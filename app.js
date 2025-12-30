@@ -36,6 +36,10 @@ const els = {
   title: document.getElementById("activeTitle"),
   url: document.getElementById("activeUrl"),
   hint: document.getElementById("hint"),
+  sidebar: document.getElementById("sidebar"),
+  app: document.getElementById("app"),
+  collapseBtn: document.getElementById("collapseBtn"),
+  expandBtn: document.getElementById("expandBtn"),
 };
 
 let activeToolId = null;
@@ -59,19 +63,28 @@ function setActive(tool) {
     els.empty.style.display = "grid";
     els.frame.classList.remove("is-visible");
     els.frame.removeAttribute("src");
-    els.hint.textContent = "Select a tool to load it.";
+    els.hint.textContent = "";
     return;
   }
 
   els.title.textContent = tool.name;
-  els.url.textContent = tool.url;
+  els.url.textContent = "";
   els.empty.style.display = "none";
   els.frame.classList.add("is-visible");
 
   // Force reload when switching tools
   els.frame.src = tool.url;
-  els.hint.textContent = "Tip: use the search to filter tools.";
+  els.hint.textContent = "";
 }
+
+// Sidebar collapse/expand
+function toggleSidebar() {
+  els.sidebar.classList.toggle("is-collapsed");
+  els.app.classList.toggle("sidebar-collapsed");
+}
+
+els.collapseBtn.addEventListener("click", toggleSidebar);
+els.expandBtn.addEventListener("click", toggleSidebar);
 
 function renderList(filteredTools) {
   els.list.innerHTML = "";
@@ -104,12 +117,7 @@ function renderList(filteredTools) {
     name.className = "menu__name";
     name.textContent = tool.name;
 
-    const url = document.createElement("span");
-    url.className = "menu__url";
-    url.textContent = tool.url;
-
     label.appendChild(name);
-    label.appendChild(url);
 
     btn.appendChild(icon);
     btn.appendChild(label);

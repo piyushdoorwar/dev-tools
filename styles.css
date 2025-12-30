@@ -39,6 +39,42 @@ body {
   grid-template-columns: 320px 1fr;
   gap: 16px;
   padding: 16px;
+  position: relative;
+}
+
+.app.sidebar-collapsed {
+  grid-template-columns: 0 1fr;
+}
+
+.expand-btn {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  width: 40px;
+  height: 40px;
+  display: none;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(8px);
+  color: var(--text);
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.2s ease;
+}
+
+.app.sidebar-collapsed .expand-btn {
+  display: grid;
+}
+
+.expand-btn:hover {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: rgba(168, 85, 247, 0.4);
+}
+
+.expand-btn svg {
+  display: block;
 }
 
 .sidebar {
@@ -53,12 +89,51 @@ body {
     rgba(17, 24, 39, 0.55) 100%
   );
   overflow: hidden;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.sidebar.is-collapsed {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .sidebar__top {
   padding: 14px;
   border-bottom: 1px solid var(--border);
   background: rgba(0, 0, 0, 0.12);
+  position: relative;
+}
+
+.collapse-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.collapse-btn:hover {
+  background: rgba(168, 85, 247, 0.12);
+  border-color: rgba(168, 85, 247, 0.3);
+  color: var(--text);
+}
+
+.collapse-btn svg {
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+.sidebar.is-collapsed .collapse-btn svg {
+  transform: rotate(180deg);
 }
 
 .brand {
@@ -74,11 +149,15 @@ body {
   display: grid;
   place-items: center;
   border-radius: 10px;
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.9), rgba(236, 72, 153, 0.8));
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  overflow: hidden;
   user-select: none;
+  flex-shrink: 0;
+}
+
+.brand__mark img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .brand__title {
@@ -105,9 +184,14 @@ body {
 
 .search__icon {
   color: var(--muted);
-  font-size: 14px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   user-select: none;
+}
+
+.search__icon svg {
+  display: block;
 }
 
 .search__input {
@@ -201,7 +285,7 @@ body {
 
 .menu__name {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: -0.01em;
 }
 
