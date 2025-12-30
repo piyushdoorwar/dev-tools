@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dev Tools</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <aside class="sidebar" aria-label="Tool navigation">
+        <div class="sidebar__top">
+          <div class="brand" title="Dev Tools">
+            <div class="brand__mark" aria-hidden="true">{ }</div>
+            <div class="brand__text">
+              <div class="brand__title">Dev Tools</div>
+              <div class="brand__subtitle">Utilities in one place</div>
+            </div>
+          </div>
+
+          <label class="search" aria-label="Search tools">
+            <span class="search__icon" aria-hidden="true">⌕</span>
+            <input
+              id="toolSearch"
+              class="search__input"
+              type="search"
+              placeholder="Search…"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+        </div>
+
+        <nav class="menu" aria-label="Tools">
+          <div class="menu__section">
+            <div class="menu__title">TOOLS</div>
+            <ul class="menu__list" id="toolList" role="list"></ul>
+          </div>
+        </nav>
+
+        <div class="sidebar__bottom">
+          <div class="hint" id="hint">Select a tool to load it.</div>
+        </div>
+      </aside>
+
+      <main class="main" aria-label="Tool content">
+        <header class="main__header">
+          <div class="main__title" id="activeTitle">Choose a tool</div>
+          <div class="main__meta" id="activeUrl"></div>
+        </header>
+
+        <section class="main__content" aria-label="Iframe panel">
+          <div class="empty" id="emptyState">
+            <div class="empty__title">No tool loaded</div>
+            <div class="empty__subtitle">Pick one from the left sidebar.</div>
+          </div>
+
+          <iframe
+            id="toolFrame"
+            class="frame"
+            title="Tool iframe"
+            referrerpolicy="no-referrer"
+            loading="lazy"
+            allow="clipboard-read; clipboard-write"
+          ></iframe>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
