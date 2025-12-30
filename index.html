@@ -3,8 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#a855f7" />
+    <meta name="description" content="Developer utilities in one place" />
     <title>Dev Tools</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="manifest" href="./manifest.json" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -63,11 +66,6 @@
       </aside>
 
       <main class="main" aria-label="Tool content">
-        <header class="main__header">
-          <div class="main__title" id="activeTitle">Choose a tool</div>
-          <div class="main__meta" id="activeUrl"></div>
-        </header>
-
         <section class="main__content" aria-label="Iframe panel">
           <div class="empty" id="emptyState">
             <div class="empty__title">No tool loaded</div>
@@ -86,6 +84,24 @@
       </main>
     </div>
 
+    <!-- 3rd party library: Lodash for utility functions -->
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    
     <script src="./app.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+              console.log('Service Worker registration failed:', error);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

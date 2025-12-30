@@ -33,8 +33,6 @@ const els = {
   search: document.getElementById("toolSearch"),
   frame: document.getElementById("toolFrame"),
   empty: document.getElementById("emptyState"),
-  title: document.getElementById("activeTitle"),
-  url: document.getElementById("activeUrl"),
   hint: document.getElementById("hint"),
   sidebar: document.getElementById("sidebar"),
   app: document.getElementById("app"),
@@ -45,7 +43,8 @@ const els = {
 let activeToolId = null;
 
 function normalize(text) {
-  return (text || "").toLowerCase().trim();
+  // Using Lodash for string normalization
+  return _.toLower(_.trim(text || ""));
 }
 
 function setActive(tool) {
@@ -58,8 +57,6 @@ function setActive(tool) {
   }
 
   if (!tool) {
-    els.title.textContent = "Choose a tool";
-    els.url.textContent = "";
     els.empty.style.display = "grid";
     els.frame.classList.remove("is-visible");
     els.frame.removeAttribute("src");
@@ -67,8 +64,6 @@ function setActive(tool) {
     return;
   }
 
-  els.title.textContent = tool.name;
-  els.url.textContent = "";
   els.empty.style.display = "none";
   els.frame.classList.add("is-visible");
 
@@ -146,9 +141,10 @@ function applySearch() {
     return;
   }
 
-  const filtered = TOOLS.filter((t) => {
+  // Using Lodash filter for better performance
+  const filtered = _.filter(TOOLS, (t) => {
     const hay = `${t.name} ${t.id} ${t.url}`.toLowerCase();
-    return hay.includes(q);
+    return _.includes(hay, q);
   });
   renderList(filtered);
 }
