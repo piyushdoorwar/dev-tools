@@ -23,6 +23,11 @@ const TOOLS = [
     name: "JWT Debugger",
     url: `${BASE}jwt-debugger/`,
   },
+  {
+    id: "json-diff",
+    name: "JSON Diff",
+    url: `${BASE}json-diff/`,
+  },
 ].map((t) => ({
   ...t,
   faviconUrl: `${BASE}${t.id}/favicon.svg`,

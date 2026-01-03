@@ -1,19 +1,22 @@
 {
-  "name": "Dev Tools",
+  "name": "Dev Tools - Developer Utilities",
   "short_name": "Dev Tools",
-  "description": "Developer utilities in one place",
+  "description": "Beautiful modern developer utilities dashboard - All your dev tools in one place",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0f",
-  "theme_color": "#a855f7",
-  "orientation": "portrait-primary",
+  "background_color": "#0d0d0d",
+  "theme_color": "#0d0d0d",
+  "orientation": "any",
+  "scope": "/",
   "icons": [
     {
       "src": "/favicon.svg",
       "sizes": "any",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ],
-  "categories": ["productivity", "utilities"],
-  "screenshots": []
+  "categories": ["productivity", "utilities", "development"],
+  "screenshots": [],
+  "prefer_related_applications": false
 }
