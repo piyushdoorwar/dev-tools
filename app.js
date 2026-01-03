@@ -43,6 +43,7 @@ const els = {
   app: document.getElementById("app"),
   collapseBtn: document.getElementById("collapseBtn"),
   expandBtn: document.getElementById("expandBtn"),
+  version: document.getElementById("appVersion"),
 };
 
 let activeToolId = null;
@@ -165,3 +166,90 @@ els.search.addEventListener("keydown", (e) => {
   const firstBtn = els.list.querySelector("button.menu__item");
   if (firstBtn) firstBtn.click();
 });
+
+function inferGitHubPagesRepo() {
+  const host = window.location.hostname;
+  if (!host.endsWith("github.io")) return null;
+
+  const owner = host.split(".")[0];
+  const path = window.location.pathname || "/";
+  const segments = path.split("/").filter(Boolean);
+
+  // Project pages: https://owner.github.io/repo/...
+  // User pages:    https://owner.github.io/...
+  const repo = segments.length > 0 && segments[0] !== "index.html" ? segments[0] : `${owner}.github.io`;
+  return { owner, repo };
+}
+
+function getConfiguredGitHubRepo() {
+  const meta = document.querySelector('meta[name="github-repo"]');
+  const value = meta?.getAttribute("content")?.trim();
+  if (!value) return null;
+  const [owner, repo] = value.split("/");
+  if (!owner || !repo) return null;
+  return { owner, repo };
+}
+
+async function loadDeployedVersion() {
+  if (!els.version) return;
+
+  const inferred = getConfiguredGitHubRepo() || inferGitHubPagesRepo();
+  if (!inferred) {
+    els.version.style.display = "none";
+    return;
+  }
+
+  const cacheKey = `devtools:gh-version:${inferred.owner}/${inferred.repo}`;
+  const cachedRaw = localStorage.getItem(cacheKey);
+  if (cachedRaw) {
+    try {
+      const cached = JSON.parse(cachedRaw);
+      if (cached?.value && cached?.ts && Date.now() - cached.ts < 60 * 60 * 1000) {
+        els.version.textContent = cached.value;
+        els.version.href = cached.href || "#";
+        els.version.dataset.tooltip = cached.tooltip || "Version from GitHub Pages deploy";
+        return;
+      }
+    } catch {
+      // ignore cache parse errors
+    }
+  }
+
+  try {
+    els.version.textContent = "Version…";
+    els.version.dataset.tooltip = "Loading version…";
+
+    const apiUrl = `https://api.github.com/repos/${inferred.owner}/${inferred.repo}/commits?per_page=1`;
+    const res = await fetch(apiUrl, {
+      headers: {
+        Accept: "application/vnd.github+json",
+      },
+    });
+
+    if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+    const data = await res.json();
+    const commit = Array.isArray(data) ? data[0] : null;
+    const sha = commit?.sha;
+    if (!sha) throw new Error("Missing commit SHA");
+
+    const shortSha = String(sha).slice(0, 7);
+    const dateRaw = commit?.commit?.committer?.date || commit?.commit?.author?.date;
+    const date = dateRaw ? new Date(dateRaw).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" }) : "";
+    const href = commit?.html_url || `https://github.com/${inferred.owner}/${inferred.repo}/commit/${sha}`;
+
+    const value = `v${shortSha}`;
+    const tooltip = date ? `Deployed: ${date} • ${inferred.repo}@${shortSha}` : `Deployed: ${inferred.repo}@${shortSha}`;
+
+    els.version.textContent = value;
+    els.version.href = href;
+    els.version.dataset.tooltip = tooltip;
+
+    localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), value, href, tooltip }));
+  } catch (err) {
+    els.version.textContent = "Version";
+    els.version.href = "#";
+    els.version.dataset.tooltip = "Version unavailable";
+  }
+}
+
+loadDeployedVersion();

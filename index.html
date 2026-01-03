@@ -7,19 +7,21 @@
     <meta name="description" content="Developer utilities in one place - A beautiful, modern dev tools dashboard" />
     <meta name="keywords" content="developer tools, utilities, markdown editor, jwt debugger, html preview" />
     <meta name="author" content="Dev Tools" />
+    <meta name="github-repo" content="piyushdoorwar/dev-tools" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Dev Tools - All Your Developer Utilities</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <div class="app" id="app">
-      <button class="expand-btn" id="expandBtn" type="button" aria-label="Expand sidebar">
+      <button class="expand-btn" id="expandBtn" type="button" aria-label="Expand sidebar" data-tooltip="Expand sidebar">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M13 5l7 7-7 7"></path>
           <path d="M5 5l7 7-7 7"></path>
@@ -27,7 +29,7 @@
       </button>
       <aside class="sidebar" id="sidebar" aria-label="Tool navigation">
         <div class="sidebar__top">
-          <button class="collapse-btn" id="collapseBtn" type="button" aria-label="Toggle sidebar">
+          <button class="collapse-btn" id="collapseBtn" type="button" aria-label="Toggle sidebar" data-tooltip="Collapse sidebar">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 19l-7-7 7-7"></path>
               <path d="M19 19l-7-7 7-7"></path>
@@ -69,6 +71,9 @@
 
         <div class="sidebar__bottom">
           <div class="hint" id="hint"></div>
+          <div class="sidebar__footer" aria-label="App version">
+            <a class="sidebar__version" id="appVersion" href="#" target="_blank" rel="noreferrer" data-tooltip="Loading version…">Version</a>
+          </div>
         </div>
       </aside>
 
