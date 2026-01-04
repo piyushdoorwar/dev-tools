@@ -28,6 +28,16 @@ const TOOLS = [
     name: "JSON Diff",
     url: `${BASE}json-diff/`,
   },
+  {
+    id: "json-xml-converter",
+    name: "JSON to XML Converter",
+    url: `${BASE}json-xml-converter/#json-xml`,
+  },
+  {
+    id: "xml-json-converter",
+    name: "XML to JSON Converter",
+    url: `${BASE}json-xml-converter/#xml-json`,
+  },
 ].map((t) => ({
   ...t,
   faviconUrl: `${BASE}${t.id}/favicon.svg`,
