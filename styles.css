@@ -275,6 +275,31 @@ body {
   font-size: 14px;
   font-weight: 400;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  box-shadow: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search__input:focus-visible {
+  outline: none;
+  outline-offset: 0;
+}
+
+/* Remove browser-native inner borders/decoration on <input type="search"> */
+.search__input::-webkit-search-decoration,
+.search__input::-webkit-search-cancel-button,
+.search__input::-webkit-search-results-button,
+.search__input::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+.search__input::-ms-clear,
+.search__input::-ms-reveal {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .search__input::placeholder {
@@ -395,8 +420,8 @@ body {
 }
 
 .menu__icon img {
-  width: 20px;
-  height: 20px;
+  width: 25px;
+  height: 25px;
   display: block;
 }
 
