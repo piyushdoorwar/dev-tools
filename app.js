@@ -40,6 +40,18 @@ const TOOLS = [
     url: `${BASE}json-xml-converter`,
     endpoint: "#xml-json",
   },
+  {
+    id: "json-toon-converter",
+    name: "JSON to Toon Converter",
+    url: `${BASE}json-toon-converter`,
+    endpoint: "#json-toon",
+  },
+  {
+    id: "toon-json-converter",
+    name: "Toon to JSON Converter",
+    url: `${BASE}json-toon-converter`,
+    endpoint: "#toon-json",
+  },
 ].map((t) => ({
   ...t,
   url: t.url + (t.endpoint || ''),
