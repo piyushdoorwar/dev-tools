@@ -53,7 +53,35 @@ function normalize(text) {
   return _.toLower(_.trim(text || ""));
 }
 
-function setActive(tool) {
+// Convert tool name to URL-friendly format
+function toolNameToRoute(name) {
+  return name.toLowerCase().replace(/\s+/g, "-");
+}
+
+// Convert URL route to tool ID
+function routeToToolId(route) {
+  if (!route) return null;
+  const tool = TOOLS.find(t => toolNameToRoute(t.name) === route);
+  return tool?.id ?? null;
+}
+
+// Get current route from URL
+function getCurrentRoute() {
+  const hash = window.location.hash.slice(1); // Remove #
+  return hash || null;
+}
+
+// Update URL without triggering navigation
+function updateURL(route, replaceState = false) {
+  const newURL = route ? `#${route}` : window.location.pathname;
+  if (replaceState) {
+    window.history.replaceState(null, "", newURL);
+  } else {
+    window.history.pushState(null, "", newURL);
+  }
+}
+
+function setActive(tool, updateHistory = true) {
   activeToolId = tool?.id ?? null;
 
   // Update menu selection
@@ -67,6 +95,9 @@ function setActive(tool) {
     els.frame.classList.remove("is-visible");
     els.frame.removeAttribute("src");
     els.hint.textContent = "";
+    if (updateHistory) {
+      updateURL(null, true);
+    }
     return;
   }
 
@@ -76,6 +107,12 @@ function setActive(tool) {
   // Force reload when switching tools
   els.frame.src = tool.url;
   els.hint.textContent = "";
+
+  // Update URL
+  if (updateHistory) {
+    const route = toolNameToRoute(tool.name);
+    updateURL(route);
+  }
 }
 
 // Sidebar collapse/expand
@@ -157,7 +194,29 @@ function applySearch() {
 
 // Init
 renderList(TOOLS);
-setActive(null);
+
+// Load tool from URL on page load
+function loadFromURL() {
+  const route = getCurrentRoute();
+  if (route) {
+    const toolId = routeToToolId(route);
+    const tool = TOOLS.find(t => t.id === toolId);
+    if (tool) {
+      setActive(tool, false); // Don't update history on initial load
+      return;
+    }
+  }
+  setActive(null, false);
+}
+
+// Handle browser back/forward buttons
+window.addEventListener("popstate", () => {
+  loadFromURL();
+});
+
+// Load initial tool
+loadFromURL();
+
 els.search.addEventListener("input", applySearch);
 
 // Keyboard: Enter loads first visible tool
