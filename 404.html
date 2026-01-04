@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0d0d0d" />
+    <meta name="description" content="Page not found - Dev Tools" />
+    <meta name="author" content="Dev Tools" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>404 - Page Not Found | Dev Tools</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .error-container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        text-align: center;
+      }
+
+      .error-code {
+        font-size: 120px;
+        font-weight: 800;
+        line-height: 1;
+        background: linear-gradient(135deg, var(--purple-light), var(--pink), var(--blue));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 16px;
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      .error-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 12px;
+        animation: fadeInUp 0.6s ease-out 0.1s backwards;
+      }
+
+      .error-subtitle {
+        font-size: 18px;
+        color: var(--text-secondary);
+        margin-bottom: 32px;
+        max-width: 500px;
+        animation: fadeInUp 0.6s ease-out 0.2s backwards;
+      }
+
+      .error-actions {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        justify-content: center;
+        animation: fadeInUp 0.6s ease-out 0.3s backwards;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 28px;
+        border-radius: var(--radius);
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        outline: none;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+        color: var(--text);
+        box-shadow: var(--shadow-purple);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(103, 57, 183, 0.4);
+      }
+
+      .btn-secondary {
+        background: var(--bg-elevated);
+        color: var(--text);
+        border: 1px solid var(--border-light);
+      }
+
+      .btn-secondary:hover {
+        background: var(--bg-panel);
+        border-color: var(--purple-light);
+      }
+
+      .error-decoration {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .error-decoration::before,
+      .error-decoration::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.15;
+        animation: float 8s ease-in-out infinite;
+      }
+
+      .error-decoration::before {
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, var(--purple-light), transparent);
+        top: -200px;
+        left: -200px;
+      }
+
+      .error-decoration::after {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, var(--pink), transparent);
+        bottom: -150px;
+        right: -150px;
+        animation-delay: -4s;
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes float {
+        0%, 100% {
+          transform: translate(0, 0) scale(1);
+        }
+        50% {
+          transform: translate(30px, 30px) scale(1.1);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .error-code {
+          font-size: 80px;
+        }
+
+        .error-title {
+          font-size: 24px;
+        }
+
+        .error-subtitle {
+          font-size: 16px;
+        }
+
+        .error-actions {
+          flex-direction: column;
+          width: 100%;
+          max-width: 300px;
+        }
+
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="error-decoration"></div>
+    <div class="error-container">
+      <div class="error-code">404</div>
+      <h1 class="error-title">Page Not Found</h1>
+      <p class="error-subtitle">
+        Oops! The page you're looking for doesn't exist. It might have been moved or deleted.
+      </p>
+      <div class="error-actions">
+        <a href="/" class="btn btn-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Go Home
+        </a>
+        <button class="btn btn-secondary" onclick="window.history.back()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 19-7-7 7-7"></path>
+            <path d="M19 12H5"></path>
+          </svg>
+          Go Back
+        </button>
+      </div>
+    </div>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('SW registered:', registration);
+            })
+            .catch(error => {
+              console.log('SW registration failed:', error);
+              navigator.serviceWorker.register('/service-worker.js')
+                .then(reg => console.log('Service Worker registered:', reg))
+                .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        });
+      }
+    </script>
+  </body>
+</html>
