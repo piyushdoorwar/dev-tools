@@ -31,16 +31,21 @@ const TOOLS = [
   {
     id: "json-xml-converter",
     name: "JSON to XML Converter",
-    url: `${BASE}json-xml-converter/#json-xml`,
+    url: `${BASE}json-xml-converter`,
+    endpoint: "#json-xml",
   },
   {
     id: "xml-json-converter",
     name: "XML to JSON Converter",
-    url: `${BASE}json-xml-converter/#xml-json`,
+    url: `${BASE}json-xml-converter`,
+    endpoint: "#xml-json",
   },
 ].map((t) => ({
   ...t,
-  faviconUrl: `${BASE}${t.id}/favicon.svg`,
+  url: t.url + (t.endpoint || ''),
+  faviconUrl: t.endpoint 
+    ? `${t.url}/favicon${t.endpoint.replace('#', '-')}.svg`
+    : `${BASE}${t.id}/favicon.svg`,
 }));
 
 const els = {
