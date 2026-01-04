@@ -445,7 +445,6 @@ body {
 .sidebar__footer {
   margin-top: 8px;
   padding-top: 10px;
-  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -463,6 +462,199 @@ body {
 
 .sidebar__version:hover {
   color: var(--yellow);
+}
+
+.support-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.support-btn:hover {
+  background: var(--bg-panel);
+  border-color: var(--purple-light);
+  color: var(--purple-light);
+  transform: translateY(-2px);
+}
+
+.support-btn:active {
+  transform: translateY(0);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  padding: 20px;
+}
+
+.modal-overlay[aria-hidden="false"] {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-card);
+  max-width: 500px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  transform: scale(0.95) translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.modal-overlay[aria-hidden="false"] .modal {
+  transform: scale(1) translateY(0);
+}
+
+.modal__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+.modal__close:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-light);
+  color: var(--text);
+}
+
+.modal__header {
+  padding: 40px 40px 24px;
+  text-align: center;
+}
+
+.modal__icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+  border: 1px solid var(--purple-light);
+  color: var(--text);
+  box-shadow: var(--shadow-purple);
+}
+
+.modal__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.modal__body {
+  padding: 0 40px 40px;
+}
+
+.modal__text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.modal__email-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+}
+
+.modal__email-box:hover {
+  border-color: var(--purple-light);
+  background: var(--bg-secondary);
+}
+
+.modal__email-box svg {
+  color: var(--purple-light);
+  flex-shrink: 0;
+}
+
+.modal__email {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  font-family: 'JetBrains Mono', monospace;
+  word-break: break-all;
+}
+
+.modal__email:hover {
+  color: var(--purple-light);
+  text-decoration: underline;
+}
+
+.modal__subtext {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .modal__header {
+    padding: 30px 24px 20px;
+  }
+
+  .modal__body {
+    padding: 0 24px 30px;
+  }
+
+  .modal__title {
+    font-size: 24px;
+  }
+
+  .modal__icon {
+    width: 56px;
+    height: 56px;
+  }
 }
 
 .hint {

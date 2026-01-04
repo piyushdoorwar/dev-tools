@@ -73,9 +73,57 @@
           <div class="hint" id="hint"></div>
           <div class="sidebar__footer" aria-label="App version">
             <a class="sidebar__version" id="appVersion" href="#" target="_blank" rel="noreferrer" data-tooltip="Loading version…">Version</a>
+            <button class="support-btn" id="supportBtn" type="button" aria-label="Support & Contact" data-tooltip="Support & Contact">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <path d="M12 7v6"></path>
+                <path d="M12 17h.01"></path>
+              </svg>
+            </button>
           </div>
         </div>
       </aside>
+
+      <!-- Support Modal -->
+      <div class="modal-overlay" id="supportModal" aria-hidden="true">
+        <div class="modal" role="dialog" aria-labelledby="modalTitle" aria-modal="true">
+          <button class="modal__close" id="modalClose" type="button" aria-label="Close modal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+          
+          <div class="modal__header">
+            <div class="modal__icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <path d="M12 7v6"></path>
+                <path d="M12 17h.01"></path>
+              </svg>
+            </div>
+            <h2 id="modalTitle" class="modal__title">Support & Contact</h2>
+          </div>
+
+          <div class="modal__body">
+            <p class="modal__text">
+              Have questions, feedback, or found a bug? We'd love to hear from you!
+            </p>
+            <div class="modal__email-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+              </svg>
+              <a href="mailto:piyushdoorwar+devtools@gmail.com" class="modal__email">
+                piyushdoorwar+devtools@gmail.com
+              </a>
+            </div>
+            <p class="modal__subtext">
+              Whether it's a bug report, feature request, or general inquiry, feel free to reach out!
+            </p>
+          </div>
+        </div>
+      </div>
 
       <main class="main" aria-label="Tool content">
         <section class="main__content" aria-label="Iframe panel">
@@ -106,14 +154,14 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           // Register both service workers
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('./sw.js')
             .then(registration => {
               console.log('SW registered:', registration);
             })
             .catch(error => {
               console.log('SW registration failed:', error);
               // Fallback to service-worker.js
-              navigator.serviceWorker.register('/service-worker.js')
+              navigator.serviceWorker.register('./service-worker.js')
                 .then(reg => console.log('Service Worker registered:', reg))
                 .catch(err => console.log('Service Worker registration failed:', err));
             });

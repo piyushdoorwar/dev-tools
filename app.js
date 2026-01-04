@@ -59,6 +59,9 @@ const els = {
   collapseBtn: document.getElementById("collapseBtn"),
   expandBtn: document.getElementById("expandBtn"),
   version: document.getElementById("appVersion"),
+  supportBtn: document.getElementById("supportBtn"),
+  supportModal: document.getElementById("supportModal"),
+  modalClose: document.getElementById("modalClose"),
 };
 
 let activeToolId = null;
@@ -138,6 +141,34 @@ function toggleSidebar() {
 
 els.collapseBtn.addEventListener("click", toggleSidebar);
 els.expandBtn.addEventListener("click", toggleSidebar);
+
+// Support Modal
+function openSupportModal() {
+  els.supportModal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeSupportModal() {
+  els.supportModal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+els.supportBtn.addEventListener("click", openSupportModal);
+els.modalClose.addEventListener("click", closeSupportModal);
+
+// Close modal when clicking outside
+els.supportModal.addEventListener("click", (e) => {
+  if (e.target === els.supportModal) {
+    closeSupportModal();
+  }
+});
+
+// Close modal with Escape key
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && els.supportModal.getAttribute("aria-hidden") === "false") {
+    closeSupportModal();
+  }
+});
 
 function renderList(filteredTools) {
   els.list.innerHTML = "";
