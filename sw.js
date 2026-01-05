@@ -13,7 +13,11 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        return cache.addAll(urlsToCache).catch((error) => {
+          console.warn('Some resources failed to cache:', error);
+          // Try to cache individually
+          return Promise.allSettled(urlsToCache.map(url => cache.add(url)));
+        });
       })
   );
   self.skipWaiting();
