@@ -1,10 +1,10 @@
 const CACHE_NAME = 'dev-tools-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/app.js',
-  '/styles.css',
-  '/favicon.svg'
+  '/dev-tools/',
+  '/dev-tools/index.html',
+  '/dev-tools/app.js',
+  '/dev-tools/styles.css',
+  '/dev-tools/favicon.svg'
 ];
 
 // Install event - cache resources

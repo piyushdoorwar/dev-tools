@@ -2,15 +2,15 @@
   "name": "Dev Tools - Developer Utilities",
   "short_name": "Dev Tools",
   "description": "Beautiful modern developer utilities dashboard - All your dev tools in one place",
-  "start_url": "/",
+  "start_url": "/dev-tools/",
   "display": "standalone",
   "background_color": "#0d0d0d",
   "theme_color": "#0d0d0d",
   "orientation": "any",
-  "scope": "/",
+  "scope": "/dev-tools/",
   "icons": [
     {
-      "src": "/favicon.svg",
+      "src": "/dev-tools/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
