@@ -4,11 +4,6 @@ const BASE = "https://piyushdoorwar.github.io/";
 // If any URL differs, just edit it here.
 const TOOLS = [
   {
-    id: "markdown-editor",
-    name: "Markdown Editor",
-    url: `${BASE}markdown-editor/`,
-  },
-  {
     id: "html-preview",
     name: "HTML Preview",
     url: `${BASE}html-preview/`,
@@ -19,26 +14,9 @@ const TOOLS = [
     url: `${BASE}id-generator/`,
   },
   {
-    id: "jwt-debugger",
-    name: "JWT Debugger",
-    url: `${BASE}jwt-debugger/`,
-  },
-  {
     id: "json-diff",
     name: "JSON Diff",
     url: `${BASE}json-diff/`,
-  },
-  {
-    id: "json-xml-converter",
-    name: "JSON to XML Converter",
-    url: `${BASE}json-xml-converter`,
-    endpoint: "#json-xml",
-  },
-  {
-    id: "xml-json-converter",
-    name: "XML to JSON Converter",
-    url: `${BASE}json-xml-converter`,
-    endpoint: "#xml-json",
   },
   {
     id: "json-toon-converter",
@@ -47,10 +25,37 @@ const TOOLS = [
     endpoint: "#json-toon",
   },
   {
+    id: "json-xml-converter",
+    name: "JSON to XML Converter",
+    url: `${BASE}json-xml-converter`,
+    endpoint: "#json-xml",
+  },
+  {
+    id: "jwt-debugger",
+    name: "JWT Debugger",
+    url: `${BASE}jwt-debugger/`,
+  },
+  {
+    id: "markdown-editor",
+    name: "Markdown Editor",
+    url: `${BASE}markdown-editor/`,
+  },
+  {
+    id: "sql-formatter",
+    name: "SQL Formatter",
+    url: `${BASE}sql-formatter/`,
+  },
+  {
     id: "toon-json-converter",
     name: "Toon to JSON Converter",
     url: `${BASE}json-toon-converter`,
     endpoint: "#toon-json",
+  },
+  {
+    id: "xml-json-converter",
+    name: "XML to JSON Converter",
+    url: `${BASE}json-xml-converter`,
+    endpoint: "#xml-json",
   },
 ].map((t) => ({
   ...t,
