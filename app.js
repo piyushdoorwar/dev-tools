@@ -41,6 +41,11 @@ const TOOLS = [
     url: `${BASE}markdown-editor/`,
   },
   {
+    id: "regex-tester",
+    name: "Regex Tester",
+    url: `${BASE}regex-tester/`,
+  },
+  {
     id: "sql-formatter",
     name: "SQL Formatter",
     url: `${BASE}sql-formatter/`,
