@@ -51,6 +51,11 @@ const TOOLS = [
     url: `${BASE}sql-formatter/`,
   },
   {
+    id: "text-diff",
+    name: "Text Diff",
+    url: `${BASE}text-diff/`,
+  },
+  {
     id: "toon-json-converter",
     name: "Toon to JSON Converter",
     url: `${BASE}json-toon-converter`,
