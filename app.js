@@ -41,6 +41,11 @@ const TOOLS = [
     url: `${BASE}markdown-editor/`,
   },
   {
+    id: "qr-generator",
+    name: "QR Generator",
+    url: `${BASE}qr-generator/`,
+  },
+  {
     id: "regex-tester",
     name: "Regex Tester",
     url: `${BASE}regex-tester/`,
