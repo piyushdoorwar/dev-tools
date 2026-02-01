@@ -105,7 +105,7 @@ let activeToolId = null;
 let activeFrame = null;
 const framesById = new Map();
 
-function getOrCreateFrame(tool, options = {}) {
+function getOrCreateFrame(tool) {
   let frame = framesById.get(tool.id);
   if (frame) return frame;
 
@@ -113,7 +113,7 @@ function getOrCreateFrame(tool, options = {}) {
   frame.className = "frame";
   frame.title = `${tool.name} iframe`;
   frame.referrerPolicy = "no-referrer";
-  frame.loading = options.preload ? "eager" : "lazy";
+  frame.loading = "lazy";
   frame.allow = "clipboard-read; clipboard-write";
   frame.dataset.toolId = tool.id;
   frame.src = tool.url;
@@ -191,50 +191,6 @@ function setActive(tool, updateHistory = true) {
   if (updateHistory) {
     const route = toolNameToRoute(tool.name);
     updateURL(route);
-  }
-}
-
-function shouldPreloadFrames() {
-  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-  if (!connection) return true;
-  if (connection.saveData) return false;
-  const type = connection.effectiveType;
-  return type !== "slow-2g" && type !== "2g";
-}
-
-function scheduleFramePreload() {
-  if (!shouldPreloadFrames()) return;
-
-  const queue = TOOLS.filter((tool) => tool.id !== activeToolId);
-  const maxConcurrent = 2;
-  let inFlight = 0;
-
-  const runNext = () => {
-    while (inFlight < maxConcurrent && queue.length > 0) {
-      const tool = queue.shift();
-      const frame = getOrCreateFrame(tool, { preload: true });
-      inFlight += 1;
-
-      const onDone = () => {
-        inFlight -= 1;
-        if (queue.length > 0) {
-          if ("requestIdleCallback" in window) {
-            window.requestIdleCallback(runNext, { timeout: 1500 });
-          } else {
-            setTimeout(runNext, 0);
-          }
-        }
-      };
-
-      frame.addEventListener("load", onDone, { once: true });
-      frame.addEventListener("error", onDone, { once: true });
-    }
-  };
-
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(runNext, { timeout: 2000 });
-  } else {
-    setTimeout(runNext, 1500);
   }
 }
 
@@ -369,8 +325,6 @@ window.addEventListener("popstate", () => {
 loadFromURL();
 
 els.search.addEventListener("input", applySearch);
-
-window.addEventListener("load", scheduleFramePreload);
 
 // Keyboard: Enter loads first visible tool
 els.search.addEventListener("keydown", (e) => {
