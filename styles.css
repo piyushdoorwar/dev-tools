@@ -958,6 +958,11 @@ body {
   display: block;
 }
 
+.frame-host {
+  position: absolute;
+  inset: 0;
+}
+
 @media (max-width: 900px) {
   .app {
     grid-template-columns: 1fr;

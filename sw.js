@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dev-tools-v3';
+const CACHE_NAME = 'dev-tools-v4';
 const urlsToCache = [
   '/dev-tools/',
   '/dev-tools/index.html',

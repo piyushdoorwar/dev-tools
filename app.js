@@ -88,7 +88,7 @@ const TOOLS = [
 const els = {
   list: document.getElementById("toolList"),
   search: document.getElementById("toolSearch"),
-  frame: document.getElementById("toolFrame"),
+  frameHost: document.getElementById("frameHost"),
   empty: document.getElementById("emptyState"),
   hint: document.getElementById("hint"),
   sidebar: document.getElementById("sidebar"),
@@ -102,6 +102,26 @@ const els = {
 };
 
 let activeToolId = null;
+let activeFrame = null;
+const framesById = new Map();
+
+function getOrCreateFrame(tool) {
+  let frame = framesById.get(tool.id);
+  if (frame) return frame;
+
+  frame = document.createElement("iframe");
+  frame.className = "frame";
+  frame.title = `${tool.name} iframe`;
+  frame.referrerPolicy = "no-referrer";
+  frame.loading = "lazy";
+  frame.allow = "clipboard-read; clipboard-write";
+  frame.dataset.toolId = tool.id;
+  frame.src = tool.url;
+
+  framesById.set(tool.id, frame);
+  els.frameHost.appendChild(frame);
+  return frame;
+}
 
 function normalize(text) {
   // Using Lodash for string normalization
@@ -147,8 +167,10 @@ function setActive(tool, updateHistory = true) {
 
   if (!tool) {
     els.empty.style.display = "grid";
-    els.frame.classList.remove("is-visible");
-    els.frame.removeAttribute("src");
+    if (activeFrame) {
+      activeFrame.classList.remove("is-visible");
+      activeFrame = null;
+    }
     els.hint.textContent = "";
     if (updateHistory) {
       updateURL(null, true);
@@ -157,10 +179,12 @@ function setActive(tool, updateHistory = true) {
   }
 
   els.empty.style.display = "none";
-  els.frame.classList.add("is-visible");
-
-  // Force reload when switching tools
-  els.frame.src = tool.url;
+  const frame = getOrCreateFrame(tool);
+  if (activeFrame && activeFrame !== frame) {
+    activeFrame.classList.remove("is-visible");
+  }
+  frame.classList.add("is-visible");
+  activeFrame = frame;
   els.hint.textContent = "";
 
   // Update URL
