@@ -9,6 +9,11 @@ const TOOLS = [
     url: `${BASE}crypto-generator/`,
   },
   {
+    id: "fake-data-generator",
+    name: "Fake Data Generator",
+    url: `${BASE}fake-data-generator/`,
+  },
+  {
     id: "html-preview",
     name: "HTML Preview",
     url: `${BASE}html-preview/`,
