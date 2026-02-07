@@ -4,6 +4,11 @@ const BASE = "https://piyushdoorwar.github.io/";
 // If any URL differs, just edit it here.
 const TOOLS = [
   {
+    id: "base-converter",
+    name: "Base Converter",
+    url: `${BASE}base-converter/`,
+  },
+  {
     id: "crypto-generator",
     name: "Crypto Generator",
     url: `${BASE}crypto-generator/`,
