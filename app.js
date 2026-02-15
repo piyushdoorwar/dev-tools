@@ -1,4 +1,6 @@
 const BASE = "https://piyushdoorwar.github.io/";
+const PRELOAD_ON_HOVER = true;
+const PRELOAD_DELAY_MS = 160;
 
 // NOTE: Assumption: each tool lives at `${BASE}${id}/` and exposes `${BASE}${id}/favicon.svg`.
 // If any URL differs, just edit it here.
@@ -115,6 +117,8 @@ const els = {
 let activeToolId = null;
 let activeFrame = null;
 const framesById = new Map();
+let preloadTimer = null;
+let pendingPreloadId = null;
 
 function showLoader(tool) {
   if (!els.frameLoader) return;
@@ -140,7 +144,7 @@ function getOrCreateFrame(tool) {
   frame.className = "frame";
   frame.title = `${tool.name} iframe`;
   frame.referrerPolicy = "no-referrer";
-  frame.loading = "lazy";
+  frame.loading = "eager";
   frame.allow = "clipboard-read; clipboard-write";
   frame.dataset.toolId = tool.id;
   frame.addEventListener("load", () => {
@@ -159,6 +163,25 @@ function getOrCreateFrame(tool) {
   framesById.set(tool.id, frame);
   els.frameHost.appendChild(frame);
   return frame;
+}
+
+function schedulePreload(tool) {
+  if (!PRELOAD_ON_HOVER || !tool) return;
+  if (framesById.has(tool.id)) return;
+  pendingPreloadId = tool.id;
+  if (preloadTimer) {
+    clearTimeout(preloadTimer);
+  }
+  preloadTimer = setTimeout(() => {
+    preloadTimer = null;
+    const id = pendingPreloadId;
+    pendingPreloadId = null;
+    if (!id) return;
+    const match = TOOLS.find((t) => t.id === id);
+    if (match && !framesById.has(match.id)) {
+      getOrCreateFrame(match);
+    }
+  }, PRELOAD_DELAY_MS);
 }
 
 function normalize(text) {
@@ -312,6 +335,8 @@ function renderList(filteredTools) {
     btn.appendChild(label);
 
     btn.addEventListener("click", () => setActive(tool));
+    btn.addEventListener("mouseenter", () => schedulePreload(tool));
+    btn.addEventListener("focus", () => schedulePreload(tool));
 
     li.appendChild(btn);
     els.list.appendChild(li);
