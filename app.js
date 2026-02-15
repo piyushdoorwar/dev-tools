@@ -314,6 +314,7 @@ function renderList(filteredTools) {
     btn.type = "button";
     btn.className = "menu__item";
     btn.dataset.toolId = tool.id;
+    btn.title = tool.name;
     btn.setAttribute("aria-current", tool.id === activeToolId ? "true" : "false");
 
     const icon = document.createElement("span");

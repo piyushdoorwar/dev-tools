@@ -80,7 +80,7 @@ body {
 }
 
 .app.sidebar-collapsed {
-  grid-template-columns: 0 1fr;
+  grid-template-columns: 84px 1fr;
 }
 
 .expand-btn {
@@ -136,9 +136,84 @@ body {
 }
 
 .sidebar.is-collapsed {
-  transform: translateX(-100%);
-  opacity: 0;
-  pointer-events: none;
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.app.sidebar-collapsed .expand-btn {
+  display: none;
+}
+
+.app.sidebar-collapsed .sidebar__top {
+  padding: 14px 10px 12px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.app.sidebar-collapsed .collapse-btn {
+  position: static;
+}
+
+.app.sidebar-collapsed .brand {
+  padding: 0;
+  justify-content: center;
+}
+
+.app.sidebar-collapsed .brand__mark {
+  width: 40px;
+  height: 40px;
+}
+
+.app.sidebar-collapsed .brand__text {
+  display: none;
+}
+
+.app.sidebar-collapsed .search {
+  display: none;
+}
+
+.app.sidebar-collapsed .menu {
+  padding: 12px 6px;
+  scrollbar-width: none;
+}
+
+.app.sidebar-collapsed .menu::-webkit-scrollbar {
+  width: 0;
+}
+
+.app.sidebar-collapsed .menu__item {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  padding: 10px;
+}
+
+.app.sidebar-collapsed .menu__label {
+  display: none;
+}
+
+.app.sidebar-collapsed .menu__icon {
+  width: 36px;
+  height: 36px;
+}
+
+.app.sidebar-collapsed .sidebar__bottom {
+  padding: 10px;
+}
+
+.app.sidebar-collapsed .sidebar__footer {
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.app.sidebar-collapsed .sidebar__version {
+  display: none;
+}
+
+.app.sidebar-collapsed .hint {
+  display: none;
 }
 
 .sidebar__top {
