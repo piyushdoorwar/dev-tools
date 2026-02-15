@@ -58,8 +58,7 @@ dev-tools/
 ├── index.html          # Main HTML file
 ├── app.js             # Application logic
 ├── styles.css         # Premium modern styling
-├── service-worker.js  # Full PWA service worker
-├── sw.js             # Simplified service worker
+├── sw.js             # PWA service worker
 ├── manifest.json     # PWA manifest
 ├── favicon.svg       # App icon
 ├── LICENSE           # License file
