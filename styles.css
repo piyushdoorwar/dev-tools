@@ -1084,6 +1084,25 @@ body {
   letter-spacing: 0.02em;
 }
 
+.frame-loader__meta {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.frame-loader__stage {
+  font-weight: 600;
+}
+
+.frame-loader__percent {
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 900px) {
   .app {
     grid-template-columns: 1fr;

@@ -119,21 +119,56 @@ let activeFrame = null;
 const framesById = new Map();
 let preloadTimer = null;
 let pendingPreloadId = null;
+let loaderInterval = null;
+let loaderStart = 0;
 
 function showLoader(tool) {
   if (!els.frameLoader) return;
   const text = els.frameLoader.querySelector(".frame-loader__text");
+  const stageEl = els.frameLoader.querySelector(".frame-loader__stage");
+  const percentEl = els.frameLoader.querySelector(".frame-loader__percent");
   if (text) {
     text.textContent = tool?.name ? `Loading ${tool.name}...` : "Loading tool...";
   }
+  if (stageEl) stageEl.textContent = "Connecting";
+  if (percentEl) percentEl.textContent = "0%";
   els.frameLoader.classList.add("is-visible");
   els.frameLoader.setAttribute("aria-hidden", "false");
+
+  loaderStart = Date.now();
+  if (loaderInterval) {
+    clearInterval(loaderInterval);
+  }
+  loaderInterval = setInterval(() => {
+    const elapsed = Date.now() - loaderStart;
+    let stage = "Connecting";
+    let percent = 5;
+    if (elapsed < 600) {
+      stage = "Connecting";
+      percent = Math.min(20, Math.round(5 + (elapsed / 600) * 15));
+    } else if (elapsed < 1600) {
+      stage = "Fetching";
+      percent = Math.min(60, Math.round(20 + ((elapsed - 600) / 1000) * 40));
+    } else if (elapsed < 3200) {
+      stage = "Rendering";
+      percent = Math.min(85, Math.round(60 + ((elapsed - 1600) / 1600) * 25));
+    } else {
+      stage = "Finalizing";
+      percent = 95;
+    }
+    if (stageEl) stageEl.textContent = stage;
+    if (percentEl) percentEl.textContent = `${percent}%`;
+  }, 120);
 }
 
 function hideLoader() {
   if (!els.frameLoader) return;
   els.frameLoader.classList.remove("is-visible");
   els.frameLoader.setAttribute("aria-hidden", "true");
+  if (loaderInterval) {
+    clearInterval(loaderInterval);
+    loaderInterval = null;
+  }
 }
 
 function getOrCreateFrame(tool, opts = {}) {
