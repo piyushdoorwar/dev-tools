@@ -101,6 +101,7 @@ const els = {
   frameHost: document.getElementById("frameHost"),
   empty: document.getElementById("emptyState"),
   hint: document.getElementById("hint"),
+  frameLoader: document.getElementById("frameLoader"),
   sidebar: document.getElementById("sidebar"),
   app: document.getElementById("app"),
   collapseBtn: document.getElementById("collapseBtn"),
@@ -115,6 +116,22 @@ let activeToolId = null;
 let activeFrame = null;
 const framesById = new Map();
 
+function showLoader(tool) {
+  if (!els.frameLoader) return;
+  const text = els.frameLoader.querySelector(".frame-loader__text");
+  if (text) {
+    text.textContent = tool?.name ? `Loading ${tool.name}...` : "Loading tool...";
+  }
+  els.frameLoader.classList.add("is-visible");
+  els.frameLoader.setAttribute("aria-hidden", "false");
+}
+
+function hideLoader() {
+  if (!els.frameLoader) return;
+  els.frameLoader.classList.remove("is-visible");
+  els.frameLoader.setAttribute("aria-hidden", "true");
+}
+
 function getOrCreateFrame(tool) {
   let frame = framesById.get(tool.id);
   if (frame) return frame;
@@ -126,6 +143,17 @@ function getOrCreateFrame(tool) {
   frame.loading = "lazy";
   frame.allow = "clipboard-read; clipboard-write";
   frame.dataset.toolId = tool.id;
+  frame.addEventListener("load", () => {
+    frame.dataset.loaded = "true";
+    if (frame === activeFrame) {
+      hideLoader();
+    }
+  });
+  frame.addEventListener("error", () => {
+    if (frame === activeFrame) {
+      hideLoader();
+    }
+  });
   frame.src = tool.url;
 
   framesById.set(tool.id, frame);
@@ -182,6 +210,7 @@ function setActive(tool, updateHistory = true) {
       activeFrame = null;
     }
     els.hint.textContent = "";
+    hideLoader();
     if (updateHistory) {
       updateURL(null, true);
     }
@@ -196,6 +225,11 @@ function setActive(tool, updateHistory = true) {
   frame.classList.add("is-visible");
   activeFrame = frame;
   els.hint.textContent = "";
+  if (frame.dataset.loaded === "true") {
+    hideLoader();
+  } else {
+    showLoader(tool);
+  }
 
   // Update URL
   if (updateHistory) {
