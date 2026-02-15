@@ -136,15 +136,21 @@ function hideLoader() {
   els.frameLoader.setAttribute("aria-hidden", "true");
 }
 
-function getOrCreateFrame(tool) {
+function getOrCreateFrame(tool, opts = {}) {
+  const desiredLoading = opts.loading || "eager";
   let frame = framesById.get(tool.id);
-  if (frame) return frame;
+  if (frame) {
+    if (desiredLoading === "eager") {
+      frame.loading = "eager";
+    }
+    return frame;
+  }
 
   frame = document.createElement("iframe");
   frame.className = "frame";
   frame.title = `${tool.name} iframe`;
   frame.referrerPolicy = "no-referrer";
-  frame.loading = "eager";
+  frame.loading = desiredLoading;
   frame.allow = "clipboard-read; clipboard-write";
   frame.dataset.toolId = tool.id;
   frame.addEventListener("load", () => {
@@ -179,7 +185,7 @@ function schedulePreload(tool) {
     if (!id) return;
     const match = TOOLS.find((t) => t.id === id);
     if (match && !framesById.has(match.id)) {
-      getOrCreateFrame(match);
+      getOrCreateFrame(match, { loading: "lazy" });
     }
   }, PRELOAD_DELAY_MS);
 }
@@ -241,7 +247,7 @@ function setActive(tool, updateHistory = true) {
   }
 
   els.empty.style.display = "none";
-  const frame = getOrCreateFrame(tool);
+  const frame = getOrCreateFrame(tool, { loading: "eager" });
   if (activeFrame && activeFrame !== frame) {
     activeFrame.classList.remove("is-visible");
   }
