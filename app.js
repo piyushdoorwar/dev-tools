@@ -21,6 +21,11 @@ const TOOLS = [
     url: `${BASE}fake-data-generator/`,
   },
   {
+    id: "file-compressor",
+    name: "File Compressor",
+    url: `${BASE}file-compressor/`,
+  },
+  {
     id: "html-preview",
     name: "HTML Preview",
     url: `${BASE}html-preview/`,
