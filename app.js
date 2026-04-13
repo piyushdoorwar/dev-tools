@@ -89,6 +89,11 @@ const TOOLS = [
     endpoint: "#toon-json",
   },
   {
+    id: "unit-converter",
+    name: "Unit Converter",
+    url: `${BASE}unit-converter/`,
+  },
+  {
     id: "xml-json-converter",
     name: "XML to JSON Converter",
     url: `${BASE}json-xml-converter`,

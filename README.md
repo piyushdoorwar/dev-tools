@@ -50,6 +50,7 @@ npx http-server
 - **HTML Preview**: Test and preview HTML code
 - **ID Generator**: Generate unique IDs and UUIDs
 - **JWT Debugger**: Decode and debug JSON Web Tokens
+- **Unit Converter**: Convert values across multiple dimensions including area and time
 
 ## 📁 Project Structure
 
