@@ -6,6 +6,8 @@
   --bg-secondary: #1a1a1a;
   --panel-bg: #1e1e1e;
   --panel-bg-elevated: #252525;
+  --surface-soft: rgba(255, 255, 255, 0.02);
+  --surface-strong: rgba(255, 255, 255, 0.04);
   --border: rgba(255, 255, 255, 0.06);
   --border-light: rgba(255, 255, 255, 0.1);
   --accent-purple: #6739b7;
@@ -18,6 +20,14 @@
   --accent-pink: #ff6b9d;
   --accent-blue: #5dade2;
   --accent-orange: #f59e0b;
+  --diff-added: rgba(0, 208, 156, 0.15);
+  --diff-added-border: rgba(0, 208, 156, 0.5);
+  --diff-removed: rgba(255, 107, 157, 0.15);
+  --diff-removed-border: rgba(255, 107, 157, 0.5);
+  --diff-modified: rgba(139, 92, 246, 0.15);
+  --diff-modified-border: rgba(139, 92, 246, 0.5);
+  --diff-minor: rgba(245, 158, 11, 0.15);
+  --diff-minor-border: rgba(245, 158, 11, 0.5);
   --text: #ffffff;
   --text-primary: #ffffff;
   --text-secondary: #b8b8b8;
@@ -31,6 +41,27 @@
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-headline: 'Gilroy', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --control-bg: rgba(0, 0, 0, 0.22);
+  --control-bg-strong: rgba(0, 0, 0, 0.35);
+  --control-bg-hover: var(--accent-purple);
+  --control-border: rgba(255, 255, 255, 0.08);
+  --control-border-strong: var(--border-light);
+  --control-border-hover: var(--accent-purple-light);
+  --control-text: var(--text-secondary);
+  --control-text-hover: var(--text-primary);
+  --tooltip-bg: var(--panel-bg-elevated);
+  --toast-bg: var(--panel-bg-elevated);
+  --toast-border: var(--accent-purple);
+  --toast-success-bg: rgba(0, 208, 156, 0.14);
+  --toast-success-border: rgba(0, 208, 156, 0.45);
+  --toast-error-bg: rgba(255, 107, 157, 0.14);
+  --toast-error-border: rgba(255, 107, 157, 0.45);
+  --toast-info-bg: rgba(139, 92, 246, 0.14);
+  --toast-info-border: rgba(139, 92, 246, 0.45);
   --purple: var(--accent-purple);
   --purple-light: var(--accent-purple-light);
   --purple-dark: var(--accent-purple-dark);
@@ -44,6 +75,10 @@
   --bg-panel: var(--panel-bg);
   --bg-panel-elevated: var(--panel-bg-elevated);
   --border-default: var(--border);
+  --panel: rgba(30, 30, 30, 0.85);
+  --panel-strong: rgba(37, 37, 37, 0.9);
+  --accent: var(--accent-purple);
+  --accent-strong: var(--accent-purple-light);
 }
 
 *,
@@ -133,5 +168,59 @@ textarea:disabled {
 
 ::selection {
   background: rgba(139, 92, 246, 0.35);
+  color: var(--text-primary);
+}
+
+.btn,
+.action-btn,
+.toolbar-btn,
+.icon-btn,
+.info-btn,
+.modal-close {
+  border-color: var(--control-border);
+  color: var(--control-text);
+}
+
+.btn:hover,
+.action-btn:hover,
+.toolbar-btn:hover,
+.icon-btn:hover,
+.info-btn:hover,
+.modal-close:hover,
+.btn:focus-visible,
+.action-btn:focus-visible,
+.toolbar-btn:focus-visible,
+.icon-btn:focus-visible,
+.info-btn:focus-visible,
+.modal-close:focus-visible {
+  border-color: var(--control-border-hover);
+  color: var(--control-text-hover);
+}
+
+.toast {
+  background: var(--toast-bg);
+  border-color: var(--toast-border);
+  color: var(--text-primary);
+}
+
+.toast.success {
+  background: var(--toast-success-bg);
+  border-color: var(--toast-success-border);
+}
+
+.toast.error {
+  background: var(--toast-error-bg);
+  border-color: var(--toast-error-border);
+}
+
+.toast.info {
+  background: var(--toast-info-bg);
+  border-color: var(--toast-info-border);
+}
+
+.modal-content,
+.modal-panel {
+  background: var(--panel-bg);
+  border-color: var(--border-light);
   color: var(--text-primary);
 }

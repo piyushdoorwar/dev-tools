@@ -8,37 +8,6 @@
   display: none !important;
 }
 
-:root {
-  --accent-purple: #6739b7;
-  --accent-purple-light: #8b5cf6;
-  --accent-purple-dark: #5b21b6;
-  --accent-yellow: #ffd700;
-  --accent-yellow-dark: #ffc700;
-  --accent-green: #00d09c;
-  --accent-pink: #ff6b9d;
-  --accent-blue: #5dade2;
-  --accent-orange: #f59e0b;
-
-  --bg: #0d0d0d;
-  --bg-secondary: #1a1a1a;
-  --panel-bg: rgba(30, 30, 30, 0.7);
-  --panel-bg-elevated: rgba(37, 37, 37, 0.75);
-
-  --text-primary: #ffffff;
-  --text-secondary: #b8b8b8;
-  --text-muted: rgba(255, 255, 255, 0.6);
-  --text-disabled: rgba(255, 255, 255, 0.35);
-
-  --border: rgba(255, 255, 255, 0.08);
-  --border-light: rgba(255, 255, 255, 0.12);
-
-  --shadow-sm: 0 6px 16px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
-  --shadow-purple: 0 10px 30px rgba(103, 57, 183, 0.35);
-  --shadow-yellow: 0 8px 24px rgba(255, 215, 0, 0.3);
-}
-
 body {
   font-family: "Inter", "Segoe UI", sans-serif;
   color: var(--text-primary);

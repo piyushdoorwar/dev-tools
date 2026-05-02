@@ -4,46 +4,6 @@
     box-sizing: border-box;
 }
 
-:root {
-    /* Primary Colors */
-    --accent-purple: #6739B7;
-    --accent-purple-light: #8B5CF6;
-    --accent-purple-dark: #5B21B6;
-    
-    /* Secondary Colors */
-    --accent-yellow: #FFD700;
-    --accent-yellow-dark: #FFC700;
-    --accent-yellow-light: #FFE55C;
-    
-    /* Additional Accents */
-    --accent-green: #00D09C;
-    --accent-pink: #FF6B9D;
-    --accent-blue: #5DADE2;
-    
-    /* Backgrounds */
-    --bg: #0d0d0d;
-    --bg-secondary: #1a1a1a;
-    --panel-bg: #1e1e1e;
-    --panel-bg-elevated: #252525;
-    
-    /* Text Colors */
-    --text-primary: #FFFFFF;
-    --text-secondary: #B8B8B8;
-    --text-muted: rgba(255, 255, 255, 0.6);
-    --text-disabled: rgba(255, 255, 255, 0.3);
-    
-    /* Borders */
-    --border: rgba(255, 255, 255, 0.06);
-    --border-light: rgba(255, 255, 255, 0.1);
-    
-    /* Shadows */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
-    --shadow-purple: 0 8px 24px rgba(103, 57, 183, 0.3);
-    --shadow-yellow: 0 8px 24px rgba(255, 215, 0, 0.3);
-}
-
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     color: var(--text-primary);
