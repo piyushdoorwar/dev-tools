@@ -25,37 +25,10 @@ body {
   height: 100vh;
   overflow: hidden;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   position: relative;
-}
-
-body::before {
-  content: "";
-  position: fixed;
-  inset: -50%;
-  background:
-    radial-gradient(circle at 20% 50%, rgba(103, 57, 183, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 40% 90%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
-  animation: gradientShift 20s ease infinite;
-  z-index: 0;
-  pointer-events: none;
-}
-
-@keyframes gradientShift {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(0deg);
-  }
-  33% {
-    transform: translate(5%, -5%) rotate(60deg);
-  }
-  66% {
-    transform: translate(-5%, 5%) rotate(120deg);
-  }
 }
 
 .app-shell {
