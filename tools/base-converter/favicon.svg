@@ -1,0 +1,84 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="gradA" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="gradB" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#FFD700"/>
+    </linearGradient>
+    <linearGradient id="gradC" x1="50%" y1="100%" x2="50%" y2="0%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="gradD" x1="100%" y1="50%" x2="0%" y2="50%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="100%" stop-color="#FFD700"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#0d0d0d" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+
+    <pattern id="pat-lines" patternUnits="userSpaceOnUse" width="6" height="6">
+      <path d="M0 6 L6 0" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/>
+    </pattern>
+    <pattern id="pat-dots" patternUnits="userSpaceOnUse" width="6" height="6">
+      <circle cx="1.5" cy="1.5" r="0.8" fill="rgba(255,255,255,0.35)"/>
+      <circle cx="4.5" cy="4.5" r="0.8" fill="rgba(255,255,255,0.35)"/>
+    </pattern>
+    <pattern id="pat-grid" patternUnits="userSpaceOnUse" width="6" height="6">
+      <path d="M0 0 H6 M0 0 V6" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+    </pattern>
+    <pattern id="pat-cross" patternUnits="userSpaceOnUse" width="6" height="6">
+      <path d="M0 3 H6 M3 0 V6" stroke="rgba(255,255,255,0.3)" stroke-width="0.6"/>
+    </pattern>
+  </defs>
+
+  <circle cx="50" cy="50" r="48" fill="#0d0d0d"/>
+  <circle cx="50" cy="50" r="42" fill="url(#glow)" opacity="0.3">
+    <animate attributeName="opacity" values="0.2;0.35;0.2" dur="6s" repeatCount="indefinite"/>
+  </circle>
+
+  <g id="wheel" filter="url(#shadow)">
+    <g>
+      <path d="M50 50 L50 8 A42 42 0 0 1 92 50 Z" fill="url(#gradA)" stroke="#0d0d0d" stroke-width="2"/>
+      <path d="M50 50 L50 8 A42 42 0 0 1 92 50 Z" fill="url(#pat-lines)" opacity="0.28"/>
+    </g>
+    <g>
+      <path d="M50 50 L92 50 A42 42 0 0 1 50 92 Z" fill="url(#gradB)" stroke="#0d0d0d" stroke-width="2"/>
+      <path d="M50 50 L92 50 A42 42 0 0 1 50 92 Z" fill="url(#pat-dots)" opacity="0.28"/>
+    </g>
+    <g>
+      <path d="M50 50 L50 92 A42 42 0 0 1 8 50 Z" fill="url(#gradC)" stroke="#0d0d0d" stroke-width="2"/>
+      <path d="M50 50 L50 92 A42 42 0 0 1 8 50 Z" fill="url(#pat-grid)" opacity="0.28"/>
+    </g>
+    <g>
+      <path d="M50 50 L8 50 A42 42 0 0 1 50 8 Z" fill="url(#gradD)" stroke="#0d0d0d" stroke-width="2"/>
+      <path d="M50 50 L8 50 A42 42 0 0 1 50 8 Z" fill="url(#pat-cross)" opacity="0.28"/>
+    </g>
+
+    <g font-family="Inter, sans-serif" font-weight="700" font-size="10" fill="#ffffff" text-anchor="middle" dominant-baseline="central" letter-spacing="0.5">
+      <text x="50" y="25">BIN</text>
+      <text x="75" y="50">DEC</text>
+      <text x="50" y="75">HEX</text>
+      <text x="25" y="50">OCT</text>
+    </g>
+
+    <animateTransform attributeName="transform" type="rotate" values="0 50 50;360 50 50" dur="16s" repeatCount="indefinite"/>
+  </g>
+
+  <circle cx="50" cy="50" r="14" fill="#1a1a1a" stroke="#2b2b2b" stroke-width="1"/>
+  <g stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M44 45c3-3 9-3 12 0"/>
+    <path d="M56 55c-3 3-9 3-12 0"/>
+    <polyline points="52 43 56 45 52 47"/>
+    <polyline points="48 57 44 55 48 53"/>
+  </g>
+
+  <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+</svg>

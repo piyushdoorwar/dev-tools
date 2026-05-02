@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base Converter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Base Converter</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" data-action="clear-all" aria-label="Clear all">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                    <button class="action-btn" data-action="paste-sample" aria-label="Load sample">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                            <polyline points="13 2 13 9 20 9"></polyline>
+                            <path d="M10 12h4"></path>
+                            <path d="M10 16h4"></path>
+                            <path d="M10 8h1"></path>
+                        </svg>
+                    </button>
+                    <button class="action-btn" id="schemaHelpBtn" aria-label="Converter tips">
+                        <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <circle cx="12" cy="12" r="9"></circle>
+                            <path d="M12 10v5"></path>
+                            <path d="M12 7h.01"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+        <div class="main-content single-panel">
+            <div class="converter-grid">
+                <div class="field-row converter-row" data-row="text">
+                    <div class="field-cell">
+                        <div class="converter-row-header">
+                            <label class="field-label" for="text-input">
+                                <span class="converter-icon">T</span>
+                                <span class="converter-label-text">Text</span>
+                                <span class="field-tag">ASCII</span>
+                            </label>
+                            <div class="converter-row-actions">
+                                <button class="copy-btn" data-action="copy-field" data-target="text" aria-label="Copy text">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <button class="download-btn" data-action="download-field" data-target="text" aria-label="Download text">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea class="field-input converter-input" id="text-input" data-source="text" rows="5" placeholder="Type any text here..."></textarea>
+                    </div>
+                </div>
+                <div class="field-row converter-row" data-row="decimal">
+                    <div class="field-cell">
+                        <div class="converter-row-header">
+                            <label class="field-label" for="decimal-input">
+                                <span class="converter-icon">#</span>
+                                <span class="converter-label-text">Decimal (ASCII)</span>
+                                <span class="field-tag">Base 10</span>
+                            </label>
+                            <div class="converter-row-actions">
+                                <button class="copy-btn" data-action="copy-field" data-target="decimal" aria-label="Copy decimal">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <button class="download-btn" data-action="download-field" data-target="decimal" aria-label="Download decimal">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea class="field-input converter-input" id="decimal-input" data-source="decimal" rows="5" placeholder="72 101 108 108 111"></textarea>
+                    </div>
+                </div>
+                <div class="field-row converter-row span-2" data-row="binary">
+                    <div class="field-cell">
+                        <div class="converter-row-header">
+                            <label class="field-label" for="binary-input">
+                                <span class="converter-icon">01</span>
+                                <span class="converter-label-text">Binary</span>
+                                <span class="field-tag">Base 2</span>
+                            </label>
+                            <div class="converter-row-actions">
+                                <button class="copy-btn" data-action="copy-field" data-target="binary" aria-label="Copy binary">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <button class="download-btn" data-action="download-field" data-target="binary" aria-label="Download binary">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea class="field-input converter-input" id="binary-input" data-source="binary" rows="4" placeholder="01001000 01101001"></textarea>
+                    </div>
+                </div>
+                <div class="field-row converter-row" data-row="hex">
+                    <div class="field-cell">
+                        <div class="converter-row-header">
+                            <label class="field-label" for="hex-input">
+                                <span class="converter-icon">#</span>
+                                <span class="converter-label-text">Hexadecimal</span>
+                                <span class="field-tag">Base 16</span>
+                            </label>
+                            <div class="converter-row-actions">
+                                <button class="copy-btn" data-action="copy-field" data-target="hex" aria-label="Copy hexadecimal">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <button class="download-btn" data-action="download-field" data-target="hex" aria-label="Download hexadecimal">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea class="field-input converter-input" id="hex-input" data-source="hex" rows="4" placeholder="48 65 6C 6C 6F"></textarea>
+                    </div>
+                </div>
+                <div class="field-row converter-row" data-row="octal">
+                    <div class="field-cell">
+                        <div class="converter-row-header">
+                            <label class="field-label" for="octal-input">
+                                <span class="converter-icon">0</span>
+                                <span class="converter-label-text">Octal</span>
+                                <span class="field-tag">Base 8</span>
+                            </label>
+                            <div class="converter-row-actions">
+                                <button class="copy-btn" data-action="copy-field" data-target="octal" aria-label="Copy octal">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                </button>
+                                <button class="download-btn" data-action="download-field" data-target="octal" aria-label="Download octal">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="7 10 12 15 17 10"/>
+                                        <line x1="12" y1="15" x2="12" y2="3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea class="field-input converter-input" id="octal-input" data-source="octal" rows="4" placeholder="110 145 154 154 157"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="schemaHelpModal" aria-hidden="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Converter Tips</h3>
+                    <button class="modal-close" id="schemaHelpCloseBtn" data-modal-close>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Quick Guide</strong></p>
+                        <p>Type in any box to update the others instantly. Separate numbers with spaces or commas.</p>
+                    </div>
+                    <div class="legend-grid">
+                        <div class="legend-row">
+                            <div class="legend-swatch added"></div>
+                            <div>
+                                <div class="legend-title">ASCII / Text</div>
+                                <div class="legend-desc">ASCII is a standard table that maps characters to numbers. Text input shows readable characters.</div>
+                            </div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-swatch modified"></div>
+                            <div>
+                                <div class="legend-title">Binary (Base 2)</div>
+                                <div class="legend-desc">Used for raw bits in computers. Enter as 8-bit groups like <span class="hint-code">01001000</span>.</div>
+                            </div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-swatch minor"></div>
+                            <div>
+                                <div class="legend-title">Hexadecimal (Base 16)</div>
+                                <div class="legend-desc">Compact for bytes. Common in programming, colors, memory addresses. Use 2-digit groups.</div>
+                            </div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-swatch removed"></div>
+                            <div>
+                                <div class="legend-title">Decimal (Base 10)</div>
+                                <div class="legend-desc">Human-friendly numbers. ASCII codes are typically shown in decimal.</div>
+                            </div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-swatch added"></div>
+                            <div>
+                                <div class="legend-title">Octal (Base 8)</div>
+                                <div class="legend-desc">Legacy and Unix permissions. Use 3-digit groups for bytes.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e9cd556fb46f4880a8842d37e2dfe3fb"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

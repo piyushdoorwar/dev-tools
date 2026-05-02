@@ -1,0 +1,53 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f4f4f4"/>
+      <stop offset="100%" stop-color="#d9d9d9"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="100" height="100" rx="20" fill="#0d0d0d"/>
+  <circle cx="50" cy="34" r="32" fill="url(#glow)" opacity="0.35">
+    <animate attributeName="opacity" values="0.15;0.35;0.15" dur="3.2s" repeatCount="indefinite"/>
+  </circle>
+
+  <g id="doc" stroke="none">
+    <!-- back sheet -->
+    <path d="M58 16h20l8 8v40H58z" fill="#FFD700" opacity="0.95"/>
+    <path d="M86 24h-8v-8z" fill="#FFC700"/>
+
+    <!-- front sheet -->
+    <rect x="20" y="20" width="50" height="64" rx="6" fill="url(#paper)"/>
+    <rect x="24" y="26" width="42" height="10" rx="4" fill="#8B5CF6" opacity="0.9"/>
+
+    <!-- lines -->
+    <rect x="24" y="40" width="42" height="4" rx="2" fill="#2a2a2a" opacity="0.7"/>
+    <rect x="24" y="48" width="42" height="4" rx="2" fill="#2a2a2a" opacity="0.7"/>
+    <rect x="24" y="56" width="36" height="4" rx="2" fill="#2a2a2a" opacity="0.7"/>
+    <rect x="24" y="64" width="32" height="4" rx="2" fill="#2a2a2a" opacity="0.7"/>
+
+    <!-- badge -->
+    <circle cx="70" cy="70" r="14" fill="#8B5CF6"/>
+    <circle cx="70" cy="70" r="11" fill="#0d0d0d"/>
+    <g stroke="#FFD700" stroke-width="3" stroke-linecap="round">
+      <line x1="66" y1="64" x2="64" y2="76"/>
+      <line x1="72" y1="64" x2="70" y2="76"/>
+      <line x1="62" y1="68" x2="74" y2="68"/>
+      <line x1="61" y1="72" x2="73" y2="72"/>
+    </g>
+
+    <animateTransform attributeName="transform" type="translate" values="0 0;0 -1;0 0" dur="2.6s" repeatCount="indefinite"/>
+  </g>
+
+  <circle cx="70" cy="70" r="15" fill="none" stroke="url(#g)" stroke-width="1" opacity="0.6">
+    <animate attributeName="opacity" values="0.2;0.6;0.2" dur="2.6s" repeatCount="indefinite"/>
+  </circle>
+</svg>

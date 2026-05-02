@@ -1,0 +1,19 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+  <defs>
+    <linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'>
+      <stop offset='0%' style='stop-color:#6739B7;stop-opacity:1'>
+        <animate attributeName='stop-color' values='#5B21B6;#8B5CF6;#6739B7' dur='5s' repeatCount='indefinite' />
+      </stop>
+      <stop offset='100%' style='stop-color:#FFD700;stop-opacity:1'>
+        <animate attributeName='stop-color' values='#FFC700;#FFE55C;#FFD700' dur='5s' repeatCount='indefinite' />
+      </stop>
+    </linearGradient>
+  </defs>
+  <rect width='100' height='100' rx='20' fill='url(#grad)'>
+    <animate attributeName='rx' values='16;22;16' dur='3.2s' repeatCount='indefinite' />
+  </rect>
+  <text x='50' y='70' font-family='Arial' font-size='60' font-weight='bold' fill='white' text-anchor='middle' opacity='1'>
+    M
+    <animateTransform attributeName='transform' type='rotate' values='-6 50 60;6 50 60;-6 50 60' dur='4.8s' repeatCount='indefinite' />
+  </text>
+</svg>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON-Toon Converter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon-json-toon.svg" id="favicon">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">JSON ⇄ Toon Converter</h1>
+            </div>
+            <div class="header-right">
+                <div class="mode-switcher">
+                    <button class="mode-btn active" data-mode="json-toon">JSON → Toon</button>
+                    <button class="mode-btn" data-mode="toon-json">Toon → JSON</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel -->
+            <div class="editor-panel left-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="left-title">JSON Input</h2>
+                    <div class="action-bar" id="left-actions">
+                        <button class="action-btn" data-action="load-sample" aria-label="Load sample" data-tooltip="Load sample">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="12" y1="18" x2="12" y2="12"/>
+                                <line x1="9" y1="15" x2="15" y2="15"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="validate-left" aria-label="Validate" data-tooltip="Validate">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="beautify-left" aria-label="Beautify" data-tooltip="Beautify">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="17" y1="10" x2="3" y2="10"/>
+                                <line x1="21" y1="6" x2="3" y2="6"/>
+                                <line x1="21" y1="14" x2="3" y2="14"/>
+                                <line x1="17" y1="18" x2="3" y2="18"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn json-only" data-action="sort-keys" aria-label="Sort keys" data-tooltip="Sort keys">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="4" y1="6" x2="11" y2="6"/>
+                                <line x1="4" y1="12" x2="16" y2="12"/>
+                                <line x1="4" y1="18" x2="20" y2="18"/>
+                                <polyline points="15 9 18 6 21 9"/>
+                                <line x1="18" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="copy-left" aria-label="Copy" data-tooltip="Copy">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="paste-left" aria-label="Paste" data-tooltip="Paste">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="download-left" aria-label="Download" data-tooltip="Download">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="undo-left" aria-label="Undo" data-tooltip="Undo">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 7v6h6"/>
+                                <path d="M21 17a9 9 0 00-9-9 9 9 0 00-9 9"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="clear-left" aria-label="Clear" data-tooltip="Clear">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn json-only" data-action="open-settings" aria-label="Settings" data-tooltip="Settings">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="code-editor-wrapper">
+                        <div class="line-numbers" id="left-line-numbers"></div>
+                        <textarea class="editor-textarea" id="left-editor" spellcheck="false" placeholder="Enter your JSON here..."></textarea>
+                    </div>
+                    <div class="status-bar" id="left-status">
+                        <span class="status-text">Ready</span>
+                        <span class="char-count">0 characters</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="editor-panel right-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="right-title">Toon Output</h2>
+                    <div class="action-bar" id="right-actions">
+                        <button class="action-btn" data-action="validate-right" aria-label="Validate" data-tooltip="Validate">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="beautify-right" aria-label="Beautify" data-tooltip="Beautify">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="17" y1="10" x2="3" y2="10"/>
+                                <line x1="21" y1="6" x2="3" y2="6"/>
+                                <line x1="21" y1="14" x2="3" y2="14"/>
+                                <line x1="17" y1="18" x2="3" y2="18"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="copy-right" aria-label="Copy" data-tooltip="Copy">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="paste-right" aria-label="Paste" data-tooltip="Paste">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="download-right" aria-label="Download" data-tooltip="Download">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="undo-right" aria-label="Undo" data-tooltip="Undo">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 7v6h6"/>
+                                <path d="M21 17a9 9 0 00-9-9 9 9 0 00-9 9"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" data-action="clear-right" aria-label="Clear" data-tooltip="Clear">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn json-only" id="info-btn" data-action="open-info" aria-label="Token Stats" data-tooltip="Token Stats" style="display: none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4"/>
+                                <path d="M12 8h.01"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="code-editor-wrapper">
+                        <div class="line-numbers" id="right-line-numbers"></div>
+                        <textarea class="editor-textarea" id="right-editor" spellcheck="false" placeholder="Toon output will appear here..."></textarea>
+                    </div>
+                    <div class="status-bar" id="right-status">
+                        <span class="status-text">Ready</span>
+                        <span class="char-count">0 characters</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settings-modal">
+        <div class="settings-overlay" id="settings-overlay"></div>
+        <div class="settings-content">
+            <div class="settings-header">
+                <h3>Conversion Settings</h3>
+                <button class="settings-close" id="settings-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="settings-body">
+                <div class="settings-option">
+                    <label class="settings-label">Indent Spaces</label>
+                    <div class="indent-buttons">
+                        <button class="indent-btn" data-indent="0">0</button>
+                        <button class="indent-btn active" data-indent="2">2</button>
+                        <button class="indent-btn" data-indent="4">4</button>
+                    </div>
+                </div>
+                <div class="settings-option">
+                    <label class="settings-label">Delimiter</label>
+                    <div class="delimiter-buttons">
+                        <button class="delimiter-btn active" data-delimiter=",">,</button>
+                        <button class="delimiter-btn" data-delimiter="\t">\t</button>
+                        <button class="delimiter-btn" data-delimiter="|">|</button>
+                    </div>
+                </div>
+                <div class="settings-option json-only">
+                    <label class="settings-label">Change Case</label>
+                    <div class="case-buttons">
+                        <button class="case-btn" data-case="camel">camelCase</button>
+                        <button class="case-btn" data-case="snake">snake_case</button>
+                        <button class="case-btn" data-case="pascal">PascalCase</button>
+                        <button class="case-btn" data-case="kebab">kebab-case</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="info-modal" id="info-modal">
+        <div class="modal-overlay" id="info-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Token Statistics</h3>
+                <button class="modal-close" id="info-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="stat-item">
+                    <div class="stat-label">JSON Tokens</div>
+                    <div class="stat-value" id="modal-json-tokens">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">TOON Tokens</div>
+                    <div class="stat-value" id="modal-toon-tokens">0</div>
+                </div>
+                <div class="stat-item stat-highlight">
+                    <div class="stat-label">Token Reduction</div>
+                    <div class="stat-value stat-reduction" id="modal-token-reduction">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="info-modal" id="info-modal">
+        <div class="modal-overlay" id="info-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Token Statistics</h3>
+                <button class="modal-close" id="info-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="stat-item">
+                    <div class="stat-label">JSON Tokens</div>
+                    <div class="stat-value" id="modal-json-tokens">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">TOON Tokens</div>
+                    <div class="stat-value" id="modal-toon-tokens">0</div>
+                </div>
+                <div class="stat-item stat-highlight">
+                    <div class="stat-label">Token Reduction</div>
+                    <div class="stat-value stat-reduction" id="modal-token-reduction">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e9cd556fb46f4880a8842d37e2dfe3fb"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg fill="#6739b7" width="800px" height="800px" viewBox="0 0 24 24" id="wifi" data-name="Flat Color" xmlns="http://www.w3.org/2000/svg" class="icon flat-color">
+  <g class="icon-anim" style="transform-origin: 50% 50%; transform-box: fill-box;">
+  <animate attributeName="opacity" values="1;0.45;1" dur="1.6s" repeatCount="indefinite" />
+  <animateTransform attributeName="transform" type="scale" values="1;1.08;1" dur="1.6s" repeatCount="indefinite" />
+<circle id="secondary" cx="12" cy="18" r="3" style="fill: #ffd700;"></circle><path id="primary" d="M21,8.3a1,1,0,0,1-.64-.24,13,13,0,0,0-16.76,0A1,1,0,0,1,2.22,8a1,1,0,0,1,.11-1.41,15,15,0,0,1,19.34,0A1,1,0,0,1,21,8.3ZM19.21,11A1,1,0,0,0,19.1,9.6a11,11,0,0,0-14.2,0,1,1,0,1,0,1.3,1.52,9,9,0,0,1,11.6,0,1,1,0,0,0,.65.24A1,1,0,0,0,19.21,11Zm-2.58,3.05a1,1,0,0,0-.11-1.41,7,7,0,0,0-9,0,1,1,0,0,0,1.3,1.52,5.14,5.14,0,0,1,6.44,0,1,1,0,0,0,.65.24A1,1,0,0,0,16.63,14.06Z" style="fill: #6739b7;"></path>
+  </g>
+</svg>

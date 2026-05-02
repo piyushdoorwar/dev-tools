@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unit Converter DevTool</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="units.js"></script>
+    <script defer src="converter.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div>
+          <h1>Unit Converter</h1>
+        </div>
+      </header>
+
+      <div class="toolbar" role="toolbar" aria-label="Converter controls">
+        <div class="toolbar-group toolbar-group-grow">
+          <div id="category-list" class="category-list" aria-label="Conversion category"></div>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="toolbar-group">
+          <span class="toolbar-label">Precision</span>
+          <div id="precision-dropdown" class="precision-dropdown" aria-label="Decimal precision">
+            <button id="precision-trigger" class="precision-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+              <span id="precision-value">4</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div id="precision-menu" class="precision-menu" role="listbox" aria-label="Precision options">
+              <button class="precision-option" type="button" role="option" data-value="2">2</button>
+              <button class="precision-option active" type="button" role="option" data-value="4" aria-selected="true">4</button>
+              <button class="precision-option" type="button" role="option" data-value="6">6</button>
+              <button class="precision-option" type="button" role="option" data-value="8">8</button>
+              <button class="precision-option" type="button" role="option" data-value="10">10</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <main class="workspace">
+        <section class="panel">
+          <div class="panel-header">
+            <span>Converter</span>
+            <div class="panel-header-actions">
+              <span class="hint">Live</span>
+              <button class="toolbar-btn panel-copy-btn" id="copy-result" data-tooltip="Copy Result" aria-label="Copy result">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <label class="field-label" for="value-input">Value</label>
+            <input id="value-input" class="field-input" type="text" inputmode="decimal" placeholder="Enter a number" autocomplete="off" />
+
+            <span class="field-label">From Unit</span>
+            <div class="unit-row unit-row-picker">
+              <div id="from-unit-list" class="unit-picker" aria-label="From unit"></div>
+              <button id="swap-units" class="swap-btn" aria-label="Swap units" data-tooltip="Swap Units">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="17 1 21 5 17 9"></polyline>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                  <polyline points="7 23 3 19 7 15"></polyline>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                </svg>
+              </button>
+            </div>
+
+            <span class="field-label">To Unit</span>
+            <div id="to-unit-list" class="unit-picker" aria-label="To unit"></div>
+          </div>
+
+          <div id="error" class="error" role="alert" aria-live="polite"></div>
+
+          <div class="result-card" aria-live="polite">
+            <div class="result-label">Result</div>
+            <div id="result" class="result-value">-</div>
+            <div id="result-meta" class="result-meta"></div>
+          </div>
+        </section>
+
+        <div class="resizer" id="resizer"></div>
+
+        <section class="panel right-panel">
+          <div class="panel-header">
+            <span>All Conversions</span>
+            <span class="hint">Selected category</span>
+          </div>
+          <div id="all-results" class="all-results" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

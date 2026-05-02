@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 232.068 232.068" width="128" height="128">
+  <defs>
+    <radialGradient id="bg" cx="30%" cy="25%" r="80%">
+      <stop offset="0%" stop-color="#2A1B4D"/>
+      <stop offset="55%" stop-color="#1B1236"/>
+      <stop offset="100%" stop-color="#120B26"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE55C"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feColorMatrix in="blur" type="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 0.7 0" result="glow"/>
+      <feMerge>
+        <feMergeNode in="glow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <circle cx="116.034" cy="116.034" r="114" fill="url(#bg)"/>
+
+  <path
+    d="M116.034,0C52.053,0,0,52.053,0,116.034s52.053,116.034,116.033,116.034c63.981,0,116.034-52.053,116.034-116.034 S180.015,0,116.034,0z M106.701,9.034h18v18h-18V9.034z M197.07,116.034c0,44.684-36.353,81.036-81.036,81.036 c-44.683,0-81.035-36.353-81.035-81.036s36.353-81.036,81.035-81.036C160.717,34.998,197.07,71.351,197.07,116.034z M46.738,34.01 l12.728,12.728L46.738,59.466L34.01,46.738L46.738,34.01z M26.701,125.034h-18v-18h18V125.034z M46.738,198.059L34.01,185.331 l12.728-12.728l12.728,12.728L46.738,198.059z M124.701,223.034h-18v-18h18V223.034z M185.33,198.059l-12.728-12.728l12.728-12.728 l12.728,12.728L185.33,198.059z M185.33,59.466l-12.728-12.728L185.33,34.01l12.728,12.728L185.33,59.466z M204.701,125.034v-18h18 v18H204.701z"
+    fill="url(#ring)"
+  />
+
+  <circle cx="116.034" cy="116.034" r="80" fill="url(#bg)"/>
+  <circle cx="116.034" cy="116.034" r="72" fill="none" stroke="url(#ring)" stroke-width="4" opacity="0.7"/>
+
+  <g transform="translate(116.034 116.034)" filter="url(#softGlow)">
+    <animateTransform
+      attributeName="transform"
+      type="rotate"
+      from="0"
+      to="360"
+      dur="24s"
+      repeatCount="indefinite"
+      additive="sum"
+    />
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#FFD700" transform="rotate(0)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#8B5CF6" transform="rotate(30)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#FFE55C" transform="rotate(60)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#6739B7" transform="rotate(90)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#FFD700" transform="rotate(120)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#8B5CF6" transform="rotate(150)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#FFE55C" transform="rotate(180)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#6739B7" transform="rotate(210)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#FFD700" transform="rotate(240)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#8B5CF6" transform="rotate(270)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#FFE55C" transform="rotate(300)"/>
+    <rect x="-6" y="-69.32" width="12" height="33.32" rx="6" fill="#6739B7" transform="rotate(330)"/>
+  </g>
+
+  <circle cx="116.034" cy="116.034" r="18" fill="#1A1135" stroke="url(#ring)" stroke-width="3"/>
+</svg>

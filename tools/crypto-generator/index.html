@@ -1,0 +1,240 @@
+﻿<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Crypto Generator</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  </head>
+  <body class="crypto-body">
+    <div class="app-shell crypto-app-shell">
+      <header class="app-header crypto-header">
+        <div>
+          <h1>Crypto Generator</h1>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn header-info-btn" id="securityInfoBtn" data-tooltip="Security & Privacy" data-tooltip-align="right" aria-label="Security and privacy info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 10v5"></path>
+              <path d="M12 7h.01"></path>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="crypto-main">
+        <div class="mode-tabs" role="tablist" aria-label="Generator modes">
+          <button class="mode-tab active" data-mode="passwords" role="tab" aria-selected="true">
+            Password Generator
+          </button>
+          <button class="mode-tab" data-mode="hashes" role="tab" aria-selected="false">
+            Hash Generator
+          </button>
+        </div>
+
+        <section class="mode-panel active" id="mode-passwords" role="tabpanel">
+          <div class="card-grid">
+            <div class="card wide reveal" style="--delay: 0.05s">
+              <div class="card-header">Length Slider</div>
+              <div class="slider-row">
+                <input
+                  type="range"
+                  min="8"
+                  max="64"
+                  value="16"
+                  id="lengthSlider"
+                  aria-label="Password length"
+                />
+                <div class="length-value">
+                  <span id="lengthValue">16</span>
+                </div>
+              </div>
+              <p class="helper-text">8 – 64 characters. Live preview updates as you drag.</p>
+              <div class="card-subheader">Options</div>
+              <div class="options-stack">
+                <div class="option-block">
+                  <div class="option-grid">
+                    <span class="option-label">Alphabets</span>
+                    <span class="option-label option-label-right">Min letters</span>
+                    <div class="option-control">
+                      <div class="radio-group">
+                        <label class="radio-pill">
+                          <input type="radio" name="alphaCase" id="alphaMixed" value="mixed" checked />
+                          <span>Mixed case</span>
+                        </label>
+                        <label class="radio-pill">
+                          <input type="radio" name="alphaCase" id="alphaLower" value="lower" />
+                          <span>Lower case</span>
+                        </label>
+                        <label class="radio-pill">
+                          <input type="radio" name="alphaCase" id="alphaUpper" value="upper" />
+                          <span>Upper case</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="option-control option-control-right">
+                      <input type="number" id="alphaMin" min="1" max="64" value="1" />
+                    </div>
+                  </div>
+                </div>
+                <div class="option-block">
+                  <div class="option-grid">
+                    <span class="option-label">Numbers</span>
+                    <span class="option-label option-label-right">Min numbers</span>
+                    <label class="option-item checkbox-pill">
+                      <input type="checkbox" id="optNumbers" checked />
+                      <span>Numbers</span>
+                    </label>
+                    <div class="option-control option-control-right">
+                      <input type="number" id="numMin" min="1" max="64" value="1" />
+                    </div>
+                  </div>
+                </div>
+                <div class="option-block">
+                  <div class="option-grid">
+                    <span class="option-label">Symbols</span>
+                    <span class="option-label option-label-right">Min symbols</span>
+                    <label class="option-item checkbox-pill">
+                      <input type="checkbox" id="optSymbols" />
+                      <span>Symbols</span>
+                    </label>
+                    <div class="option-control option-control-right">
+                      <input type="number" id="symMin" min="1" max="64" value="1" />
+                    </div>
+                  </div>
+                </div>
+                <label class="option-item">
+                  <input type="checkbox" id="optAvoid" />
+                  <span>Avoid similar characters</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="card output-card wide reveal" style="--delay: 0.15s">
+              <div class="output-main">
+                <div class="output-head">
+                  <div>
+                    <h3>Output Field</h3>
+                    <p class="helper-text">Copy or regenerate instantly.</p>
+                  </div>
+                  <div class="output-actions">
+                    <button class="icon-btn" id="copyPasswordBtn" aria-label="Copy password">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                      </svg>
+                    </button>
+                    <button class="icon-btn" id="regenPasswordBtn" aria-label="Regenerate password">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M20 4v6h-6"></path>
+                        <path d="M4 20v-6h6"></path>
+                        <path d="M20 10a8 8 0 0 0-14.5-4"></path>
+                        <path d="M4 14a8 8 0 0 0 14.5 4"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <input type="text" id="passwordOutput" readonly placeholder="Select at least one option." />
+                <div class="strength">
+                  <div class="strength-label">
+                    <span>Strength</span>
+                    <span id="strengthText">Strong</span>
+                  </div>
+                  <div class="strength-bar">
+                    <div class="strength-fill" id="strengthFill"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="bulk-panel">
+                <div class="bulk-header">
+                  <label class="switch">
+                    <input type="checkbox" id="bulkToggle" />
+                    <span class="switch-slider"></span>
+                  </label>
+                  <div>
+                    <h4>Bulk Mode</h4>
+                    <p>Optional but powerful. Create multiple passwords in one click.</p>
+                  </div>
+                </div>
+                <div class="bulk-controls" id="bulkControls">
+                  <input
+                    type="number"
+                    min="2"
+                    max="1000"
+                    value="10"
+                    id="bulkCount"
+                    class="bulk-count-input"
+                    placeholder="Count"
+                    aria-label="Password count"
+                  />
+                  <button class="btn btn-secondary" id="bulkDownloadBtn">Download 10 passwords</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mode-panel" id="mode-hashes" role="tabpanel">
+          <div class="card-grid">
+            <div class="card wide reveal" style="--delay: 0.05s">
+              <div class="card-header">Input Area</div>
+              <textarea id="hashInput" placeholder="Enter text or paste JSON"></textarea>
+              <div class="salt-row">
+                <label for="saltInput">Salt (optional)</label>
+                <input type="text" id="saltInput" placeholder="Add a salt value" />
+              </div>
+              <div class="algo-row">
+                <label for="algoSelect">Algorithm Selector</label>
+                <select id="algoSelect">
+                  <option value="all">All algorithms</option>
+                  <option value="md5">MD5</option>
+                  <option value="sha1">SHA1</option>
+                  <option value="sha256">SHA256</option>
+                  <option value="sha512">SHA512</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="card wide reveal" style="--delay: 0.15s">
+              <div class="card-header">Output Area</div>
+              <div class="hash-list" id="hashList"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal" id="securityInfoModal" aria-hidden="true">
+      <div class="modal-content security-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Secure & Local</h2>
+          <button class="modal-close" id="securityInfoCloseBtn" aria-label="Close security info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="security-note">
+            Everything runs in your browser. Password generation, hashing, and copy actions stay local on your device.
+          </p>
+          <p class="security-note">
+            This tool does not require sending your input to a server for the core generator features shown on this page.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+    <!-- Cloudflare Web Analytics -->
+    <script
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "e9cd556fb46f4880a8842d37e2dfe3fb"}'
+    ></script>
+    <!-- End Cloudflare Web Analytics -->
+  </body>
+</html>

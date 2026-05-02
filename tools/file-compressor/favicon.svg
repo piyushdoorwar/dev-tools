@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="8%" y1="6%" x2="92%" y2="94%">
+      <stop offset="0%" stop-color="#161616"/>
+      <stop offset="58%" stop-color="#0f0f0f"/>
+      <stop offset="100%" stop-color="#090909"/>
+    </linearGradient>
+    <linearGradient id="frame" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#ffd700"/>
+    </linearGradient>
+    <linearGradient id="shell" x1="12%" y1="4%" x2="88%" y2="96%">
+      <stop offset="0%" stop-color="#7b50d7"/>
+      <stop offset="100%" stop-color="#4b1d98"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6739b7"/>
+    </linearGradient>
+    <linearGradient id="zip" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#ffe55c"/>
+      <stop offset="100%" stop-color="#ffc700"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="2" y="2" width="60" height="60" rx="18" fill="url(#bg)"/>
+  <rect x="2.5" y="2.5" width="59" height="59" rx="17.5" fill="none" stroke="url(#frame)" stroke-opacity="0.34"/>
+  <path d="M24 10h3.2c0.4-1.8 1.9-3 3.8-3h2c1.9 0 3.4 1.2 3.8 3H40c4.4 0 8 3.6 8 8v34c0 2.8-2.2 5-5 5H21c-2.8 0-5-2.2-5-5V18c0-4.4 3.6-8 8-8z" fill="url(#shell)" opacity="0.18">
+    <animate attributeName="opacity" values="0.12;0.2;0.2;0.12" keyTimes="0;0.42;0.58;1" dur="2.6s" calcMode="spline" keySplines="0.35 0 0.25 1;0 0 1 1;0.45 0 0.25 1" repeatCount="indefinite"/>
+  </path>
+
+  <g filter="url(#glow)">
+    <rect x="26.4" y="9" width="11.2" height="4.8" rx="2.4" fill="#6e3fc4" opacity="0.95"/>
+    <rect x="29" y="10.2" width="6" height="2.4" rx="1.2" fill="#0d0d0d" opacity="0.5"/>
+    <path d="M22 12h20c2.8 0 5 2.2 5 5v31c0 2.8-2.2 5-5 5H22c-2.8 0-5-2.2-5-5V17c0-2.8 2.2-5 5-5z" fill="url(#shell)" stroke="#ffffff" stroke-opacity="0.08"/>
+
+    <g>
+      <g>
+        <path d="M21 16H31V50H21Z" fill="url(#panel)"/>
+        <animateTransform attributeName="transform" type="rotate" values="0 29.4 49;-5 29.4 49;-5 29.4 49;0 29.4 49" keyTimes="0;0.42;0.58;1" dur="2.6s" calcMode="spline" keySplines="0.35 0 0.25 1;0 0 1 1;0.45 0 0.25 1" repeatCount="indefinite"/>
+      </g>
+      <g>
+        <path d="M33 16H43V50H33Z" fill="#5b21b6"/>
+        <animateTransform attributeName="transform" type="rotate" values="0 34.6 49;5 34.6 49;5 34.6 49;0 34.6 49" keyTimes="0;0.42;0.58;1" dur="2.6s" calcMode="spline" keySplines="0.35 0 0.25 1;0 0 1 1;0.45 0 0.25 1" repeatCount="indefinite"/>
+      </g>
+    </g>
+
+    <rect x="30.25" y="14" width="3.5" height="29" rx="1.75" fill="url(#zip)"/>
+    <g>
+      <rect x="29.3" y="33.2" width="5.4" height="6.6" rx="2.7" fill="#ffd700"/>
+      <animateTransform attributeName="transform" type="translate" values="0 0;0 -13.5;0 -13.5;0 0" keyTimes="0;0.42;0.58;1" dur="2.6s" calcMode="spline" keySplines="0.35 0 0.25 1;0 0 1 1;0.45 0 0.25 1" repeatCount="indefinite"/>
+    </g>
+
+    <g fill="#0d0d0d" opacity="0.92">
+      <rect x="31" y="16" width="2" height="1.6" rx="0.8"/>
+      <rect x="31" y="19.2" width="2" height="1.6" rx="0.8"/>
+      <rect x="31" y="22.4" width="2" height="1.6" rx="0.8"/>
+      <rect x="31" y="25.6" width="2" height="1.6" rx="0.8"/>
+      <rect x="31" y="28.8" width="2" height="1.6" rx="0.8"/>
+      <rect x="31" y="32" width="2" height="1.6" rx="0.8"/>
+      <rect x="31" y="35.2" width="2" height="1.6" rx="0.8"/>
+      <rect x="31" y="38.4" width="2" height="1.6" rx="0.8"/>
+    </g>
+  </g>
+</svg>

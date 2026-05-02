@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <div id="toast-container"></div>
+    <header class="topbar">
+      <div class="header-left">
+        <h1 class="app-title">QR Generator</h1>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn" id="infoBtn" type="button" aria-label="Open quick tips">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"></circle>
+            <line x1="12" y1="10" x2="12" y2="16"></line>
+            <circle cx="12" cy="7.5" r="1"></circle>
+          </svg>
+        </button>
+        <button class="icon-btn" id="settingsBtn" type="button" aria-label="Open design settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 01-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.2a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 01-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.2a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 012.8-2.8l.1.1a1.7 1.7 0 001.8.3 1.7 1.7 0 001-1.5V3a2 2 0 014 0v.2a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 012.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8 1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.2a1.7 1.7 0 00-1.4 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="panel panel-left">
+        <div class="step-card">
+          <div class="step-head">
+            <div>
+              <h2>Complete the content</h2>
+              <p>Pick the QR type and fill the details.</p>
+            </div>
+          </div>
+          <div class="pill-group" role="tablist" aria-label="QR content type">
+            <button class="pill active" type="button" data-content-type="text">Text</button>
+            <button class="pill" type="button" data-content-type="website">Website</button>
+            <button class="pill" type="button" data-content-type="email">Email</button>
+            <button class="pill" type="button" data-content-type="phone">Mobile</button>
+            <button class="pill" type="button" data-content-type="whatsapp">WhatsApp</button>
+            <button class="pill" type="button" data-content-type="contact">Contact</button>
+            <button class="pill" type="button" data-content-type="wifi">WiFi</button>
+            <button class="pill" type="button" data-content-type="upi">UPI</button>
+          </div>
+          <div class="content-forms">
+            <div class="form-grid" data-content-form="text">
+              <label class="field">
+                <span class="label">Message</span>
+                <textarea id="textMessage" placeholder="Type your text..."></textarea>
+              </label>
+            </div>
+            <div class="form-grid" data-content-form="website" hidden>
+              <label class="field">
+                <span class="label">Website link</span>
+                <input id="websiteUrl" type="url" placeholder="https://example.com">
+              </label>
+            </div>
+            <div class="form-grid" data-content-form="email" hidden>
+              <label class="field">
+                <span class="label">Email address</span>
+                <input id="emailAddress" type="email" placeholder="hello@example.com">
+              </label>
+            </div>
+            <div class="form-grid form-grid--phone" data-content-form="phone" hidden>
+              <label class="field">
+                <span class="label">Country code</span>
+                <div class="country-code-input">
+                  <span class="flag-slot" aria-hidden="true">
+                    <img id="phoneFlag" class="flag-icon" alt="">
+                  </span>
+                  <input id="phoneCode" class="code-input" type="text" placeholder="+1" value="+1" inputmode="tel" maxlength="5" autocomplete="tel-country-code">
+                </div>
+              </label>
+              <label class="field">
+                <span class="label">Mobile number</span>
+                <input id="phoneNumber" type="tel" placeholder="555 013 999">
+              </label>
+            </div>
+            <div class="form-grid form-grid--phone" data-content-form="whatsapp" hidden>
+              <label class="field">
+                <span class="label">Country code</span>
+                <div class="country-code-input">
+                  <span class="flag-slot" aria-hidden="true">
+                    <img id="waFlag" class="flag-icon" alt="">
+                  </span>
+                  <input id="waCode" class="code-input" type="text" placeholder="+91" value="+91" inputmode="tel" maxlength="5" autocomplete="tel-country-code">
+                </div>
+              </label>
+              <label class="field">
+                <span class="label">WhatsApp number</span>
+                <input id="waNumber" type="tel" placeholder="98765 43210">
+              </label>
+            </div>
+            <div class="form-grid" data-content-form="wifi" hidden>
+              <label class="field">
+                <span class="label">WiFi name (SSID)</span>
+                <input id="wifiSsid" type="text" placeholder="MyWiFi">
+              </label>
+              <label class="field">
+                <span class="label">Password</span>
+                <input id="wifiPassword" type="password" placeholder="Password">
+              </label>
+              <label class="field">
+                <span class="label">Security</span>
+                <select id="wifiSecurity">
+                  <option value="WPA">WPA/WPA2</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">Open (no password)</option>
+                </select>
+              </label>
+              <label class="field">
+                <span class="label">Hidden network</span>
+                <div class="checkbox-field">
+                  <input id="wifiHidden" type="checkbox">
+                  <span>SSID is hidden</span>
+                </div>
+              </label>
+            </div>
+            <div class="form-grid" data-content-form="upi" hidden>
+              <label class="field">
+                <span class="label">UPI ID</span>
+                <input id="upiId" type="text" placeholder="name@bank">
+              </label>
+              <label class="field">
+                <span class="label">Payee name</span>
+                <input id="upiName" type="text" placeholder="Recipient name">
+              </label>
+              <label class="field">
+                <span class="label">Amount (INR)</span>
+                <div class="input-with-icon">
+                  <img class="input-icon" src="assets/upi.svg" alt="" aria-hidden="true">
+                  <input id="upiAmount" type="number" min="0" step="0.01" placeholder="0.00">
+                </div>
+              </label>
+              <label class="field">
+                <span class="label">Note</span>
+                <input id="upiNote" type="text" placeholder="Payment note">
+              </label>
+            </div>
+            <div class="contact-form" data-content-form="contact" hidden>
+              <div class="contact-section">
+                <div class="contact-section-header">
+                  <div>
+                    <h3>Name</h3>
+                    <p>Optional, but it helps scanners label the contact.</p>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <label class="field">
+                    <span class="label">Name prefix (optional)</span>
+                    <input id="contactPrefix" type="text" placeholder="Dr.">
+                  </label>
+                  <label class="field">
+                    <span class="label">First name</span>
+                    <input id="contactFirstName" type="text" placeholder="Riya">
+                  </label>
+                  <label class="field">
+                    <span class="label">Middle name (optional)</span>
+                    <input id="contactMiddleName" type="text" placeholder="K.">
+                  </label>
+                  <label class="field">
+                    <span class="label">Surname</span>
+                    <input id="contactLastName" type="text" placeholder="Mehta">
+                  </label>
+                  <label class="field">
+                    <span class="label">Nickname (optional)</span>
+                    <input id="contactNickname" type="text" placeholder="Riya M.">
+                  </label>
+                </div>
+              </div>
+
+              <div class="contact-section">
+                <div class="contact-section-header">
+                  <div>
+                    <h3>Job</h3>
+                    <p>All optional details about the role.</p>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <label class="field">
+                    <span class="label">Company name</span>
+                    <input id="contactCompany" type="text" placeholder="Studio Nova">
+                  </label>
+                  <label class="field">
+                    <span class="label">Job title (optional)</span>
+                    <input id="contactJobTitle" type="text" placeholder="Product Designer">
+                  </label>
+                  <label class="field">
+                    <span class="label">Department (optional)</span>
+                    <input id="contactDepartment" type="text" placeholder="Design">
+                  </label>
+                </div>
+              </div>
+
+              <div class="contact-section">
+                <div class="contact-section-header">
+                  <div>
+                    <h3>Contact</h3>
+                    <p>Phone, email, and birthday.</p>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <label class="field">
+                    <span class="label">Email</span>
+                    <input id="contactEmail" type="email" placeholder="riya@example.com">
+                  </label>
+                  <label class="field">
+                    <span class="label">Additional email (optional)</span>
+                    <input id="contactEmailAlt" type="email" placeholder="work@example.com">
+                  </label>
+                  <label class="field">
+                    <span class="label">Birthday (optional)</span>
+                    <input id="contactBirthday" type="date">
+                  </label>
+                </div>
+                <div class="form-grid form-grid--phone-extended contact-phone-grid">
+                  <label class="field">
+                    <span class="label">Phone country code</span>
+                    <div class="country-code-input">
+                      <span class="flag-slot" aria-hidden="true">
+                        <img id="contactPhoneFlag" class="flag-icon" alt="">
+                      </span>
+                      <input id="contactPhoneCode" class="code-input" type="text" placeholder="+1" value="+1" inputmode="tel" maxlength="5" autocomplete="tel-country-code">
+                    </div>
+                  </label>
+                  <label class="field">
+                    <span class="label">Phone number</span>
+                    <input id="contactPhoneNumber" type="tel" placeholder="555 123 4567">
+                  </label>
+                  <label class="field">
+                    <span class="label">Label (optional)</span>
+                    <input id="contactPhoneLabel" type="text" placeholder="Mobile">
+                  </label>
+                </div>
+                <div class="contact-extra-toggle">
+                  <button class="ghost-btn" type="button" id="addContactPhoneBtn">Add another number</button>
+                  <button class="ghost-btn" type="button" id="removeContactPhoneBtn" hidden>Remove additional number</button>
+                </div>
+                <div class="form-grid form-grid--phone-extended contact-phone-grid" id="contactExtraPhoneBlock" hidden>
+                  <label class="field">
+                    <span class="label">Additional code</span>
+                    <div class="country-code-input">
+                      <span class="flag-slot" aria-hidden="true">
+                        <img id="contactAltPhoneFlag1" class="flag-icon" alt="">
+                      </span>
+                      <input id="contactAltPhoneCode1" class="code-input" type="text" placeholder="+1" value="+1" inputmode="tel" maxlength="5" autocomplete="tel-country-code">
+                    </div>
+                  </label>
+                  <label class="field">
+                    <span class="label">Additional number</span>
+                    <input id="contactAltPhoneNumber1" type="tel" placeholder="555 888 0000">
+                  </label>
+                  <label class="field">
+                    <span class="label">Label (optional)</span>
+                    <input id="contactAltPhoneLabel1" type="text" placeholder="Work">
+                  </label>
+                </div>
+              </div>
+
+              <div class="contact-section">
+                <div class="contact-section-header">
+                  <div>
+                    <h3>Address</h3>
+                    <p>Optional location details.</p>
+                  </div>
+                  <div class="contact-section-actions">
+                    <button class="ghost-btn" type="button" id="addContactAddressBtn">Add address</button>
+                    <button class="ghost-btn" type="button" id="removeContactAddressBtn" hidden>Remove address</button>
+                  </div>
+                </div>
+                <div class="form-grid" id="contactAddressBlock" hidden>
+                  <label class="field">
+                    <span class="label">Address line 1</span>
+                    <input id="contactAddressLine1" type="text" placeholder="123 Market Street">
+                  </label>
+                  <label class="field">
+                    <span class="label">Address line 2 (optional)</span>
+                    <input id="contactAddressLine2" type="text" placeholder="Suite 12">
+                  </label>
+                  <label class="field">
+                    <span class="label">City</span>
+                    <input id="contactAddressCity" type="text" placeholder="San Francisco">
+                  </label>
+                  <label class="field">
+                    <span class="label">State / Region</span>
+                    <input id="contactAddressRegion" type="text" placeholder="CA">
+                  </label>
+                  <label class="field">
+                    <span class="label">Postal code</span>
+                    <input id="contactAddressPostal" type="text" placeholder="94105">
+                  </label>
+                  <label class="field">
+                    <span class="label">Country</span>
+                    <input id="contactAddressCountry" type="text" placeholder="United States">
+                  </label>
+                </div>
+              </div>
+
+              <p class="form-help">Add at least a name, phone, email, or address to generate the contact QR.</p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <aside class="panel panel-right">
+        <div class="step-card preview-card">
+          <div class="step-head">
+            <div>
+              <h2>Download your QR</h2>
+              <p>Copy or download as SVG.</p>
+            </div>
+          </div>
+          <div class="preview-stage">
+            <div id="qr-frame" class="qr-frame frame-none">
+              <div id="qr-preview"></div>
+              <div id="frameLabel" class="frame-label">Scan me</div>
+              <div id="qr-empty" class="qr-empty" hidden>
+                <h3>Add content to generate</h3>
+                <p>Fill the fields to start.</p>
+              </div>
+            </div>
+          </div>
+          <div class="download-actions">
+            <button id="copyBtn" class="btn btn-secondary" type="button">Share</button>
+            <button id="downloadBtn" class="btn btn-primary" type="button">Download SVG</button>
+          </div>
+          <div class="preview-meta">
+            <span id="qr-meta">260 x 260 - SVG</span>
+            <span id="qr-status" class="status-pill">Ready</span>
+          </div>
+        </div>
+
+      </aside>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="designModal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Design your QR</h3>
+          <p class="modal-subtitle">Frame, shape, logo, level, and colors.</p>
+        </div>
+        <button class="icon-btn" id="designModalClose" type="button" aria-label="Close design modal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="tab-list" role="tablist" aria-label="Design tabs">
+          <button class="tab active" type="button" data-design-tab="frame">Frame</button>
+          <button class="tab" type="button" data-design-tab="shape">Shape</button>
+          <button class="tab" type="button" data-design-tab="logo">Logo</button>
+          <button class="tab" type="button" data-design-tab="level">Level</button>
+          <button class="tab" type="button" data-design-tab="color">Color</button>
+        </div>
+
+        <div class="tab-panels">
+          <div class="tab-panel active" data-design-panel="frame">
+            <div class="option-grid">
+              <button class="option-card" data-frame="none" type="button">
+                <div class="frame-preview frame-none"></div>
+                <span>None</span>
+              </button>
+              <button class="option-card active" data-frame="soft" type="button">
+                <div class="frame-preview frame-soft"></div>
+                <span>Soft</span>
+              </button>
+              <button class="option-card" data-frame="badge" type="button">
+                <div class="frame-preview frame-badge"></div>
+                <span>Badge</span>
+              </button>
+              <button class="option-card" data-frame="ticket" type="button">
+                <div class="frame-preview frame-ticket"></div>
+                <span>Ticket</span>
+              </button>
+            </div>
+            <div class="form-grid compact">
+              <label class="field">
+                <span class="label">Frame text</span>
+                <input id="frameText" type="text" value="Scan me">
+              </label>
+              <label class="field">
+                <span class="label">Frame color</span>
+                <div class="color-field">
+                  <input id="frameColor" type="color" value="#ffffff">
+                  <input id="frameColorText" type="text" value="#ffffff">
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-design-panel="shape">
+            <div class="option-grid shape-grid">
+              <button class="option-card active" data-shape="rounded" type="button">
+                <span class="icon">
+                  <svg viewBox="0 0 48 48" aria-hidden="true">
+                    <rect x="4" y="4" width="12" height="12" rx="4"></rect>
+                    <rect x="20" y="4" width="12" height="12" rx="4"></rect>
+                    <rect x="34" y="4" width="10" height="10" rx="3"></rect>
+                    <rect x="4" y="20" width="10" height="10" rx="3"></rect>
+                    <rect x="18" y="18" width="12" height="12" rx="4"></rect>
+                    <rect x="32" y="20" width="12" height="12" rx="4"></rect>
+                    <rect x="4" y="34" width="12" height="12" rx="4"></rect>
+                    <rect x="20" y="34" width="10" height="10" rx="3"></rect>
+                    <rect x="34" y="34" width="10" height="10" rx="3"></rect>
+                  </svg>
+                </span>
+                <span>Rounded</span>
+              </button>
+              <button class="option-card" data-shape="square" type="button">
+                <span class="icon">
+                  <svg viewBox="0 0 48 48" aria-hidden="true">
+                    <rect x="4" y="4" width="12" height="12"></rect>
+                    <rect x="20" y="4" width="12" height="12"></rect>
+                    <rect x="36" y="4" width="8" height="8"></rect>
+                    <rect x="4" y="20" width="8" height="8"></rect>
+                    <rect x="18" y="18" width="12" height="12"></rect>
+                    <rect x="32" y="20" width="12" height="12"></rect>
+                    <rect x="4" y="36" width="12" height="12"></rect>
+                    <rect x="20" y="36" width="8" height="8"></rect>
+                    <rect x="36" y="36" width="8" height="8"></rect>
+                  </svg>
+                </span>
+                <span>Square</span>
+              </button>
+              <button class="option-card" data-shape="dots" type="button">
+                <span class="icon">
+                  <svg viewBox="0 0 48 48" aria-hidden="true">
+                    <circle cx="10" cy="10" r="4"></circle>
+                    <circle cx="24" cy="10" r="4"></circle>
+                    <circle cx="38" cy="10" r="3"></circle>
+                    <circle cx="10" cy="24" r="3"></circle>
+                    <circle cx="24" cy="24" r="4"></circle>
+                    <circle cx="38" cy="24" r="4"></circle>
+                    <circle cx="10" cy="38" r="4"></circle>
+                    <circle cx="24" cy="38" r="3"></circle>
+                    <circle cx="38" cy="38" r="3"></circle>
+                  </svg>
+                </span>
+                <span>Dots</span>
+              </button>
+              <button class="option-card" data-shape="classy" type="button">
+                <span class="icon">
+                  <svg viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M6 6h12v12H6z"></path>
+                    <path d="M24 6h12v12H24z"></path>
+                    <path d="M36 6h6v6h-6z"></path>
+                    <path d="M6 24h6v6H6z"></path>
+                    <path d="M20 20h12v12H20z"></path>
+                    <path d="M34 24h12v12H34z"></path>
+                    <path d="M6 36h12v6H6z"></path>
+                    <path d="M24 36h6v6h-6z"></path>
+                    <path d="M36 36h6v6h-6z"></path>
+                  </svg>
+                </span>
+                <span>Classy</span>
+              </button>
+              <button class="option-card" data-shape="classy-rounded" type="button">
+                <span class="icon">
+                  <svg viewBox="0 0 48 48" aria-hidden="true">
+                    <rect x="6" y="6" width="12" height="12" rx="4"></rect>
+                    <rect x="24" y="6" width="12" height="12" rx="4"></rect>
+                    <rect x="36" y="6" width="6" height="6" rx="3"></rect>
+                    <rect x="6" y="24" width="6" height="6" rx="3"></rect>
+                    <rect x="20" y="20" width="12" height="12" rx="4"></rect>
+                    <rect x="34" y="24" width="12" height="12" rx="4"></rect>
+                    <rect x="6" y="36" width="12" height="6" rx="3"></rect>
+                    <rect x="24" y="36" width="6" height="6" rx="3"></rect>
+                    <rect x="36" y="36" width="6" height="6" rx="3"></rect>
+                  </svg>
+                </span>
+                <span>Classy Round</span>
+              </button>
+              <button class="option-card" data-shape="extra-rounded" type="button">
+                <span class="icon">
+                  <svg viewBox="0 0 48 48" aria-hidden="true">
+                    <rect x="6" y="6" width="12" height="12" rx="6"></rect>
+                    <rect x="24" y="6" width="12" height="12" rx="6"></rect>
+                    <rect x="36" y="6" width="6" height="6" rx="3"></rect>
+                    <rect x="6" y="24" width="6" height="6" rx="3"></rect>
+                    <rect x="20" y="20" width="12" height="12" rx="6"></rect>
+                    <rect x="34" y="24" width="12" height="12" rx="6"></rect>
+                    <rect x="6" y="36" width="12" height="6" rx="3"></rect>
+                    <rect x="24" y="36" width="6" height="6" rx="3"></rect>
+                    <rect x="36" y="36" width="6" height="6" rx="3"></rect>
+                  </svg>
+                </span>
+                <span>Extra Round</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-design-panel="logo">
+            <div class="option-grid logo-grid">
+              <button class="option-card active" data-logo="none" type="button">
+                <span class="icon">No logo</span>
+              </button>
+              <button class="option-card" data-logo="phone" type="button">
+                <span class="icon"><img class="logo-img" src="assets/phone.svg" alt="Phone logo" /></span>
+                <span>Phone</span>
+              </button>
+              <button class="option-card" data-logo="email" type="button">
+                <span class="icon"><img class="logo-img" src="assets/email.svg" alt="Email logo" /></span>
+                <span>Email</span>
+              </button>
+              <button class="option-card" data-logo="contact" type="button">
+                <span class="icon"><img class="logo-img" src="assets/contact.svg" alt="Contact logo" /></span>
+                <span>Contact</span>
+              </button>
+              <button class="option-card" data-logo="link" type="button">
+                <span class="icon"><img class="logo-img" src="assets/link.svg" alt="Link logo" /></span>
+                <span>Link</span>
+              </button>
+              <button class="option-card" data-logo="whatsapp" type="button">
+                <span class="icon"><img class="logo-img" src="assets/whatsapp.svg" alt="WhatsApp logo" /></span>
+                <span>WhatsApp</span>
+              </button>
+              <button class="option-card" data-logo="wifi" type="button">
+                <span class="icon"><img class="logo-img" src="assets/wifi.svg" alt="WiFi logo" /></span>
+                <span>WiFi</span>
+              </button>
+              <button class="option-card" data-logo="upi" type="button">
+                <span class="icon"><img class="logo-img" src="assets/upi.svg" alt="UPI logo" /></span>
+                <span>UPI</span>
+              </button>
+
+            </div>
+          </div>
+
+          <div class="tab-panel" data-design-panel="level">
+            <div class="option-grid level-grid">
+              <button class="level-card" data-level="L" type="button">
+                <div class="level-preview">
+                  <span class="level-label">Level L</span>
+                  <span class="level-percent">7%</span>
+                </div>
+              </button>
+              <button class="level-card" data-level="M" type="button">
+                <div class="level-preview">
+                  <span class="level-label">Level M</span>
+                  <span class="level-percent">15%</span>
+                </div>
+              </button>
+              <button class="level-card active" data-level="Q" type="button">
+                <div class="level-preview">
+                  <span class="level-label">Level Q</span>
+                  <span class="level-percent">25%</span>
+                </div>
+              </button>
+              <button class="level-card" data-level="H" type="button">
+                <div class="level-preview">
+                  <span class="level-label">Level H</span>
+                  <span class="level-percent">30%</span>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-design-panel="color">
+            <div class="form-grid">
+              <label class="field">
+                <span class="label">QR color</span>
+                <div class="color-field">
+                  <input id="dotColor" type="color" value="#1f1530">
+                  <input id="dotColorText" type="text" value="#1f1530">
+                </div>
+              </label>
+              <label class="field">
+                <span class="label">Background</span>
+                <div class="color-field">
+                  <input id="bgColor" type="color" value="#ffffff">
+                  <input id="bgColorText" type="text" value="#ffffff">
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="tipsModal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">Quick tips</h3>
+          <p class="modal-subtitle">Best practices for high-scan QR codes.</p>
+        </div>
+        <button class="icon-btn" id="tipsModalClose" type="button" aria-label="Close quick tips">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="tips-card">
+          <ul>
+            <li>Use Level Q or H when adding a logo.</li>
+            <li>Keep background light for maximum contrast.</li>
+            <li>Test your QR with multiple camera apps.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+  <script src="script.js"></script>
+  <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e9cd556fb46f4880a8842d37e2dfe3fb"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

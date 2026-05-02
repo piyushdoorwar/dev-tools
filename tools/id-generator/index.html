@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ID Generator Decoder</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <h1 class="app-title">ID Generator Decoder</h1>
+    </header>
+    <div class="split">
+      <section class="panel">
+        <div class="generate-header">
+          <strong>Generate new IDs</strong>
+        </div>
+        <div class="generate-controls-all">
+          <div id="id-type-dropdown" class="precision-dropdown id-type-dropdown" aria-label="ID type">
+            <button id="id-type-trigger" class="precision-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="ID type">
+              <span id="id-type-value">UUID v4</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div id="id-type-menu" class="precision-menu" role="listbox" aria-label="ID type options">
+              <button class="precision-option" type="button" role="option" data-value="uuid-v1">UUID v1</button>
+              <button class="precision-option" type="button" role="option" data-value="uuid-v3">UUID v3</button>
+              <button class="precision-option active" type="button" role="option" data-value="uuid-v4" aria-selected="true">UUID v4</button>
+              <button class="precision-option" type="button" role="option" data-value="uuid-v5">UUID v5</button>
+              <button class="precision-option" type="button" role="option" data-value="uuid-v7">UUID v7</button>
+              <button class="precision-option" type="button" role="option" data-value="ulid">ULID</button>
+              <button class="precision-option" type="button" role="option" data-value="objectid">Object ID</button>
+              <button class="precision-option" type="button" role="option" data-value="nanoid">Nano ID</button>
+            </div>
+            <select id="id-type" class="id-type-hidden" aria-hidden="true" tabindex="-1">
+              <option value="uuid-v1">UUID v1</option>
+              <option value="uuid-v3">UUID v3</option>
+              <option value="uuid-v4" selected>UUID v4</option>
+              <option value="uuid-v5">UUID v5</option>
+              <option value="uuid-v7">UUID v7</option>
+              <option value="ulid">ULID</option>
+              <option value="objectid">Object ID</option>
+              <option value="nanoid">Nano ID</option>
+            </select>
+          </div>
+          <div class="counter-container">
+            <span>×</span>
+            <input id="count-input" class="counter-input" type="number" min="1" max="1000" value="1" />
+          </div>
+          <button class="btn-icon-generate" id="generate-btn" title="Generate">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="16"></line>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            Generate
+          </button>
+        </div>
+        <div class="extra-inputs" id="hash-inputs" style="display: none;">
+          <input id="namespace-input" class="namespace-input" type="text" value="6ba7b810-9dad-11d1-80b4-00c04fd430c8" />
+          <input id="name-input" class="name-input" type="text" value="example.com" />
+        </div>
+        <div class="editor-wrapper">
+          <div class="editor-toolbar">
+            <div class="editor-toolbar-left">
+              <div class="case-toggle" role="group" aria-label="Case">
+                <span class="case-label">case</span>
+                <div class="case-options">
+                  <button type="button" class="case-option is-active" data-case="lower" aria-pressed="true">lower</button>
+                  <button type="button" class="case-option" data-case="upper" aria-pressed="false">upper</button>
+                </div>
+              </div>
+            </div>
+            <div class="editor-toolbar-right">
+              <button class="editor-btn" id="download-btn" title="Download">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </button>
+              <button class="editor-btn" id="copy-output-btn" title="Copy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+              <button class="editor-btn" id="clear-output-btn" title="Clear">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div id="output-area" class="code-editor" contenteditable="true" spellcheck="false" data-placeholder="Generated IDs will appear here..."></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <strong>Decode</strong>
+          <div class="controls">
+            <button class="editor-btn" id="clipboard-btn" title="Paste from clipboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+              </svg>
+            </button>
+            <button class="editor-btn" id="sample-btn" title="Generate random sample">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </button>
+            <button class="editor-btn" id="clear-decode-btn" title="Clear">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="input-with-button">
+          <input
+            type="text"
+            id="decode-input"
+            class="input-field"
+            placeholder="Paste a UUID or ULID"
+            autocomplete="off"
+          />
+        </div>
+        <div class="decoded-fields">
+          <div class="decoded-field" data-field="standard">
+            <label>Standard String Format</label>
+            <div class="input-with-button">
+              <input type="text" readonly value="—" />
+              <button class="icon-button copy-field" data-target="standard" aria-label="Copy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="decoded-field" data-field="raw">
+            <label>Raw Contents</label>
+            <div class="input-with-button">
+              <input type="text" readonly value="—" />
+              <button class="icon-button copy-field" data-target="raw" aria-label="Copy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="decoded-field" data-field="version">
+            <label>Version</label>
+            <div class="input-with-button">
+              <input type="text" readonly value="—" />
+              <button class="icon-button copy-field" data-target="version" aria-label="Copy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="decoded-field" data-field="variant">
+            <label>Variant</label>
+            <div class="input-with-button">
+              <input type="text" readonly value="—" />
+              <button class="icon-button copy-field" data-target="variant" aria-label="Copy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="decoded-field" data-field="time">
+            <label>Contents - Time</label>
+            <div class="input-with-button">
+              <input type="text" readonly value="—" />
+              <button class="icon-button copy-field" data-target="time" aria-label="Copy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="scripts.js"></script>
+  <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e9cd556fb46f4880a8842d37e2dfe3fb"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

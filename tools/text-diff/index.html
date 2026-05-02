@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Diff Tool</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Text Diff Tool</h1>
+            </div>
+            <div class="header-right">
+                <div class="diff-stats" id="diff-stats">
+                    <span class="stat-item added"><span class="stat-count" id="stat-added">0</span> Added</span>
+                    <span class="stat-item removed"><span class="stat-count" id="stat-removed">0</span> Removed</span>
+                    <span class="stat-item modified"><span class="stat-count" id="stat-modified">0</span> Modified</span>
+                </div>
+                <button class="info-btn" id="diffLegendBtn" aria-label="Diff color legend" data-tooltip="Diff colors">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <line x1="12" y1="10" x2="12" y2="16"></line>
+                        <circle cx="12" cy="7.5" r="1"></circle>
+                    </svg>
+                </button>
+            </div>
+        </header>
+        <div class="main-content">
+            <div class="editor-panel left-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Original Text</h2>
+                    <div class="action-bar">
+                        <button class="action-btn" data-action="undo" data-editor="left" data-tooltip="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg></button>
+                        <button class="action-btn" data-action="copy" data-editor="left" data-tooltip="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+                        <button class="action-btn" data-action="paste" data-editor="left" data-tooltip="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></button>
+                        <button class="action-btn" data-action="sample" data-editor="left" data-tooltip="Load Sample Text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/><path d="M10 12h4"/><path d="M10 16h4"/><path d="M10 8h1"/></svg></button>
+                        <button class="action-btn" data-action="normalize" data-editor="left" data-tooltip="Normalize Whitespace"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg></button>
+                        <button class="action-btn" data-action="download" data-editor="left" data-tooltip="Download Text File"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+                        <button class="action-btn" data-action="clear" data-editor="left" data-tooltip="Clear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="code-editor-wrapper">
+                        <div class="line-numbers" id="left-line-numbers"></div>
+                        <div class="editor-content-wrapper">
+                            <div class="editor-highlights" id="left-highlights"></div>
+                            <textarea class="editor-textarea" id="left-editor" spellcheck="false" placeholder="Enter original text here..."></textarea>
+                        </div>
+                    </div>
+                    <div class="status-bar" id="left-status"><span class="status-text">Ready</span><span class="char-count">0 characters</span></div>
+                </div>
+            </div>
+            <div class="editor-panel right-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Modified Text</h2>
+                    <div class="action-bar">
+                        <button class="action-btn" data-action="undo" data-editor="right" data-tooltip="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg></button>
+                        <button class="action-btn" data-action="copy" data-editor="right" data-tooltip="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+                        <button class="action-btn" data-action="paste" data-editor="right" data-tooltip="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></button>
+                        <button class="action-btn" data-action="sample" data-editor="right" data-tooltip="Load Sample Text"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/><path d="M10 12h4"/><path d="M10 16h4"/><path d="M10 8h1"/></svg></button>
+                        <button class="action-btn" data-action="normalize" data-editor="right" data-tooltip="Normalize Whitespace"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg></button>
+                        <button class="action-btn" data-action="download" data-editor="right" data-tooltip="Download Text File"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+                        <button class="action-btn" data-action="clear" data-editor="right" data-tooltip="Clear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="code-editor-wrapper">
+                        <div class="line-numbers" id="right-line-numbers"></div>
+                        <div class="editor-content-wrapper">
+                            <div class="editor-highlights" id="right-highlights"></div>
+                            <textarea class="editor-textarea" id="right-editor" spellcheck="false" placeholder="Enter modified text here..."></textarea>
+                        </div>
+                    </div>
+                    <div class="status-bar" id="right-status"><span class="status-text">Ready</span><span class="char-count">0 characters</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-overlay" id="diffLegendModal" aria-hidden="true">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Diff Colors</h3>
+                    <button class="modal-close" id="diffLegendCloseBtn" data-modal-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-grid">
+                        <div class="legend-row">
+                            <span class="legend-swatch added"></span>
+                            <div class="legend-text">
+                                <div class="legend-title">Added</div>
+                                <div class="legend-desc">Present only in the modified text.</div>
+                            </div>
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-swatch removed"></span>
+                            <div class="legend-text">
+                                <div class="legend-title">Removed</div>
+                                <div class="legend-desc">Present only in the original text.</div>
+                            </div>
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-swatch modified"></span>
+                            <div class="legend-text">
+                                <div class="legend-title">Modified</div>
+                                <div class="legend-desc">Line changed between left and right editors.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e9cd556fb46f4880a8842d37e2dfe3fb"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

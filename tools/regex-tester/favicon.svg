@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b0714" />
+      <stop offset="100%" stop-color="#1c0f2f" />
+    </linearGradient>
+    <radialGradient id="glowYellow" cx="28%" cy="30%" r="60%">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="0.25">
+        <animate attributeName="stop-opacity" values="0.18;0.32;0.18" dur="3.2s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#FFD700" stop-opacity="0">
+        <animate attributeName="stop-opacity" values="0;0.12;0" dur="3.2s" repeatCount="indefinite" />
+      </stop>
+    </radialGradient>
+    <radialGradient id="glowPurple" cx="72%" cy="72%" r="70%">
+      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.28">
+        <animate attributeName="stop-opacity" values="0.2;0.36;0.2" dur="3.6s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0">
+        <animate attributeName="stop-opacity" values="0;0.14;0" dur="3.6s" repeatCount="indefinite" />
+      </stop>
+    </radialGradient>
+    <linearGradient id="textGradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="45%" stop-color="#FFD700" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+      <animate attributeName="x1" values="0;1;0" dur="4.5s" repeatCount="indefinite" />
+      <animate attributeName="x2" values="1;2;1" dur="4.5s" repeatCount="indefinite" />
+    </linearGradient>
+    <filter id="neon" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.6" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="64" height="64" rx="14" fill="url(#bg)" />
+  <rect width="64" height="64" rx="14" fill="url(#glowYellow)" />
+  <rect width="64" height="64" rx="14" fill="url(#glowPurple)" />
+
+  <g font-family="'Segoe UI', 'Arial', sans-serif" font-weight="700" font-style="italic" text-anchor="middle">
+    <text x="32" y="38" font-size="14" textLength="52" lengthAdjust="spacingAndGlyphs" fill="url(#textGradient)" opacity="0.6" filter="url(#neon)">
+      /(reg)ex/
+      <animate attributeName="opacity" values="0.45;0.75;0.45" dur="2.6s" repeatCount="indefinite" />
+    </text>
+    <text x="32" y="38" font-size="14" textLength="52" lengthAdjust="spacingAndGlyphs" fill="url(#textGradient)">
+      /(reg)ex/
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2.6s" repeatCount="indefinite" />
+    </text>
+  </g>
+</svg>

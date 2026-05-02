@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FilePress - Local File Compressor</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <!-- Cloudflare Web Analytics -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "e9cd556fb46f4880a8842d37e2dfe3fb"}'></script>
+  <!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1>File Compressor</h1>
+      </div>
+      <div class="header-actions">
+        <button class="info-btn" id="infoBtn" type="button" aria-label="Open local processing info" title="Local processing info">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 10v5"></path>
+            <path d="M12 7.5h.01"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <section class="toolbar" aria-label="Queue controls">
+      <div class="toolbar-group toolbar-cluster">
+        <span class="toolbar-label">File</span>
+        <button class="toolbar-action icon-only" id="browseBtn" type="button" aria-label="Browse files" data-tooltip="Browse Files">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path>
+            <path d="M14 3v5h5"></path>
+            <path d="M9 13h6"></path>
+            <path d="M9 17h4"></path>
+          </svg>
+          <span class="sr-only">Browse Files</span>
+        </button>
+        <button class="toolbar-action icon-only" id="browseFolderBtn" type="button" aria-label="Browse folder" data-tooltip="Browse Folder">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H3z"></path>
+            <path d="M3 10h18l-1.3 7.2A2 2 0 0 1 17.7 19H6.3a2 2 0 0 1-2-1.8z"></path>
+          </svg>
+          <span class="sr-only">Browse Folder</span>
+        </button>
+        <button class="toolbar-action ghost icon-only" id="clearBtn" type="button" aria-label="Clear queue" data-tooltip="Clear Queue">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 7h16"></path>
+            <path d="M10 11v5"></path>
+            <path d="M14 11v5"></path>
+            <path d="M6 7l1 11a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-11"></path>
+            <path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"></path>
+          </svg>
+          <span class="sr-only">Clear Queue</span>
+        </button>
+      </div>
+
+      <div class="toolbar-divider" aria-hidden="true"></div>
+
+      <div class="toolbar-group toolbar-cluster toolbar-cluster-mode">
+        <span class="toolbar-label">Mode</span>
+        <div class="mode-switch" role="tablist" aria-label="Compression presets">
+          <button class="mode-pill preset-btn icon-only" data-mode="fastest" type="button" aria-label="Fastest" data-tooltip="Fastest">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 12h8"></path>
+              <path d="M11 8l4 4-4 4"></path>
+              <path d="M13 8l4 4-4 4"></path>
+            </svg>
+            <span class="sr-only">Fastest</span>
+          </button>
+          <button class="mode-pill preset-btn active icon-only" data-mode="balanced" type="button" aria-label="Balanced" data-tooltip="Balanced">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 7h12"></path>
+              <path d="M6 12h12"></path>
+              <path d="M6 17h12"></path>
+              <circle cx="10" cy="7" r="1.4" fill="currentColor" stroke="none"></circle>
+              <circle cx="14" cy="12" r="1.4" fill="currentColor" stroke="none"></circle>
+              <circle cx="9" cy="17" r="1.4" fill="currentColor" stroke="none"></circle>
+            </svg>
+            <span class="sr-only">Balanced</span>
+          </button>
+          <button class="mode-pill preset-btn icon-only" data-mode="maximum" type="button" aria-label="Maximum" data-tooltip="Maximum">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.5-4.8-2.5-4.8 2.5.9-5.5-3.9-3.8 5.4-.8z"></path>
+            </svg>
+            <span class="sr-only">Maximum</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-spacer" aria-hidden="true"></div>
+
+      <div class="toolbar-group">
+        <span class="toolbar-label" id="algorithmLabel">Algo</span>
+        <div class="algo-dropdown" id="algorithmDropdown">
+          <button class="algo-trigger" id="algorithmTrigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="algorithmLabel algorithmValue">
+            <span class="algo-value" id="algorithmValue">Deflate</span>
+            <svg class="ui-icon algo-caret" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m7 10 5 5 5-5"></path>
+            </svg>
+          </button>
+          <div class="algo-menu hidden" id="algorithmMenu" role="listbox" aria-labelledby="algorithmLabel">
+            <button class="algo-option" data-value="store" type="button" role="option" aria-selected="false">Store</button>
+            <button class="algo-option active" data-value="deflate" type="button" role="option" aria-selected="true">Deflate</button>
+            <button class="algo-option" data-value="lzma" type="button" role="option" aria-selected="false">LZMA</button>
+            <button class="algo-option" data-value="zstd" type="button" role="option" aria-selected="false">Zstd</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="workspace">
+      <section class="panel control-panel">
+        <div class="panel-header">
+          <span class="section-title">
+            <svg class="ui-icon ui-icon-accent" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 7h16"></path>
+              <path d="M7 12h10"></path>
+              <path d="M10 17h4"></path>
+            </svg>
+            <span>Input Queue</span>
+          </span>
+          <span class="header-pill" id="fileCounter">0 items listed</span>
+        </div>
+
+        <section class="drop-card" id="dropZone" aria-label="File drop zone">
+          <div class="drop-glow"></div>
+          <div class="drop-inner">
+            <div class="drop-icon-wrap" aria-hidden="true">
+              <svg class="drop-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 5 17 10"></polyline>
+                <line x1="12" y1="5" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <p class="drop-heading">Drop files here or use the toolbar to pick files and folders.</p>
+            <p class="drop-sub">Best for text, source files, and mixed project bundles up to roughly 500 MB.</p>
+          </div>
+          <input type="file" id="fileInput" multiple hidden>
+          <input type="file" id="folderInput" webkitdirectory directory multiple hidden>
+        </section>
+
+        <section class="metrics-grid" aria-label="Queue metrics">
+          <article class="metric-card">
+            <p class="metric-label">Total Size</p>
+            <p class="metric-value" id="totalSize">0 B</p>
+          </article>
+          <article class="metric-card">
+            <p class="metric-label">Files</p>
+            <p class="metric-value" id="fileCount">0 items</p>
+          </article>
+          <article class="metric-card metric-card-accent">
+            <p class="metric-label">Estimated Output</p>
+            <p class="metric-value" id="estOutput">~0 B</p>
+          </article>
+        </section>
+
+        <section class="action-card">
+          <p class="action-title">Generate a compressed ZIP archive</p>
+          <p class="action-copy">Output always stays in ZIP format. Zstd and LZMA may need modern tools like 7-Zip.</p>
+          <button class="generate-btn" id="generateBtn" type="button" disabled>
+            <svg class="ui-icon button-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 8.5h16"></path>
+              <path d="M6 8.5l1 9.5a2 2 0 0 0 2 1.8h6a2 2 0 0 0 2-1.8l1-9.5"></path>
+              <path d="M9 8.5V6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2.5"></path>
+              <path d="M12 11v5"></path>
+              <path d="M10 14h4"></path>
+            </svg>
+            <span>Generate ZIP</span>
+          </button>
+        </section>
+      </section>
+
+      <section class="panel output-panel">
+        <div class="panel-header">
+          <span class="section-title">
+            <svg class="ui-icon ui-icon-accent" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 9h16"></path>
+              <path d="M5 9l1 9a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-9"></path>
+              <path d="M9 9V6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"></path>
+            </svg>
+            <span>Archive Preview</span>
+          </span>
+          <span class="header-pill" id="statusBadge" data-state="idle">Idle</span>
+        </div>
+
+        <section class="progress-card">
+          <div class="progress-inner">
+            <div id="idleState" class="progress-state">
+              <div class="status-orb" aria-hidden="true"></div>
+              <p class="idle-text">Add files to start building a local archive.</p>
+            </div>
+
+            <div id="activeState" class="progress-state hidden">
+              <div class="prog-header">
+                <span class="prog-status" id="progStatus">Archiving...</span>
+                <span class="prog-pct" id="progPct">0%</span>
+              </div>
+              <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+              <p class="prog-file" id="progFile">Preparing queue</p>
+            </div>
+
+            <div id="doneState" class="progress-state hidden">
+              <div class="done-badge" aria-hidden="true">Ready</div>
+              <div class="done-stats">
+                <span id="doneOriginal">0 B</span>
+                <span class="done-arrow">to</span>
+                <span id="doneCompressed" class="accent">0 B</span>
+              </div>
+              <span class="done-saved" id="doneSaved"></span>
+              <button class="download-btn" id="downloadBtn" type="button">
+                <svg class="ui-icon button-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12 4v11"></path>
+                  <path d="M8 11l4 4 4-4"></path>
+                  <path d="M4 19h16"></path>
+                </svg>
+                <span>Download ZIP</span>
+              </button>
+              <p class="done-note">The ZIP archive is ready for download.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="files-card">
+          <div class="files-header">
+            <h2 class="files-title">
+              <svg class="ui-icon ui-icon-accent" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H3z"></path>
+                <path d="M3 10h18l-1.3 7.2A2 2 0 0 1 17.7 19H6.3a2 2 0 0 1-2-1.8z"></path>
+              </svg>
+              <span>Queued Files</span>
+            </h2>
+            <span class="files-caption">Relative paths are preserved for folder uploads.</span>
+          </div>
+
+          <div class="files-table-wrap" id="filesTableWrap">
+            <table class="files-table">
+              <thead>
+                <tr>
+                  <th class="th-path">Path</th>
+                  <th class="th-size">Size</th>
+                  <th class="th-actions">Remove</th>
+                </tr>
+              </thead>
+              <tbody id="fileTableBody">
+                <tr class="empty-row" id="emptyRow">
+                  <td colspan="3" class="empty-cell">No files selected. Use browse, folder import, or drag and drop.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="infoModal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+      <div class="modal-header">
+        <h2 id="infoModalTitle">Local Processing</h2>
+        <button class="modal-close" id="closeInfoBtn" type="button" aria-label="Close local processing info">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12"></path>
+            <path d="M18 6L6 18"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-card">
+          <div class="modal-icon-wrap">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="6" y="10" width="12" height="9" rx="2"></rect>
+              <path d="M9 10V8a3 3 0 0 1 6 0v2"></path>
+            </svg>
+          </div>
+          <div class="modal-copy">
+            <p class="modal-lead">100% local. Nothing leaves your browser.</p>
+            <p>Compression and ZIP packaging run in the browser only. No uploads, no remote storage, and no server-side processing are involved.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="algo/pako_deflate.min.js"></script>
+  <script src="algo/zstd_asm.umd.js"></script>
+  <script src="algo/lzma_worker-min.js"></script>
+  <script src="scripts.js"></script>
+</body>
+</html>

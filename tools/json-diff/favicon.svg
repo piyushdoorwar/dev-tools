@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="100" height="100" rx="20" fill="#0d0d0d"/>
+  
+  <!-- Left bracket -->
+  <path d="M 30 30 L 25 30 L 25 70 L 30 70" stroke="#FFD700" stroke-width="4" stroke-linecap="round" fill="none"/>
+  
+  <!-- Right bracket -->
+  <path d="M 70 30 L 75 30 L 75 70 L 70 70" stroke="#8B5CF6" stroke-width="4" stroke-linecap="round" fill="none"/>
+  
+  <!-- Center diff symbol with animation -->
+  <g>
+    <g>
+      <animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 50 50" to="360 50 50" dur="2s" repeatCount="indefinite"/>
+      <circle cx="50" cy="40" r="3" fill="#FFD700"/>
+      <line x1="50" y1="45" x2="50" y2="55" stroke="url(#g)" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="50" cy="60" r="3" fill="#8B5CF6"/>
+    </g>
+  </g>
+</svg>

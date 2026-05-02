@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown Diff Editor</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script defer src="scripts.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div>
+          <h1>Markdown Editor</h1>
+        </div>
+      </header>
+
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <span class="toolbar-label">File</span>
+          <button class="toolbar-btn" data-action="undo" data-tooltip="Undo (Ctrl+Z)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 7v6h6"/>
+              <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="redo" data-tooltip="Redo (Ctrl+Y)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 7v6h-6"/>
+              <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3L21 13"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="copy" data-tooltip="Copy All">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="paste" data-tooltip="Paste">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="loadSample" data-tooltip="Load Sample">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="download" data-tooltip="Download as .md">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="toolbar-group">
+          <span class="toolbar-label">Format</span>
+          <button class="toolbar-btn" data-action="heading" data-tooltip="Heading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 12h8m-8-6v12m8-12v12m4-12h4m-4 6h4m-4 6h4"/>
+            </svg>
+          </button>
+          <input type="color" class="toolbar-color" data-action="fontcolor" data-tooltip="Font Color" data-requires-selection="true" value="#000000">
+          <button class="toolbar-btn" data-action="bold" data-tooltip="Bold (Ctrl+B)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6zM6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="italic" data-tooltip="Italic (Ctrl+I)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="4" x2="10" y2="4"/>
+              <line x1="14" y1="20" x2="5" y2="20"/>
+              <line x1="15" y1="4" x2="9" y2="20"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="underline" data-tooltip="Underline">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/>
+              <line x1="4" y1="21" x2="20" y2="21"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="strikethrough" data-tooltip="Strikethrough" data-requires-selection="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17.3 4.9c-2.3-.6-4.4-1-6.2-.9-2.7.1-4.4 1.1-5.4 2.7-.7 1.2-.8 2.5-.3 3.8.5 1.3 1.4 2.2 2.8 2.9"/>
+              <path d="M3 12h18"/>
+              <path d="M13.2 17.8c.3.2.6.4 1 .5 2.2.6 4.3.5 6.4-.4 1.2-.5 2.1-1.5 2.3-2.8.2-.8 0-1.8-.4-2.6"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="code" data-tooltip="Inline Code">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="codeblock" data-tooltip="Code Block">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="18" rx="2"/>
+              <path d="M10 9l-2 2 2 2"/>
+              <path d="M14 9l2 2-2 2"/>
+            </svg>
+          </button>
+        </div>
+        <div class="toolbar-divider"></div>
+        <div class="toolbar-group">
+          <span class="toolbar-label">Insert</span>
+          <button class="toolbar-btn" data-action="quote" data-tooltip="Blockquote">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/>
+              <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="ul" data-tooltip="Unordered List">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="9" y1="6" x2="20" y2="6"/>
+              <line x1="9" y1="12" x2="20" y2="12"/>
+              <line x1="9" y1="18" x2="20" y2="18"/>
+              <circle cx="4" cy="6" r="1" fill="currentColor"/>
+              <circle cx="4" cy="12" r="1" fill="currentColor"/>
+              <circle cx="4" cy="18" r="1" fill="currentColor"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="ol" data-tooltip="Ordered List">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="10" y1="6" x2="21" y2="6"/>
+              <line x1="10" y1="12" x2="21" y2="12"/>
+              <line x1="10" y1="18" x2="21" y2="18"/>
+              <path d="M4 6h1v4"/>
+              <path d="M4 10h2"/>
+              <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="task" data-tooltip="Task List">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="5" width="6" height="6" rx="1"/>
+              <path d="M6 8l1 1 2-2"/>
+              <line x1="12" y1="8" x2="21" y2="8"/>
+              <rect x="3" y="13" width="6" height="6" rx="1"/>
+              <line x1="12" y1="16" x2="21" y2="16"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="link" data-tooltip="Link" data-requires-selection="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="image" data-tooltip="Image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="table" data-tooltip="Table">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <line x1="3" y1="15" x2="21" y2="15"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+              <line x1="15" y1="3" x2="15" y2="21"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="hr" data-tooltip="Horizontal Rule">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <circle cx="5" cy="12" r="1" fill="currentColor"/>
+              <circle cx="12" cy="12" r="1" fill="currentColor"/>
+              <circle cx="19" cy="12" r="1" fill="currentColor"/>
+            </svg>
+          </button>
+          <button class="toolbar-btn" data-action="comment" data-tooltip="HTML Comment" data-requires-selection="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              <line x1="9" y1="10" x2="15" y2="10"/>
+              <line x1="12" y1="7" x2="12" y2="13"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <main class="workspace">
+        <section class="panel">
+          <div class="panel-header">
+            <span>Markdown Source</span>
+            <span class="hint">.md</span>
+          </div>
+          <div class="editor-container">
+            <div class="line-numbers" id="line-numbers"></div>
+            <textarea id="editor" spellcheck="false"></textarea>
+          </div>
+        </section>
+
+        <div class="resizer" id="resizer"></div>
+
+        <section class="panel right-panel">
+          <div class="panel-header">
+            <div>
+              <span>Preview</span>
+              <span class="hint">Rendered output</span>
+            </div>
+            <button class="preview-copy-btn" onclick="copyPreviewContent()" data-tooltip="Copy rendered HTML">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+              </svg>
+            </button>
+          </div>
+          <div id="preview" class="preview" aria-live="polite"></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Table Modal -->
+    <div class="modal" id="tableModal">
+      <div class="modal-content modal-content-small">
+        <div class="modal-header">
+          <h2>Insert Table</h2>
+          <button class="modal-close" onclick="closeModal('tableModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="table-size-group">
+            <label>Rows:</label>
+            <input type="number" id="tableRows" min="1" value="3" class="table-size-input">
+            <span class="table-size-separator">×</span>
+            <label>Cols:</label>
+            <input type="number" id="tableCols" min="1" value="3" class="table-size-input">
+          </div>
+          <div class="form-group">
+            <label>Alignment:</label>
+            <div class="align-buttons">
+              <button class="align-btn active" data-align="left" data-tooltip="Left" onclick="selectAlign('left')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="17" y1="10" x2="3" y2="10"/>
+                  <line x1="21" y1="6" x2="3" y2="6"/>
+                  <line x1="21" y1="14" x2="3" y2="14"/>
+                  <line x1="17" y1="18" x2="3" y2="18"/>
+                </svg>
+              </button>
+              <button class="align-btn" data-align="center" data-tooltip="Center" onclick="selectAlign('center')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="10" x2="6" y2="10"/>
+                  <line x1="21" y1="6" x2="3" y2="6"/>
+                  <line x1="21" y1="14" x2="3" y2="14"/>
+                  <line x1="18" y1="18" x2="6" y2="18"/>
+                </svg>
+              </button>
+              <button class="align-btn" data-align="right" data-tooltip="Right" onclick="selectAlign('right')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="21" y1="10" x2="7" y2="10"/>
+                  <line x1="21" y1="6" x2="3" y2="6"/>
+                  <line x1="21" y1="14" x2="3" y2="14"/>
+                  <line x1="21" y1="18" x2="7" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('tableModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="insertTable()">Add Table</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal" id="imageModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Insert Image</h2>
+          <button class="modal-close" onclick="closeModal('imageModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="imageAlt">Alt Text:</label>
+            <input type="text" id="imageAlt" placeholder="Description of the image">
+          </div>
+          <div class="form-group">
+            <label>Image Source:</label>
+            <div class="image-upload-area" id="imageUploadArea">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p>Drag & drop an image here or click to select</p>
+              <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+            </div>
+            <div class="or-divider">OR</div>
+            <input type="text" id="imageUrl" placeholder="Enter image URL">
+          </div>
+          <div id="imagePreview"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('imageModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="insertImage()">Add Image</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Link Modal -->
+    <div class="modal" id="linkModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Insert Link</h2>
+          <button class="modal-close" onclick="closeModal('linkModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="linkText">Link Text:</label>
+            <input type="text" id="linkText" placeholder="Text to display">
+          </div>
+          <div class="form-group">
+            <label for="linkUrl">URL:</label>
+            <input type="url" id="linkUrl" placeholder="https://example.com">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('linkModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="insertLink()">Add Link</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Code Block Modal -->
+    <div class="modal" id="codeBlockModal">
+      <div class="modal-content modal-content-large">
+        <div class="modal-header">
+          <h2>Insert Code Block</h2>
+          <button class="modal-close" onclick="closeModal('codeBlockModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="code-modal-toolbar">
+            <div class="code-toolbar-left">
+              <button class="code-toolbar-btn" onclick="pasteCodeBlock()" data-tooltip="Paste (Ctrl+V)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                </svg>
+                <span>Paste</span>
+              </button>
+              <button class="code-toolbar-btn" onclick="clearCodeBlock()" data-tooltip="Clear">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                </svg>
+                <span>Clear</span>
+              </button>
+            </div>
+            <div class="code-toolbar-right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="language-icon">
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
+              </svg>
+              <select id="codeLanguage" class="language-select-toolbar">
+                <option value="">Plain Text</option>
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="csharp">C#</option>
+                <option value="cpp">C++</option>
+                <option value="c">C</option>
+                <option value="php">PHP</option>
+                <option value="ruby">Ruby</option>
+                <option value="go">Go</option>
+                <option value="rust">Rust</option>
+                <option value="swift">Swift</option>
+                <option value="kotlin">Kotlin</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="scss">SCSS</option>
+                <option value="json">JSON</option>
+                <option value="xml">XML</option>
+                <option value="yaml">YAML</option>
+                <option value="markdown">Markdown</option>
+                <option value="bash">Bash</option>
+                <option value="shell">Shell</option>
+                <option value="powershell">PowerShell</option>
+                <option value="sql">SQL</option>
+                <option value="r">R</option>
+                <option value="matlab">MATLAB</option>
+                <option value="latex">LaTeX</option>
+              </select>
+            </div>
+          </div>
+          <div class="code-editor-container">
+            <div class="code-line-numbers" id="codeLineNumbers">1</div>
+            <textarea id="codeContent" class="code-editor-with-lines" placeholder="Enter your code here..." oninput="updateCodeLineNumbers()" onscroll="syncCodeScroll()"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal('codeBlockModal')">Cancel</button>
+          <button class="btn btn-primary" onclick="insertCodeBlock()">Add Code Block</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cloudflare Web Analytics -->
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e9cd556fb46f4880a8842d37e2dfe3fb"}'></script>
+    <!-- End Cloudflare Web Analytics -->
+  </body>
+</html>
