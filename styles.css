@@ -73,7 +73,7 @@ body {
 .app {
   height: 100vh;
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 280px 1fr;
   gap: 16px;
   padding: 16px;
   position: relative;
@@ -1191,4 +1191,3 @@ input:focus-visible {
 * {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
-
