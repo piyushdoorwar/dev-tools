@@ -2,6 +2,17 @@ const BASE = "./tools/";
 const PRELOAD_ON_HOVER = true;
 const PRELOAD_DELAY_MS = 160;
 const PINNED_TOOLS_KEY = "devtools:pinned-tools";
+const RECENT_TOOLS_KEY = "devtools:recent-tools";
+const RECENT_TOOLS_LIMIT = 5;
+const QUICK_LAUNCH_TOOL_IDS = [
+  "markdown-editor",
+  "jwt-debugger",
+  "json-diff",
+  "html-preview",
+  "id-generator",
+  "base-converter",
+];
+const NEW_TOOL_IDS = new Set(["base-converter", "json-toon-converter", "toon-json-converter"]);
 
 // NOTE: Assumption: each tool lives at `${BASE}${id}/` and exposes `${BASE}${id}/favicon.svg`.
 // If any URL differs, just edit it here.
@@ -117,6 +128,7 @@ const els = {
   frameLoader: document.getElementById("frameLoader"),
   sidebar: document.getElementById("sidebar"),
   app: document.getElementById("app"),
+  brandHome: document.getElementById("brandHome"),
   collapseBtn: document.getElementById("collapseBtn"),
   expandBtn: document.getElementById("expandBtn"),
   version: document.getElementById("appVersion"),
@@ -126,6 +138,8 @@ const els = {
   commandPalette: document.getElementById("commandPalette"),
   commandPaletteInput: document.getElementById("commandPaletteInput"),
   commandPaletteList: document.getElementById("commandPaletteList"),
+  recentTools: document.getElementById("recentTools"),
+  quickLaunchTools: document.getElementById("quickLaunchTools"),
 };
 
 let activeToolId = null;
@@ -136,6 +150,7 @@ let pendingPreloadId = null;
 let loaderInterval = null;
 let loaderStart = 0;
 let pinnedToolIds = loadPinnedToolIds();
+let recentToolIds = loadRecentToolIds();
 let commandPaletteResults = [];
 let commandPaletteIndex = 0;
 const commandPaletteShortcut = /Mac|iPhone|iPad|iPod/.test(navigator.platform) ? "⌘K" : "Ctrl K";
@@ -155,6 +170,28 @@ function savePinnedToolIds() {
   localStorage.setItem(PINNED_TOOLS_KEY, JSON.stringify(pinnedToolIds));
 }
 
+function loadRecentToolIds() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(RECENT_TOOLS_KEY) || "[]");
+    if (!Array.isArray(parsed)) return [];
+    const validIds = new Set(TOOLS.map((tool) => tool.id));
+    return parsed.filter((id) => validIds.has(id)).slice(0, RECENT_TOOLS_LIMIT);
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentToolIds() {
+  localStorage.setItem(RECENT_TOOLS_KEY, JSON.stringify(recentToolIds));
+}
+
+function rememberRecentTool(toolId) {
+  if (!toolId) return;
+  recentToolIds = [toolId, ...recentToolIds.filter((id) => id !== toolId)].slice(0, RECENT_TOOLS_LIMIT);
+  saveRecentToolIds();
+  renderWelcomeTools();
+}
+
 function isPinned(toolId) {
   return pinnedToolIds.includes(toolId);
 }
@@ -167,6 +204,7 @@ function togglePinnedTool(toolId) {
   }
   savePinnedToolIds();
   applySearch();
+  renderWelcomeTools();
 }
 
 function showLoader(tool) {
@@ -291,6 +329,90 @@ function getMatchingTools(query) {
   });
 }
 
+function getToolById(toolId) {
+  return TOOLS.find((tool) => tool.id === toolId);
+}
+
+function createWelcomeToolButton(tool, options = {}) {
+  const button = document.createElement("button");
+  button.className = "empty__feature";
+  button.type = "button";
+  button.dataset.toolId = tool.id;
+
+  const icon = document.createElement("span");
+  icon.className = "empty__feature-icon";
+  const img = document.createElement("img");
+  img.src = tool.faviconUrl;
+  img.alt = "";
+  img.onerror = () => {
+    img.remove();
+    icon.textContent = tool.name.slice(0, 2).toUpperCase();
+  };
+  icon.appendChild(img);
+
+  const copy = document.createElement("span");
+  copy.className = "empty__feature-copy";
+
+  const name = document.createElement("span");
+  name.className = "empty__feature-name";
+  name.textContent = tool.name;
+  copy.appendChild(name);
+
+  if (options.meta) {
+    const meta = document.createElement("span");
+    meta.className = "empty__feature-meta";
+    meta.textContent = options.meta;
+    copy.appendChild(meta);
+  }
+
+  if (options.badge) {
+    button.classList.add("has-badge");
+    const badge = document.createElement("span");
+    badge.className = "empty__feature-badge";
+    badge.textContent = options.badge;
+    button.appendChild(badge);
+  }
+
+  button.appendChild(icon);
+  button.appendChild(copy);
+  button.addEventListener("click", () => setActive(tool));
+  button.addEventListener("mouseenter", () => schedulePreload(tool));
+  button.addEventListener("focus", () => schedulePreload(tool));
+  return button;
+}
+
+function renderWelcomeTools() {
+  if (els.quickLaunchTools) {
+    els.quickLaunchTools.innerHTML = "";
+    QUICK_LAUNCH_TOOL_IDS.map(getToolById).filter(Boolean).forEach((tool) => {
+      const badge = NEW_TOOL_IDS.has(tool.id) ? "New" : isPinned(tool.id) ? "Pinned" : "";
+      els.quickLaunchTools.appendChild(createWelcomeToolButton(tool, {
+        meta: tool.id,
+        badge,
+      }));
+    });
+  }
+
+  if (!els.recentTools) return;
+  els.recentTools.innerHTML = "";
+  const recentTools = recentToolIds.map(getToolById).filter(Boolean);
+
+  if (recentTools.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty__recent-empty";
+    empty.textContent = "Open a tool once and it will stay ready here.";
+    els.recentTools.appendChild(empty);
+    return;
+  }
+
+  recentTools.forEach((tool) => {
+    els.recentTools.appendChild(createWelcomeToolButton(tool, {
+      meta: "Recent",
+      badge: isPinned(tool.id) ? "Pinned" : "",
+    }));
+  });
+}
+
 // Convert tool name to URL-friendly format
 function toolNameToRoute(name) {
   return name.toLowerCase().replace(/\s+/g, "-");
@@ -355,6 +477,7 @@ function setActive(tool, updateHistory = true) {
   } else {
     showLoader(tool);
   }
+  rememberRecentTool(tool.id);
 
   // Update URL
   if (updateHistory) {
@@ -371,6 +494,7 @@ function toggleSidebar() {
 
 els.collapseBtn.addEventListener("click", toggleSidebar);
 els.expandBtn.addEventListener("click", toggleSidebar);
+els.brandHome.addEventListener("click", () => setActive(null));
 
 // Support Modal
 function openSupportModal() {
@@ -698,6 +822,7 @@ function applySearch() {
 
 // Init
 syncCommandShortcutLabels();
+renderWelcomeTools();
 renderList(TOOLS, { showPinnedSection: true });
 
 // Load tool from URL on page load
