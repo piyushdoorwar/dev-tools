@@ -1,4 +1,4 @@
-const BASE = "https://piyushdoorwar.github.io/";
+const BASE = "./tools/";
 const PRELOAD_ON_HOVER = true;
 const PRELOAD_DELAY_MS = 160;
 
