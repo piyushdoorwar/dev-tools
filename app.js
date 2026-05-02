@@ -123,6 +123,9 @@ const els = {
   supportBtn: document.getElementById("supportBtn"),
   supportModal: document.getElementById("supportModal"),
   modalClose: document.getElementById("modalClose"),
+  commandPalette: document.getElementById("commandPalette"),
+  commandPaletteInput: document.getElementById("commandPaletteInput"),
+  commandPaletteList: document.getElementById("commandPaletteList"),
 };
 
 let activeToolId = null;
@@ -133,6 +136,9 @@ let pendingPreloadId = null;
 let loaderInterval = null;
 let loaderStart = 0;
 let pinnedToolIds = loadPinnedToolIds();
+let commandPaletteResults = [];
+let commandPaletteIndex = 0;
+const commandPaletteShortcut = /Mac|iPhone|iPad|iPod/.test(navigator.platform) ? "⌘K" : "Ctrl K";
 
 function loadPinnedToolIds() {
   try {
@@ -271,6 +277,20 @@ function normalize(text) {
   return _.toLower(_.trim(text || ""));
 }
 
+function getMatchingTools(query) {
+  const q = normalize(query);
+  const source = [...pinnedToolIds.map((id) => TOOLS.find((tool) => tool.id === id)).filter(Boolean)];
+  const pinnedSet = new Set(source.map((tool) => tool.id));
+  source.push(...TOOLS.filter((tool) => !pinnedSet.has(tool.id)));
+
+  if (!q) return source;
+
+  return source.filter((tool) => {
+    const hay = `${tool.name} ${tool.id} ${tool.url}`.toLowerCase();
+    return _.includes(hay, q);
+  });
+}
+
 // Convert tool name to URL-friendly format
 function toolNameToRoute(name) {
   return name.toLowerCase().replace(/\s+/g, "-");
@@ -378,6 +398,179 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && els.supportModal.getAttribute("aria-hidden") === "false") {
     closeSupportModal();
   }
+});
+
+function renderCommandPalette() {
+  const query = els.commandPaletteInput.value;
+  commandPaletteResults = getMatchingTools(query);
+  commandPaletteIndex = Math.min(commandPaletteIndex, Math.max(0, commandPaletteResults.length - 1));
+  els.commandPaletteList.innerHTML = "";
+
+  const appendSection = (title, tools) => {
+    if (tools.length === 0) return;
+
+    const sectionTitle = document.createElement("li");
+    sectionTitle.className = "command-palette__section-title";
+    sectionTitle.textContent = title;
+    els.commandPaletteList.appendChild(sectionTitle);
+
+    for (const tool of tools) {
+      const index = commandPaletteResults.findIndex((result) => result.id === tool.id);
+      els.commandPaletteList.appendChild(createCommandPaletteItem(tool, index));
+    }
+  };
+
+  const pinnedSet = new Set(pinnedToolIds);
+  const pinnedResults = commandPaletteResults.filter((tool) => pinnedSet.has(tool.id));
+  const regularResults = commandPaletteResults.filter((tool) => !pinnedSet.has(tool.id));
+
+  appendSection("Pinned", pinnedResults);
+  appendSection(pinnedResults.length > 0 ? "All tools" : "Open tool", regularResults);
+
+  if (commandPaletteResults.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "command-palette__empty";
+    empty.textContent = "No matching tools.";
+    els.commandPaletteList.appendChild(empty);
+  }
+}
+
+function createCommandPaletteItem(tool, index) {
+  const item = document.createElement("li");
+  item.className = "command-palette__item";
+  item.dataset.index = String(index);
+  item.dataset.toolId = tool.id;
+  item.setAttribute("role", "option");
+  item.setAttribute("aria-selected", String(index === commandPaletteIndex));
+
+  const icon = document.createElement("span");
+  icon.className = "command-palette__item-icon";
+  const img = document.createElement("img");
+  img.alt = "";
+  img.src = tool.faviconUrl;
+  img.onerror = () => img.remove();
+  icon.appendChild(img);
+
+  const label = document.createElement("span");
+  label.className = "command-palette__item-label";
+
+  const name = document.createElement("span");
+  name.className = "command-palette__item-name";
+  name.textContent = tool.name;
+
+  const meta = document.createElement("span");
+  meta.className = "command-palette__item-meta";
+  meta.textContent = isPinned(tool.id) ? "Pinned" : tool.id;
+
+  label.appendChild(name);
+  label.appendChild(meta);
+
+  item.appendChild(icon);
+  item.appendChild(label);
+  item.addEventListener("click", () => openCommandPaletteTool(index));
+  item.addEventListener("mouseenter", () => {
+    commandPaletteIndex = index;
+    updateCommandPaletteSelection();
+  });
+  return item;
+}
+
+function updateCommandPaletteSelection() {
+  const items = els.commandPaletteList.querySelectorAll(".command-palette__item");
+  items.forEach((item, index) => {
+    const selected = index === commandPaletteIndex;
+    item.setAttribute("aria-selected", String(selected));
+    if (selected) item.scrollIntoView({ block: "nearest" });
+  });
+}
+
+function syncCommandShortcutLabels() {
+  document.querySelectorAll("[data-command-shortcut]").forEach((label) => {
+    label.textContent = commandPaletteShortcut;
+  });
+}
+
+function openCommandPalette() {
+  els.commandPalette.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  commandPaletteIndex = 0;
+  els.commandPaletteInput.value = "";
+  syncCommandShortcutLabels();
+  renderCommandPalette();
+  requestAnimationFrame(() => els.commandPaletteInput.focus());
+}
+
+function closeCommandPalette() {
+  els.commandPalette.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+function toggleCommandPalette() {
+  if (els.commandPalette.getAttribute("aria-hidden") === "false") {
+    closeCommandPalette();
+  } else {
+    openCommandPalette();
+  }
+}
+
+function openCommandPaletteTool(index = commandPaletteIndex) {
+  const tool = commandPaletteResults[index];
+  if (!tool) return;
+  closeCommandPalette();
+  setActive(tool);
+}
+
+els.commandPalette.addEventListener("click", (event) => {
+  if (event.target === els.commandPalette) {
+    closeCommandPalette();
+  }
+});
+
+els.commandPaletteInput.addEventListener("input", () => {
+  commandPaletteIndex = 0;
+  renderCommandPalette();
+});
+
+els.commandPaletteInput.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    if (commandPaletteResults.length === 0) return;
+    commandPaletteIndex = Math.min(commandPaletteIndex + 1, commandPaletteResults.length - 1);
+    updateCommandPaletteSelection();
+    return;
+  }
+
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    if (commandPaletteResults.length === 0) return;
+    commandPaletteIndex = Math.max(commandPaletteIndex - 1, 0);
+    updateCommandPaletteSelection();
+    return;
+  }
+
+  if (event.key === "Enter") {
+    event.preventDefault();
+    openCommandPaletteTool();
+    return;
+  }
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeCommandPalette();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && els.commandPalette.getAttribute("aria-hidden") === "false") {
+    event.preventDefault();
+    closeCommandPalette();
+    return;
+  }
+
+  const isCommandK = event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey);
+  if (!isCommandK) return;
+  event.preventDefault();
+  toggleCommandPalette();
 });
 
 function createToolListItem(tool) {
@@ -504,6 +697,7 @@ function applySearch() {
 }
 
 // Init
+syncCommandShortcutLabels();
 renderList(TOOLS, { showPinnedSection: true });
 
 // Load tool from URL on page load

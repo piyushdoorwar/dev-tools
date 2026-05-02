@@ -125,6 +125,39 @@
         </div>
       </div>
 
+      <div class="command-palette" id="commandPalette" aria-hidden="true">
+        <div class="command-palette__panel" role="dialog" aria-modal="true" aria-labelledby="commandPaletteTitle">
+          <div class="command-palette__header">
+            <div class="command-palette__icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </div>
+            <input
+              id="commandPaletteInput"
+              class="command-palette__input"
+              type="search"
+              placeholder="Search tools..."
+              autocomplete="off"
+              spellcheck="false"
+              aria-labelledby="commandPaletteTitle"
+              aria-controls="commandPaletteList"
+            />
+            <kbd class="command-palette__key">Esc</kbd>
+          </div>
+          <div class="command-palette__body">
+            <h2 id="commandPaletteTitle" class="command-palette__title">Open tool</h2>
+            <ul class="command-palette__list" id="commandPaletteList" role="listbox"></ul>
+          </div>
+          <div class="command-palette__footer" aria-hidden="true">
+            <span>↑↓ Navigate</span>
+            <span>Enter Open</span>
+            <span><span data-command-shortcut>⌘K</span> Toggle</span>
+          </div>
+        </div>
+      </div>
+
       <main class="main" aria-label="Tool content">
         <section class="main__content" aria-label="Iframe panel">
           <div class="empty" id="emptyState">
@@ -203,7 +236,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 18l6-6-6-6"></path>
                 </svg>
-                <span>Select a tool from the sidebar to get started</span>
+                <span>Select a tool from the sidebar or press <kbd data-command-shortcut>⌘K</kbd> to search</span>
               </div>
             </div>
           </div>
