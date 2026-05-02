@@ -1,6 +1,7 @@
 const BASE = "./tools/";
 const PRELOAD_ON_HOVER = true;
 const PRELOAD_DELAY_MS = 160;
+const PINNED_TOOLS_KEY = "devtools:pinned-tools";
 
 // NOTE: Assumption: each tool lives at `${BASE}${id}/` and exposes `${BASE}${id}/favicon.svg`.
 // If any URL differs, just edit it here.
@@ -131,6 +132,36 @@ let preloadTimer = null;
 let pendingPreloadId = null;
 let loaderInterval = null;
 let loaderStart = 0;
+let pinnedToolIds = loadPinnedToolIds();
+
+function loadPinnedToolIds() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PINNED_TOOLS_KEY) || "[]");
+    if (!Array.isArray(parsed)) return [];
+    const validIds = new Set(TOOLS.map((tool) => tool.id));
+    return parsed.filter((id) => validIds.has(id));
+  } catch {
+    return [];
+  }
+}
+
+function savePinnedToolIds() {
+  localStorage.setItem(PINNED_TOOLS_KEY, JSON.stringify(pinnedToolIds));
+}
+
+function isPinned(toolId) {
+  return pinnedToolIds.includes(toolId);
+}
+
+function togglePinnedTool(toolId) {
+  if (isPinned(toolId)) {
+    pinnedToolIds = pinnedToolIds.filter((id) => id !== toolId);
+  } else {
+    pinnedToolIds = [...pinnedToolIds, toolId];
+  }
+  savePinnedToolIds();
+  applySearch();
+}
 
 function showLoader(tool) {
   if (!els.frameLoader) return;
@@ -349,50 +380,102 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-function renderList(filteredTools) {
+function createToolListItem(tool) {
+  const li = document.createElement("li");
+  li.className = "menu__row";
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "menu__item";
+  btn.dataset.toolId = tool.id;
+  btn.title = tool.name;
+  btn.setAttribute("aria-current", tool.id === activeToolId ? "true" : "false");
+
+  const icon = document.createElement("span");
+  icon.className = "menu__icon";
+  const img = document.createElement("img");
+  img.alt = "";
+  img.loading = "lazy";
+  img.src = tool.faviconUrl;
+  img.onerror = () => {
+    // If a favicon is missing, just hide the broken image
+    img.remove();
+  };
+  icon.appendChild(img);
+
+  const label = document.createElement("span");
+  label.className = "menu__label";
+
+  const name = document.createElement("span");
+  name.className = "menu__name";
+  name.textContent = tool.name;
+
+  label.appendChild(name);
+
+  const pin = document.createElement("button");
+  pin.type = "button";
+  pin.className = "menu__pin";
+  pin.dataset.toolId = tool.id;
+  pin.dataset.pinned = String(isPinned(tool.id));
+  pin.setAttribute("aria-label", isPinned(tool.id) ? `Unpin ${tool.name}` : `Pin ${tool.name}`);
+  pin.setAttribute("aria-pressed", String(isPinned(tool.id)));
+  pin.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3.75l2.52 5.11 5.64.82-4.08 3.98.96 5.62L12 16.62l-5.04 2.66.96-5.62-4.08-3.98 5.64-.82L12 3.75z"></path>
+    </svg>
+  `;
+
+  btn.appendChild(icon);
+  btn.appendChild(label);
+  btn.addEventListener("click", () => setActive(tool));
+  pin.addEventListener("click", (event) => {
+    event.stopPropagation();
+    togglePinnedTool(tool.id);
+  });
+  btn.addEventListener("mouseenter", () => schedulePreload(tool));
+  btn.addEventListener("focus", () => schedulePreload(tool));
+
+  li.appendChild(btn);
+  li.appendChild(pin);
+  return li;
+}
+
+function appendToolSection(title, tools, options = {}) {
+  if (tools.length === 0) return;
+
+  if (title) {
+    const headerLi = document.createElement("li");
+    headerLi.className = "menu__section-title";
+    headerLi.textContent = title;
+    els.list.appendChild(headerLi);
+  }
+
+  for (const tool of tools) {
+    els.list.appendChild(createToolListItem(tool));
+  }
+
+  if (options.withDivider) {
+    const divider = document.createElement("li");
+    divider.className = "menu__divider";
+    divider.setAttribute("aria-hidden", "true");
+    els.list.appendChild(divider);
+  }
+}
+
+function renderList(filteredTools, options = {}) {
   els.list.innerHTML = "";
 
-  for (const tool of filteredTools) {
-    const li = document.createElement("li");
+  const pinnedSet = new Set(pinnedToolIds);
+  const pinnedTools = pinnedToolIds
+    .map((id) => filteredTools.find((tool) => tool.id === id))
+    .filter(Boolean);
+  const regularTools = filteredTools.filter((tool) => !pinnedSet.has(tool.id));
+  const showPinnedSection = options.showPinnedSection && pinnedTools.length > 0;
 
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "menu__item";
-    btn.dataset.toolId = tool.id;
-    btn.title = tool.name;
-    btn.setAttribute("aria-current", tool.id === activeToolId ? "true" : "false");
-
-    const icon = document.createElement("span");
-    icon.className = "menu__icon";
-    const img = document.createElement("img");
-    img.alt = "";
-    img.loading = "lazy";
-    img.src = tool.faviconUrl;
-    img.onerror = () => {
-      // If a favicon is missing, just hide the broken image
-      img.remove();
-    };
-    icon.appendChild(img);
-
-    const label = document.createElement("span");
-    label.className = "menu__label";
-
-    const name = document.createElement("span");
-    name.className = "menu__name";
-    name.textContent = tool.name;
-
-    label.appendChild(name);
-
-    btn.appendChild(icon);
-    btn.appendChild(label);
-
-    btn.addEventListener("click", () => setActive(tool));
-    btn.addEventListener("mouseenter", () => schedulePreload(tool));
-    btn.addEventListener("focus", () => schedulePreload(tool));
-
-    li.appendChild(btn);
-    els.list.appendChild(li);
+  if (showPinnedSection) {
+    appendToolSection("Pinned", pinnedTools, { withDivider: regularTools.length > 0 });
   }
+  appendToolSection(showPinnedSection ? "All tools" : "", regularTools);
 
   if (filteredTools.length === 0) {
     const li = document.createElement("li");
@@ -408,7 +491,7 @@ function renderList(filteredTools) {
 function applySearch() {
   const q = normalize(els.search.value);
   if (!q) {
-    renderList(TOOLS);
+    renderList(TOOLS, { showPinnedSection: true });
     return;
   }
 
@@ -417,11 +500,11 @@ function applySearch() {
     const hay = `${t.name} ${t.id} ${t.url}`.toLowerCase();
     return _.includes(hay, q);
   });
-  renderList(filtered);
+  renderList(filtered, { showPinnedSection: true });
 }
 
 // Init
-renderList(TOOLS);
+renderList(TOOLS, { showPinnedSection: true });
 
 // Load tool from URL on page load
 function loadFromURL() {

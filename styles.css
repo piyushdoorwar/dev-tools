@@ -189,6 +189,12 @@ body {
   padding: 10px;
 }
 
+.app.sidebar-collapsed .menu__row {
+  grid-template-columns: 1fr;
+}
+
+.app.sidebar-collapsed .menu__section-title,
+.app.sidebar-collapsed .menu__divider,
 .app.sidebar-collapsed .menu__label {
   display: none;
 }
@@ -196,6 +202,10 @@ body {
 .app.sidebar-collapsed .menu__icon {
   width: 36px;
   height: 36px;
+}
+
+.app.sidebar-collapsed .menu__pin {
+  display: none;
 }
 
 .app.sidebar-collapsed .sidebar__bottom {
@@ -425,11 +435,33 @@ body {
   gap: 6px;
 }
 
+.menu__section-title {
+  padding: 10px 10px 4px;
+  color: var(--text-disabled);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.menu__divider {
+  height: 1px;
+  margin: 8px 10px;
+  background: var(--border);
+}
+
+.menu__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  gap: 4px;
+  align-items: center;
+}
+
 .menu__item {
   width: 100%;
   display: grid;
-  grid-template-columns: 36px 1fr;
-  gap: 12px;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px;
   align-items: center;
   padding: 12px 14px;
   border-radius: var(--radius-sm);
@@ -503,12 +535,56 @@ body {
 .menu__label {
   display: grid;
   gap: 2px;
+  min-width: 0;
 }
 
 .menu__name {
   font-weight: 600;
   font-size: 14px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu__pin {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-disabled);
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+
+.menu__row:hover .menu__pin,
+.menu__row:focus-within .menu__pin,
+.menu__pin[data-pinned="true"] {
+  opacity: 1;
+}
+
+.menu__pin:hover,
+.menu__pin:focus-visible {
+  background: rgba(255, 215, 0, 0.12);
+  border-color: rgba(255, 215, 0, 0.24);
+  color: var(--yellow);
+  outline: none;
+}
+
+.menu__pin[data-pinned="true"] {
+  color: var(--yellow);
+}
+
+.menu__pin svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.5;
 }
 
 .sidebar__bottom {
