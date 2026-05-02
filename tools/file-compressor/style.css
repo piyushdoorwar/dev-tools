@@ -28,12 +28,6 @@
   --shadow-yellow: 0 12px 30px rgba(255, 215, 0, 0.28);
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
 html {
   font-size: 15px;
 }

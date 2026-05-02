@@ -47,5 +47,17 @@
     modal.setAttribute("aria-hidden", "true");
   };
 
+  root.loadCloudflareAnalytics = root.loadCloudflareAnalytics || function loadCloudflareAnalytics() {
+    const token = "e9cd556fb46f4880a8842d37e2dfe3fb";
+    if (document.querySelector(`script[data-cf-beacon*="${token}"]`)) return;
+
+    const script = document.createElement("script");
+    script.defer = true;
+    script.src = "https://static.cloudflareinsights.com/beacon.min.js";
+    script.setAttribute("data-cf-beacon", JSON.stringify({ token }));
+    document.head.appendChild(script);
+  };
+
   window.DevToolsMain = root;
+  root.loadCloudflareAnalytics();
 })();

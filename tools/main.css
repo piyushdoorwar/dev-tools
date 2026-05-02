@@ -31,6 +31,19 @@
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-headline: 'Gilroy', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --purple: var(--accent-purple);
+  --purple-light: var(--accent-purple-light);
+  --purple-dark: var(--accent-purple-dark);
+  --yellow: var(--accent-yellow);
+  --yellow-dark: var(--accent-yellow-dark);
+  --yellow-light: var(--accent-yellow-light);
+  --green: var(--accent-green);
+  --pink: var(--accent-pink);
+  --blue: var(--accent-blue);
+  --bg-primary: var(--bg);
+  --bg-panel: var(--panel-bg);
+  --bg-panel-elevated: var(--panel-bg-elevated);
+  --border-default: var(--border);
 }
 
 *,
