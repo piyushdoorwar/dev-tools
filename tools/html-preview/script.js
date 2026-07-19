@@ -131,6 +131,10 @@ scriptEditor = CodeMirror.fromTextArea(document.getElementById('script'), {
   matchBrackets: true,
 });
 
+htmlEditor.getInputField().setAttribute('aria-label', 'HTML editor');
+cssEditor.getInputField().setAttribute('aria-label', 'CSS editor');
+scriptEditor.getInputField().setAttribute('aria-label', 'JavaScript editor');
+
 // Initially show html
 cssEditor.getWrapperElement().style.display = 'none';
 scriptEditor.getWrapperElement().style.display = 'none';
@@ -263,16 +267,14 @@ loadSampleBtn.addEventListener('click', () => {
   <div id="notification" class="notification"></div>
 </div>`;
 
-  const sampleCSS = `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-* {
+  const sampleCSS = `* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background: #0d0d0d;
   color: #ffffff;
   padding: 3rem 2rem;

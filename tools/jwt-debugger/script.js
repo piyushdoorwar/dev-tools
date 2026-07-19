@@ -70,18 +70,23 @@ function base64UrlEncode(str) {
     .replace(/\//g, '_');
 }
 
-function base64UrlDecode(str) {
+function base64UrlDecodeBytes(str) {
   try {
     const replaced = str.replace(/-/g, '+').replace(/_/g, '/');
     const padded = replaced.padEnd(replaced.length + ((4 - (replaced.length % 4)) % 4), '=');
     const decoded = atob(padded);
-    return decodeURIComponent(
-      decoded
-        .split('')
-        .map((c) => `%${('00' + c.charCodeAt(0).toString(16)).slice(-2)}`)
-        .join(''),
-    );
+    return Uint8Array.from(decoded, character => character.charCodeAt(0));
   } catch (err) {
+    return null;
+  }
+}
+
+function base64UrlDecode(str) {
+  const bytes = base64UrlDecodeBytes(str);
+  if (!bytes) return null;
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch (error) {
     return null;
   }
 }
@@ -100,10 +105,13 @@ async function computeSignature(data, secret, alg) {
       .replace(/=/g, '')
       .replace(/\+/g, '-')
       .replace(/\//g, '_');
-  } else if (alg === 'RS256') {
+  } else if (alg === 'RS256' || alg === 'PS256') {
     try {
-      const key = await importRsaPrivateKey(secret);
-      const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(data));
+      const key = await importRsaPrivateKey(secret, alg);
+      const signatureAlgorithm = alg === 'PS256'
+        ? { name: 'RSA-PSS', saltLength: 32 }
+        : 'RSASSA-PKCS1-v1_5';
+      const signature = await crypto.subtle.sign(signatureAlgorithm, key, new TextEncoder().encode(data));
       return btoa(String.fromCharCode(...new Uint8Array(signature)))
         .replace(/=/g, '')
         .replace(/\+/g, '-')
@@ -136,7 +144,7 @@ async function computeSignature(data, secret, alg) {
   }
 }
 
-function importRsaPrivateKey(pem) {
+function importRsaPrivateKey(pem, alg = 'RS256') {
   const pemHeader = "-----BEGIN PRIVATE KEY-----";
   const pemFooter = "-----END PRIVATE KEY-----";
   const pemContents = pem.replace(pemHeader, '').replace(pemFooter, '').replace(/\s/g, '');
@@ -149,7 +157,7 @@ function importRsaPrivateKey(pem) {
     'pkcs8',
     der,
     {
-      name: 'RSASSA-PKCS1-v1_5',
+      name: alg === 'PS256' ? 'RSA-PSS' : 'RSASSA-PKCS1-v1_5',
       hash: 'SHA-256'
     },
     false,
@@ -157,7 +165,7 @@ function importRsaPrivateKey(pem) {
   );
 }
 
-async function importRsaPublicKey(pem) {
+async function importRsaPublicKey(pem, alg = 'RS256') {
   try {
     const pemHeader = "-----BEGIN PUBLIC KEY-----";
     const pemFooter = "-----END PUBLIC KEY-----";
@@ -171,7 +179,7 @@ async function importRsaPublicKey(pem) {
       'spki',
       der,
       {
-        name: 'RSASSA-PKCS1-v1_5',
+        name: alg === 'PS256' ? 'RSA-PSS' : 'RSASSA-PKCS1-v1_5',
         hash: 'SHA-256'
       },
       false,
@@ -327,6 +335,13 @@ function updateStatus(tokenMeta) {
     statusMessage.classList.add('invalid');
     statusIcon.textContent = '!';
     statusLabel.textContent = 'Paste a complete JWT to inspect';
+    return;
+  }
+
+  if (!tokenMeta.signature) {
+    statusMessage.classList.add('invalid');
+    statusIcon.textContent = '!';
+    statusLabel.textContent = 'Unsigned token — apply a key to sign';
     return;
   }
 
@@ -516,11 +531,13 @@ function flashActionIcon(button) {
 
 document.addEventListener('DOMContentLoaded', () => {
   updateSecretSections();
+  updateDisplay(sampleToken);
+  jwtInput.value = sampleToken;
 document.querySelectorAll('[data-copy-target]').forEach((btn) => {
   btn.addEventListener('click', () => {
     const target = btn.dataset.copyTarget;
     const element = document.getElementById(target);
-    const content = element?.textContent ?? '';
+    const content = element && 'value' in element ? element.value : element?.textContent ?? '';
     copyToClipboard(content);
     if (content) {
       flashActionIcon(btn);
@@ -650,20 +667,22 @@ if (verifyBtn) {
         const secretValue = secretTextarea.value;
         const expected = await computeSignature(data, secretValue, 'HS256');
         isValid = expected === tokenMeta.signature;
-      } else if (algo === 'RS256') {
+      } else if (algo === 'RS256' || algo === 'PS256') {
         const publicKey = publicKeyTextarea.value;
-        const pubKey = await importRsaPublicKey(publicKey);
-        const signatureBytes = base64UrlDecode(tokenMeta.signature);
+        const pubKey = await importRsaPublicKey(publicKey, algo);
+        const signatureBytes = base64UrlDecodeBytes(tokenMeta.signature);
         if (signatureBytes) {
-          isValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', pubKey, signatureBytes, new TextEncoder().encode(data));
+          const signatureAlgorithm = algo === 'PS256'
+            ? { name: 'RSA-PSS', saltLength: 32 }
+            : 'RSASSA-PKCS1-v1_5';
+          isValid = await crypto.subtle.verify(signatureAlgorithm, pubKey, signatureBytes, new TextEncoder().encode(data));
         }
       } else if (algo === 'ES256') {
         const publicKey = publicKeyTextarea.value;
         const pubKey = await importEcdsaPublicKey(publicKey);
-        const signatureBytes = base64UrlDecode(tokenMeta.signature);
+        const signatureBytes = base64UrlDecodeBytes(tokenMeta.signature);
         if (signatureBytes && signatureBytes.length === 64) {
-          const derSignature = jwtEcSignatureToDer(new Uint8Array(signatureBytes));
-          isValid = await crypto.subtle.verify({ name: 'ECDSA', hash: { name: 'SHA-256' } }, pubKey, derSignature, new TextEncoder().encode(data));
+          isValid = await crypto.subtle.verify({ name: 'ECDSA', hash: { name: 'SHA-256' } }, pubKey, signatureBytes, new TextEncoder().encode(data));
         }
       }
       if (isValid) {
@@ -765,6 +784,20 @@ function updateModalFields() {
 // Unix input changes
 iatUnixInput.addEventListener('input', updateModalFields);
 expUnixInput.addEventListener('input', updateModalFields);
+iatUtcInput.addEventListener('input', () => {
+  const date = new Date(iatUtcInput.value);
+  if (!Number.isNaN(date.getTime())) {
+    iatUnixInput.value = Math.floor(date.getTime() / 1000);
+    updateModalFields();
+  }
+});
+expUtcInput.addEventListener('input', () => {
+  const date = new Date(expUtcInput.value);
+  if (!Number.isNaN(date.getTime())) {
+    expUnixInput.value = Math.floor(date.getTime() / 1000);
+    updateModalFields();
+  }
+});
 
 // Update button
 updateDatetimeBtn.addEventListener('click', async () => {
@@ -776,8 +809,8 @@ updateDatetimeBtn.addEventListener('click', async () => {
     if (!isNaN(iat)) newPayload.iat = iat;
     if (!isNaN(exp)) newPayload.exp = exp;
     payloadJson.textContent = JSON.stringify(newPayload, null, 2);
-    // Trigger the update
-    await updateJwt();
+    payloadJson.dispatchEvent(new Event('input'));
+    if (secret) await updateJwt();
     datetimeModal.style.display = 'none';
   }
 });
@@ -793,7 +826,10 @@ algoSelect.addEventListener('change', async () => {
     const newHeaderEncoded = base64UrlEncode(JSON.stringify(newHeader));
     const payloadEncoded = base64UrlEncode(JSON.stringify(tokenMeta.payload));
     const data = `${newHeaderEncoded}.${payloadEncoded}`;
-    const newSignature = await computeSignature(data, secret);
+    const keyValue = algoSelect.value === 'HS256' ? secretTextarea.value : privateKeyTextarea.value;
+    const newSignature = keyValue
+      ? await computeSignature(data, keyValue, algoSelect.value)
+      : '';
     const newToken = `${data}.${newSignature}`;
     jwtInput.value = newToken;
     updateStatus(parseJwt(newToken));
@@ -824,100 +860,4 @@ pasteBtn.addEventListener('click', async () => {
   }
 });
 
-// unixInput.addEventListener('input', () => {
-//   updateTimePanel(unixInput.value);
-// });
-
-window.addEventListener('DOMContentLoaded', () => {
-  updateDisplay(sampleToken);
-  jwtInput.value = sampleToken;
-
-  // Eye button listeners
-  if (!window.eyeListenerAttached) {
-    document.querySelectorAll('.eye-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const tokenMeta = parseJwt(jwtInput.value.trim());
-        if (tokenMeta && tokenMeta.payload) {
-          const iat = tokenMeta.payload.iat || Math.floor(Date.now() / 1000);
-          const exp = tokenMeta.payload.exp || Math.floor(Date.now() / 1000) + 3600;
-          iatUnixInput.value = iat;
-          expUnixInput.value = exp;
-          updateModalFields();
-          datetimeModal.style.display = 'flex';
-        }
-      });
-    });
-    window.eyeListenerAttached = true;
-  }
-
-  // Close modal
-  if (!window.closeListenerAttached) {
-    closeModal.addEventListener('click', () => {
-      datetimeModal.style.display = 'none';
-    });
-    window.closeListenerAttached = true;
-  }
-
-  if (!window.windowClickAttached) {
-    window.addEventListener('click', (event) => {
-      if (event.target === datetimeModal) {
-        datetimeModal.style.display = 'none';
-      }
-    });
-    window.windowClickAttached = true;
-  }
-
-  // Unix input changes
-  if (!window.iatsInputAttached) {
-    iatUnixInput.addEventListener('input', updateModalFields);
-    window.iatsInputAttached = true;
-  }
-  if (!window.expInputAttached) {
-    expUnixInput.addEventListener('input', updateModalFields);
-    window.expInputAttached = true;
-  }
-
-  // UTC input changes
-  if (!window.iatUtcAttached) {
-    iatUtcInput.addEventListener('input', () => {
-      const date = new Date(iatUtcInput.value);
-      if (!isNaN(date.getTime())) {
-        const unix = Math.floor(date.getTime() / 1000);
-        iatUnixInput.value = unix;
-        updateModalFields();
-      }
-    });
-    window.iatUtcAttached = true;
-  }
-  if (!window.expUtcAttached) {
-    expUtcInput.addEventListener('input', () => {
-      const date = new Date(expUtcInput.value);
-      if (!isNaN(date.getTime())) {
-        const unix = Math.floor(date.getTime() / 1000);
-        expUnixInput.value = unix;
-        updateModalFields();
-      }
-    });
-    window.expUtcAttached = true;
-  }
-
-  // Update button
-  if (!window.updateBtnAttached) {
-    updateDatetimeBtn.addEventListener('click', () => {
-      const iat = parseInt(iatUnixInput.value, 10);
-      const exp = parseInt(expUnixInput.value, 10);
-      const tokenMeta = parseJwt(jwtInput.value.trim());
-      if (tokenMeta) {
-        const newPayload = { ...tokenMeta.payload };
-        if (!isNaN(iat)) newPayload.iat = iat;
-        if (!isNaN(exp)) newPayload.exp = exp;
-        payloadJson.textContent = JSON.stringify(newPayload, null, 2);
-        // Trigger the input listener to update JWT
-        payloadJson.dispatchEvent(new Event('input'));
-        datetimeModal.style.display = 'none';
-      }
-    });
-    window.updateBtnAttached = true;
-  }
-});
 });

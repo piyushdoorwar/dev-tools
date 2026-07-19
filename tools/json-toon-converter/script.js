@@ -555,276 +555,239 @@ function countTokens(str) {
 
 // JSON to Toon Converter
 function jsonToToon(obj, indentSpaces = 2, delimiter = '|') {
-    let result = '';
-    const indentStr = indentSpaces === 0 ? '' : ' '.repeat(indentSpaces);
-    
-    function needsQuotes(key) {
-        // Quote numeric keys and keys that start with numbers
-        return /^\d/.test(key);
+    const lines = [];
+    const indentStr = indentSpaces > 0 ? ' '.repeat(indentSpaces) : '';
+
+    function formatKey(key) {
+        const value = String(key);
+        return /^[A-Za-z_][A-Za-z0-9_.-]*$/.test(value) ? value : JSON.stringify(value);
     }
-    
+
     function formatValue(value) {
-        if (typeof value === 'string') {
-            // Quote strings that look like numbers or zip codes
-            if (/^\d+$/.test(value)) {
-                return `"${value}"`;
-            }
-            return value;
-        }
-        return value;
+        if (typeof value === 'string') return JSON.stringify(value);
+        if (typeof value === 'number') return Number.isFinite(value) ? String(value) : 'null';
+        if (value === null || typeof value === 'boolean') return String(value);
+        return JSON.stringify(value);
     }
-    
-    function getObjectSchema(arr) {
-        // Check if all items in array have the same keys
-        if (arr.length === 0) return null;
-        if (typeof arr[0] !== 'object' || arr[0] === null || Array.isArray(arr[0])) return null;
-        
-        const firstKeys = Object.keys(arr[0]).sort();
-        const allSame = arr.every(item => {
-            if (typeof item !== 'object' || item === null || Array.isArray(item)) return false;
-            const keys = Object.keys(item).sort();
-            return JSON.stringify(keys) === JSON.stringify(firstKeys);
+
+    function getObjectSchema(array) {
+        if (array.length === 0 || !array.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
+            return null;
+        }
+        const keys = Object.keys(array[0]).sort();
+        const safeFields = keys.every(key => /^[A-Za-z_][A-Za-z0-9_.-]*$/.test(key) && !key.includes(delimiter));
+        const samePrimitiveFields = safeFields && array.every(item => {
+            const itemKeys = Object.keys(item).sort();
+            return JSON.stringify(itemKeys) === JSON.stringify(keys) && keys.every(key => {
+                const value = item[key];
+                return value === null || typeof value !== 'object';
+            });
         });
-        
-        return allSame ? firstKeys : null;
+        return samePrimitiveFields ? keys : null;
     }
-    
-    function convert(obj, key = '', level = 0) {
+
+    function convert(value, key, level) {
         const indent = indentStr.repeat(level);
-        
-        if (obj === null) {
-            const keyStr = needsQuotes(key) ? `"${key}"` : key;
-            result += `${indent}${keyStr}: null\n`;
+        const keyText = formatKey(key);
+
+        if (indentSpaces === 0 && value !== null && typeof value === 'object') {
+            lines.push(`${keyText}: ${JSON.stringify(value)}`);
             return;
         }
-        
-        if (typeof obj === 'boolean' || typeof obj === 'number' || typeof obj === 'string') {
-            const keyStr = needsQuotes(key) ? `"${key}"` : key;
-            const value = formatValue(obj);
-            result += `${indent}${keyStr}: ${value}\n`;
-            return;
-        }
-        
-        if (Array.isArray(obj)) {
-            const schema = getObjectSchema(obj);
-            
+
+        if (Array.isArray(value)) {
+            const schema = getObjectSchema(value);
             if (schema) {
-                // Array of objects with same schema - use compact format
-                result += `${indent}${key}[${obj.length}]{${schema.join(delimiter)}}:\n`;
-                obj.forEach(item => {
-                    const values = schema.map(k => formatValue(item[k]));
-                    result += `${indent}${indentStr}${values.join(delimiter)}\n`;
+                lines.push(`${indent}${keyText}[${value.length}]{${schema.join(delimiter)}}:`);
+                value.forEach(item => {
+                    lines.push(`${indent}${indentStr}${schema.map(field => formatValue(item[field])).join(delimiter)}`);
                 });
-            } else {
-                // Regular array or mixed array
-                result += `${indent}${key}[${obj.length}]:\n`;
-                obj.forEach(item => {
-                    if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
-                        result += `${indent}${indentStr}- `;
-                        const beforeDash = result.length;
-                        for (let k in item) {
-                            convert(item[k], k, level + 1);
-                        }
-                    } else if (Array.isArray(item)) {
-                        result += `${indent}${indentStr}- `;
-                        convert(item, 'item', level + 1);
-                    } else {
-                        result += `${indent}${indentStr}- ${formatValue(item)}\n`;
-                    }
-                });
+                return;
             }
+
+            lines.push(`${indent}${keyText}[${value.length}]:`);
+            value.forEach(item => {
+                lines.push(`${indent}${indentStr}- ${formatValue(item)}`);
+            });
             return;
         }
-        
-        if (typeof obj === 'object') {
-            if (key) {
-                result += `${indent}${key}:\n`;
-            }
-            for (let k in obj) {
-                convert(obj[k], k, level + (key ? 1 : 0));
-            }
+
+        if (value && typeof value === 'object') {
+            lines.push(`${indent}${keyText}:`);
+            Object.entries(value).forEach(([childKey, childValue]) => {
+                convert(childValue, childKey, level + 1);
+            });
             return;
         }
+
+        lines.push(`${indent}${keyText}: ${formatValue(value)}`);
     }
-    
-    // Get the root key or use the first key
-    const keys = Object.keys(obj);
-    if (keys.length === 1) {
-        convert(obj[keys[0]], keys[0], 0);
+
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        Object.entries(obj).forEach(([key, value]) => convert(value, key, 0));
     } else {
-        for (let key of keys) {
-            convert(obj[key], key, 0);
-        }
+        convert(obj, '@root', 0);
     }
-    
-    return result.trim();
+
+    return lines.join('\n');
 }
 
 // Toon to JSON Converter
 function toonToJSON(toonString) {
-    const lines = toonString.split('\n').filter(line => line.trim());
-    let result = {};
-    let i = 0;
-    
+    const delimiter = currentDelimiter.replace('\\t', '\t');
+    const indentWidth = Math.max(currentIndent, 2);
+    const lines = toonString
+        .split('\n')
+        .filter(line => line.trim())
+        .map(line => {
+            const whitespace = line.match(/^\s*/)[0].replace(/\t/g, ' '.repeat(indentWidth));
+            return { indent: whitespace.length, content: line.trim() };
+        });
+
     function parseValue(value) {
         value = value.trim();
-        
-        // Handle quoted strings
-        if ((value.startsWith('"') && value.endsWith('"')) || 
-            (value.startsWith("'") && value.endsWith("'"))) {
-            return value.slice(1, -1);
+        if (!value) return '';
+        if (value.startsWith('"') || value.startsWith('{') || value.startsWith('[')) {
+            try {
+                return JSON.parse(value);
+            } catch (error) {
+                throw new Error(`Invalid encoded value: ${value}`);
+            }
         }
-        
         if (value === 'true') return true;
         if (value === 'false') return false;
         if (value === 'null') return null;
-        if (/^-?\d+$/.test(value)) return parseInt(value, 10);
-        if (/^-?\d+\.\d+$/.test(value)) return parseFloat(value);
+        if (/^-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(value)) return Number(value);
         return value;
     }
-    
-    function parseLine(line) {
-        line = line.trim();
-        
-        // Check for array with schema: key[count]{field1|field2}:
-        const schemaMatch = line.match(/^("?[^"\[]+"?)\[(\d+)\]\{([^}]+)\}:$/);
-        if (schemaMatch) {
-            const key = schemaMatch[1].replace(/^"|"$/g, '');
-            const count = parseInt(schemaMatch[2]);
-            const fields = schemaMatch[3].split('|');
-            return { type: 'array-schema', key, count, fields };
-        }
-        
-        // Check for array: key[count]:
-        const arrayMatch = line.match(/^("?[^"\[]+"?)\[(\d+)\]:$/);
-        if (arrayMatch) {
-            const key = arrayMatch[1].replace(/^"|"$/g, '');
-            const count = parseInt(arrayMatch[2]);
-            return { type: 'array', key, count };
-        }
-        
-        // Check for object: key:
-        if (line.endsWith(':')) {
-            const key = line.slice(0, -1).replace(/^"|"$/g, '');
-            return { type: 'object', key };
-        }
-        
-        // Check for array item: - value or - key: value
-        if (line.startsWith('- ')) {
-            const content = line.substring(2).trim();
-            if (content.includes(':')) {
-                const colonIndex = content.indexOf(':');
-                const key = content.substring(0, colonIndex).trim().replace(/^"|"$/g, '');
-                const value = content.substring(colonIndex + 1).trim();
-                return { type: 'array-item-kv', key, value };
-            }
-            return { type: 'array-item', value: content };
-        }
-        
-        // Key-value pair: key: value
-        if (line.includes(':')) {
-            const colonIndex = line.indexOf(':');
-            const key = line.substring(0, colonIndex).trim().replace(/^"|"$/g, '');
-            const value = line.substring(colonIndex + 1).trim();
-            return { type: 'keyvalue', key, value };
-        }
-        
-        return { type: 'unknown', line };
+
+    function parseKey(value) {
+        const key = value.trim();
+        if (key.startsWith('"')) return JSON.parse(key);
+        return key;
     }
-    
-    function buildStructure() {
-        const root = {};
-        
-        while (i < lines.length) {
-            const parsed = parseLine(lines[i]);
-            
-            if (parsed.type === 'keyvalue') {
-                root[parsed.key] = parseValue(parsed.value);
-                i++;
-            } else if (parsed.type === 'object') {
-                i++;
-                const obj = {};
-                
-                while (i < lines.length) {
-                    const next = parseLine(lines[i]);
-                    
-                    if (next.type === 'object' || next.type === 'array' || next.type === 'array-schema') {
-                        // Nested object or array
-                        const nested = buildStructure();
-                        Object.assign(obj, nested);
-                        break;
-                    } else if (next.type === 'keyvalue') {
-                        obj[next.key] = parseValue(next.value);
-                        i++;
-                    } else {
-                        break;
+
+    function splitDelimitedRow(row) {
+        const parts = [];
+        let current = '';
+        let quote = false;
+        let escaped = false;
+        for (const char of row) {
+            if (escaped) {
+                current += char;
+                escaped = false;
+                continue;
+            }
+            if (char === '\\' && quote) {
+                current += char;
+                escaped = true;
+                continue;
+            }
+            if (char === '"') {
+                current += char;
+                quote = !quote;
+                continue;
+            }
+            if (char === delimiter && !quote) {
+                parts.push(current);
+                current = '';
+                continue;
+            }
+            current += char;
+        }
+        parts.push(current);
+        return parts;
+    }
+
+    function findValueColon(content) {
+        let quote = false;
+        let escaped = false;
+        for (let index = 0; index < content.length; index++) {
+            const char = content[index];
+            if (escaped) {
+                escaped = false;
+            } else if (char === '\\' && quote) {
+                escaped = true;
+            } else if (char === '"') {
+                quote = !quote;
+            } else if (char === ':' && !quote) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    function parseBlock(startIndex, indent) {
+        const output = {};
+        let index = startIndex;
+
+        while (index < lines.length && lines[index].indent === indent) {
+            const content = lines[index].content;
+            const schemaMatch = content.match(/^(.+?)\[(\d+)\]\{(.+)\}:$/);
+            const arrayMatch = content.match(/^(.+?)\[(\d+)\]:$/);
+
+            if (schemaMatch) {
+                const key = parseKey(schemaMatch[1]);
+                const count = Number(schemaMatch[2]);
+                const fields = schemaMatch[3].split(delimiter).map(field => field.trim());
+                const array = [];
+                index += 1;
+                for (let rowIndex = 0; rowIndex < count; rowIndex++) {
+                    if (index >= lines.length || lines[index].indent <= indent) {
+                        throw new Error(`Expected ${count} rows for ${key}`);
                     }
-                }
-                
-                root[parsed.key] = obj;
-            } else if (parsed.type === 'array-schema') {
-                i++;
-                const arr = [];
-                
-                for (let j = 0; j < parsed.count; j++) {
-                    if (i >= lines.length) break;
-                    const line = lines[i].trim();
-                    const values = line.split(parsed.fields.length > 1 ? '|' : ',');
-                    const item = {};
-                    
-                    parsed.fields.forEach((field, idx) => {
-                        if (idx < values.length) {
-                            item[field.trim()] = parseValue(values[idx]);
-                        }
-                    });
-                    
-                    arr.push(item);
-                    i++;
-                }
-                
-                root[parsed.key] = arr;
-            } else if (parsed.type === 'array') {
-                i++;
-                const arr = [];
-                
-                while (i < lines.length) {
-                    const next = parseLine(lines[i]);
-                    
-                    if (next.type === 'array-item') {
-                        arr.push(parseValue(next.value));
-                        i++;
-                    } else if (next.type === 'array-item-kv') {
-                        const obj = {};
-                        obj[next.key] = parseValue(next.value);
-                        
-                        // Check for more properties of this object
-                        i++;
-                        while (i < lines.length) {
-                            const nextKV = parseLine(lines[i]);
-                            if (nextKV.type === 'keyvalue') {
-                                obj[nextKV.key] = parseValue(nextKV.value);
-                                i++;
-                            } else {
-                                break;
-                            }
-                        }
-                        
-                        arr.push(obj);
-                    } else {
-                        break;
+                    const values = splitDelimitedRow(lines[index].content);
+                    if (values.length !== fields.length) {
+                        throw new Error(`Expected ${fields.length} values for ${key}`);
                     }
+                    array.push(Object.fromEntries(fields.map((field, fieldIndex) => [field, parseValue(values[fieldIndex])])));
+                    index += 1;
                 }
-                
-                root[parsed.key] = arr;
+                output[key] = array;
+                continue;
+            }
+
+            if (arrayMatch) {
+                const key = parseKey(arrayMatch[1]);
+                const count = Number(arrayMatch[2]);
+                const array = [];
+                index += 1;
+                for (let itemIndex = 0; itemIndex < count; itemIndex++) {
+                    if (index >= lines.length || lines[index].indent <= indent || !lines[index].content.startsWith('- ')) {
+                        throw new Error(`Expected ${count} array items for ${key}`);
+                    }
+                    array.push(parseValue(lines[index].content.slice(2)));
+                    index += 1;
+                }
+                output[key] = array;
+                continue;
+            }
+
+            const colonIndex = findValueColon(content);
+            if (colonIndex < 0) throw new Error(`Invalid Toon line: ${content}`);
+            const key = parseKey(content.slice(0, colonIndex));
+            const rawValue = content.slice(colonIndex + 1).trim();
+            index += 1;
+
+            if (rawValue) {
+                output[key] = parseValue(rawValue);
+            } else if (index < lines.length && lines[index].indent > indent) {
+                const nested = parseBlock(index, lines[index].indent);
+                output[key] = nested.value;
+                index = nested.index;
             } else {
-                i++;
+                output[key] = {};
             }
         }
-        
-        return root;
+
+        return { value: output, index };
     }
-    
-    return buildStructure();
+
+    if (lines.length === 0) throw new Error('Empty Toon string');
+    const parsed = parseBlock(0, lines[0].indent).value;
+    return Object.keys(parsed).length === 1 && Object.prototype.hasOwnProperty.call(parsed, '@root')
+        ? parsed['@root']
+        : parsed;
 }
 
 // Validate Toon

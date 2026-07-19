@@ -311,8 +311,7 @@ function schedulePreload(tool) {
 }
 
 function normalize(text) {
-  // Using Lodash for string normalization
-  return _.toLower(_.trim(text || ""));
+  return String(text || "").trim().toLowerCase();
 }
 
 function getMatchingTools(query) {
@@ -325,7 +324,7 @@ function getMatchingTools(query) {
 
   return source.filter((tool) => {
     const hay = `${tool.name} ${tool.id} ${tool.url}`.toLowerCase();
-    return _.includes(hay, q);
+    return hay.includes(q);
   });
 }
 

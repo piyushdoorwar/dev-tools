@@ -469,6 +469,12 @@ function applyLineOps(ops) {
 function diffSequence(a, b) {
   const n = a.length;
   const m = b.length;
+  const maxMatrixCells = 2_000_000;
+
+  if (n * m > maxMatrixCells) {
+    return diffLargeSequence(a, b);
+  }
+
   const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
 
   for (let i = n - 1; i >= 0; i--) {
@@ -506,6 +512,27 @@ function diffSequence(a, b) {
   }
 
   return ops;
+}
+
+function diffLargeSequence(a, b) {
+  let prefix = 0;
+  while (prefix < a.length && prefix < b.length && a[prefix] === b[prefix]) prefix += 1;
+
+  let suffix = 0;
+  while (
+    suffix < a.length - prefix &&
+    suffix < b.length - prefix &&
+    a[a.length - 1 - suffix] === b[b.length - 1 - suffix]
+  ) {
+    suffix += 1;
+  }
+
+  return [
+    ...a.slice(0, prefix).map(line => ({ type: "equal", line })),
+    ...a.slice(prefix, a.length - suffix).map(line => ({ type: "delete", line })),
+    ...b.slice(prefix, b.length - suffix).map(line => ({ type: "insert", line })),
+    ...a.slice(a.length - suffix).map(line => ({ type: "equal", line })),
+  ];
 }
 
 // ==================== Event Handlers ====================

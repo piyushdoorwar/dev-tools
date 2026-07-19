@@ -40,6 +40,7 @@ body {
 
 .app-shell {
   width: 100%;
+  min-width: 0;
   max-width: 1600px;
   margin: 0 auto;
   padding: 32px 32px 36px;
@@ -93,6 +94,8 @@ body {
 
 .split {
   display: grid;
+  width: 100%;
+  min-width: 0;
   grid-template-columns: minmax(500px, 1.5fr) minmax(500px, 1fr);
   gap: 28px;
   position: relative;
@@ -111,6 +114,7 @@ body {
   gap: 20px;
   position: relative;
   overflow: visible;
+  min-width: 0;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -1055,6 +1059,18 @@ textarea:hover {
     padding: 20px;
   }
 
+  .generate-controls-all,
+  .editor-wrapper,
+  .decoded-fields,
+  .input-with-button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .editor-toolbar {
+    flex-wrap: wrap;
+  }
+
   .generate-controls,
   .split-buttons {
     width: 100%;
@@ -1062,8 +1078,18 @@ textarea:hover {
 
   .generate-controls > *,
   .split-buttons > * {
-    flex: 1;
-    min-width: 140px;
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .generate-button-row {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .generate-button-row > * {
+    flex: 1 1 140px;
+    min-width: 0;
   }
 
   .toast {

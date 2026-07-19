@@ -457,19 +457,31 @@ function jsonToXML(obj, rootName = 'root') {
             .replace(/'/g, '&apos;');
     }
     
+    function getElementName(name) {
+        const value = String(name);
+        if (/^[A-Za-z_][A-Za-z0-9._-]*$/.test(value)) {
+            return { tagName: value, keyAttribute: '' };
+        }
+        return {
+            tagName: 'item',
+            keyAttribute: ` data-json-key="${escapeXML(value)}"`
+        };
+    }
+
     function convert(obj, name, level = 0) {
         const indent = '  '.repeat(level);
+        const { tagName, keyAttribute } = getElementName(name);
         
         if (obj === null || obj === undefined) {
-            return `${indent}<${name} />\n`;
+            return `${indent}<${tagName}${keyAttribute} />\n`;
         }
         
         if (typeof obj === 'object' && !Array.isArray(obj)) {
-            let result = `${indent}<${name}>\n`;
+            let result = `${indent}<${tagName}${keyAttribute}>\n`;
             for (let key in obj) {
                 result += convert(obj[key], key, level + 1);
             }
-            result += `${indent}</${name}>\n`;
+            result += `${indent}</${tagName}>\n`;
             return result;
         } else if (Array.isArray(obj)) {
             let result = '';
@@ -478,12 +490,21 @@ function jsonToXML(obj, rootName = 'root') {
             });
             return result;
         } else {
-            return `${indent}<${name}>${escapeXML(obj)}</${name}>\n`;
+            return `${indent}<${tagName}${keyAttribute}>${escapeXML(obj)}</${tagName}>\n`;
         }
     }
     
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    xml += convert(obj, rootName, 0);
+    if (Array.isArray(obj)) {
+        const root = getElementName(rootName);
+        xml += `<${root.tagName}${root.keyAttribute}>\n`;
+        obj.forEach((item) => {
+            xml += convert(item, 'item', 1);
+        });
+        xml += `</${root.tagName}>\n`;
+    } else {
+        xml += convert(obj, rootName, 0);
+    }
     return xml.trim();
 }
 
@@ -509,10 +530,10 @@ function xmlToJSON(xmlString) {
         const obj = {};
         
         // Handle attributes
-        if (node.attributes.length > 0) {
+        const attributes = Array.from(node.attributes).filter(attr => attr.name !== 'data-json-key');
+        if (attributes.length > 0) {
             obj['@attributes'] = {};
-            for (let i = 0; i < node.attributes.length; i++) {
-                const attr = node.attributes[i];
+            for (const attr of attributes) {
                 obj['@attributes'][attr.name] = attr.value;
             }
         }
@@ -521,7 +542,7 @@ function xmlToJSON(xmlString) {
         if (node.childNodes.length === 1 && node.childNodes[0].nodeType === 3) {
             // Only text content
             const text = node.childNodes[0].textContent.trim();
-            if (node.attributes.length > 0) {
+            if (attributes.length > 0) {
                 obj['#text'] = text;
                 return obj;
             }
@@ -534,7 +555,7 @@ function xmlToJSON(xmlString) {
             if (child.nodeType !== 1) continue;
             
             const childData = parseNode(child);
-            const childName = child.nodeName;
+            const childName = child.getAttribute('data-json-key') || child.nodeName;
             
             if (children[childName]) {
                 if (!Array.isArray(children[childName])) {

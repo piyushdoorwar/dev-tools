@@ -129,7 +129,14 @@ const render = () => {
     langPrefix: 'hljs language-'
   });
   
-  preview.innerHTML = marked.parse(markdown);
+  const renderedMarkdown = marked.parse(markdown);
+  if (!window.DOMPurify) {
+    preview.textContent = markdown;
+    return;
+  }
+  preview.innerHTML = window.DOMPurify.sanitize(renderedMarkdown, {
+    USE_PROFILES: { html: true }
+  });
   
   // Add language labels to code blocks
   preview.querySelectorAll('pre code').forEach((block) => {
@@ -742,42 +749,6 @@ function insertCodeBlock() {
   closeModal('codeBlockModal');
 }
 
-// Code editor helper functions
-function updateCodeLineNumbers() {
-  const codeContent = document.getElementById('codeContent');
-  const lineNumbers = document.getElementById('codeLineNumbers');
-  const lines = codeContent.value.split('\n').length;
-  lineNumbers.innerHTML = Array.from({ length: lines }, (_, i) => i + 1).join('\n');
-}
-
-function syncCodeScroll() {
-  const codeContent = document.getElementById('codeContent');
-  const lineNumbers = document.getElementById('codeLineNumbers');
-  lineNumbers.scrollTop = codeContent.scrollTop;
-}
-
-function pasteCodeBlock() {
-  navigator.clipboard.readText().then(text => {
-    const codeContent = document.getElementById('codeContent');
-    const start = codeContent.selectionStart;
-    const end = codeContent.selectionEnd;
-    const currentValue = codeContent.value;
-    
-    codeContent.value = currentValue.substring(0, start) + text + currentValue.substring(end);
-    codeContent.selectionStart = codeContent.selectionEnd = start + text.length;
-    updateCodeLineNumbers();
-    codeContent.focus();
-  }).catch(err => {
-    console.log('Paste failed, use Ctrl+V');
-  });
-}
-
-function clearCodeBlock() {
-  const codeContent = document.getElementById('codeContent');
-  codeContent.value = '';
-  updateCodeLineNumbers();
-  codeContent.focus();
-}
 
 // Code editor helper functions
 function updateCodeLineNumbers() {
@@ -842,4 +813,3 @@ function copyPreviewContent() {
     }).catch(err => console.error('Failed to copy:', err));
   });
 }
-
