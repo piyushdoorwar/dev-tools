@@ -39,6 +39,7 @@ const statModified = document.getElementById("stat-modified");
 let lastLeftData, lastRightData, lastEntries;
 let compareTimer;
 const compareDebounceMs = 300;
+const INVALID_JSON = Symbol("invalid-json");
 
 const editorDiffHighlights = {
   left: new Map(),
@@ -241,7 +242,7 @@ function updateStatus(side, message = null, type = null) {
     if (!value.trim()) {
       statusText.textContent = "Ready";
       statusText.className = "status-text";
-    } else if (parsed) {
+    } else if (parsed !== INVALID_JSON) {
       statusText.textContent = "Valid JSON";
       statusText.className = "status-text success";
     } else {
@@ -284,11 +285,11 @@ function getIndentString() {
 // ==================== JSON Parsing ====================
 
 function tryParse(value) {
-  if (!value) return null;
+  if (!value) return INVALID_JSON;
   try {
     return JSON.parse(value);
   } catch (err) {
-    return null;
+    return INVALID_JSON;
   }
 }
 
@@ -302,7 +303,7 @@ function beautifyJSON(side) {
   }
   
   const parsed = tryParse(value);
-  if (!parsed) {
+  if (parsed === INVALID_JSON) {
     showToast("Invalid JSON - cannot beautify", "error");
     return;
   }
@@ -312,7 +313,7 @@ function beautifyJSON(side) {
     const targetValue = getValue(targetSide).trim();
     if (!targetValue) return;
     const targetParsed = tryParse(targetValue);
-    if (!targetParsed) return;
+    if (targetParsed === INVALID_JSON) return;
     setValue(targetSide, JSON.stringify(targetParsed, null, indent));
   });
   
@@ -451,7 +452,7 @@ function compareJson() {
   const rightData = tryParse(rightValue);
   
   // Clear highlights if either is invalid or empty
-  if (!leftData || !rightData) {
+  if (leftData === INVALID_JSON || rightData === INVALID_JSON) {
     clearDiffHighlights("left");
     clearDiffHighlights("right");
     updateLineNumbers("left");
@@ -672,6 +673,14 @@ function diffObjects(left, right, path = "") {
         }
       }
     });
+  } else if (!isEqual(left, right)) {
+    const currentPath = path || '$';
+    results.push({
+      path: currentPath,
+      status: markAsMinor(currentPath, left, right) ? 'minor' : 'modified',
+      oldValue: left,
+      newValue: right,
+    });
   }
   
   return results;
@@ -850,7 +859,7 @@ if (diffLegendModal) {
       const value = getValue(side).trim();
       if (!value) return;
       const parsed = tryParse(value);
-      if (!parsed) return;
+      if (parsed === INVALID_JSON) return;
       setValue(side, JSON.stringify(parsed, null, getIndentString()));
     });
     scheduleCompare();

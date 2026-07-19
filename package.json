@@ -1,0 +1,18 @@
+{
+  "name": "dev-tools-dashboard",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "precache": "node scripts/generate-precache-manifest.mjs",
+    "precache:check": "node scripts/generate-precache-manifest.mjs --check",
+    "build": "npm run precache && node scripts/build-site.mjs",
+    "test:syntax": "node scripts/check-syntax.mjs",
+    "test:static": "node scripts/check-static.mjs",
+    "test:e2e": "playwright test",
+    "test": "npm run test:syntax && npm run test:static && npm run precache:check && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.1"
+  }
+}

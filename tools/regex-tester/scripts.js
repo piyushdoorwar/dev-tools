@@ -55,6 +55,8 @@ const sampleData = {
 
 let matches = [];
 let activeMatchIndex = -1;
+let regexRunId = 0;
+let activeRegexWorker = null;
 
 function setFlagState(flags) {
   FLAG_ORDER.forEach((flag) => {
@@ -323,7 +325,39 @@ function setActiveMatch(index, focus) {
   }
 }
 
-function updateAll() {
+function collectMatchesSafely(pattern, flags, text) {
+  if (activeRegexWorker) activeRegexWorker.terminate();
+  activeRegexWorker = new Worker('regex-worker.js');
+
+  return new Promise((resolve, reject) => {
+    const worker = activeRegexWorker;
+    const timeout = window.setTimeout(() => {
+      worker.terminate();
+      if (activeRegexWorker === worker) activeRegexWorker = null;
+      reject(new Error('Pattern evaluation exceeded 300 ms and was stopped.'));
+    }, 300);
+
+    worker.addEventListener('message', (event) => {
+      window.clearTimeout(timeout);
+      worker.terminate();
+      if (activeRegexWorker === worker) activeRegexWorker = null;
+      if (event.data.error) reject(new Error(event.data.error));
+      else resolve(event.data);
+    }, { once: true });
+
+    worker.addEventListener('error', () => {
+      window.clearTimeout(timeout);
+      worker.terminate();
+      if (activeRegexWorker === worker) activeRegexWorker = null;
+      reject(new Error('Pattern evaluation failed.'));
+    }, { once: true });
+
+    worker.postMessage({ pattern, flags, text });
+  });
+}
+
+async function updateAll() {
+  const runId = ++regexRunId;
   const text = textInput.value;
   const regex = compileRegex();
 
@@ -338,7 +372,17 @@ function updateAll() {
     return;
   }
 
-  matches = collectMatches(regex, text);
+  try {
+    const result = await collectMatchesSafely(regex.source, regex.flags, text);
+    if (runId !== regexRunId) return;
+    matches = result.matches;
+    if (result.truncated) showError('Showing the first 10,000 matches.');
+    else clearError();
+  } catch (error) {
+    if (runId !== regexRunId) return;
+    matches = [];
+    showError(error.message);
+  }
   if (matches.length === 0) {
     activeMatchIndex = -1;
   } else if (activeMatchIndex < 0 || activeMatchIndex >= matches.length) {

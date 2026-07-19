@@ -1582,6 +1582,23 @@ body {
     grid-template-columns: 1fr;
     grid-template-rows: 340px 1fr;
   }
+
+  .app.sidebar-collapsed {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+  }
+
+  .app.sidebar-collapsed .sidebar {
+    display: none;
+  }
+
+  .app.sidebar-collapsed .main {
+    grid-row: 1;
+  }
+
+  .app.sidebar-collapsed .expand-btn {
+    display: grid;
+  }
 }
 
 /* Premium Animations */

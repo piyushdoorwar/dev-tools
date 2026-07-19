@@ -154,9 +154,7 @@ function decodeValue(value) {
       setField("clock", clockSeq);
       setField("node", node);
     } else if (version === 7) {
-      const timeLow = BigInt("0x" + hex.slice(0, 8));
-      const timeMid = BigInt("0x" + hex.slice(8, 12));
-      const timestamp = (timeMid << 32n) | timeLow;
+      const timestamp = BigInt("0x" + hex.slice(0, 12));
       const ms = Number(timestamp);
       const iso = new Date(ms).toISOString();
       setField("time", iso);
@@ -232,7 +230,8 @@ function decodeUlidToBytes(value) {
   for (let i = 0; i < 16; i++) {
     let byte = 0;
     for (let bit = 0; bit < 8; bit++) {
-      byte = (byte << 1) | bits[i * 8 + bit];
+      // A 26-character ULID has 130 encoded bits; the first two are padding.
+      byte = (byte << 1) | bits[i * 8 + bit + 2];
     }
     bytes[i] = byte;
   }
@@ -498,10 +497,10 @@ function bytesToUuid(bytes) {
 function generateUlid() {
   const time = Date.now();
   const timeBytes = new Uint8Array(6);
-  let temp = time;
+  let temp = BigInt(time);
   for (let idx = 5; idx >= 0; idx -= 1) {
-    timeBytes[idx] = temp & 0xff;
-    temp >>= 8;
+    timeBytes[idx] = Number(temp & 0xffn);
+    temp >>= 8n;
   }
   let randomBytes = new Uint8Array(10);
   if (time === Number(lastTimestamp)) {
@@ -572,24 +571,10 @@ function generateNanoId(size = 21) {
 }
 
 function md5(data) {
-  const K = [
-    0xd76aa478,
-    0xe8c7b756,
-    0x242070db,
-    0xc1bdceee,
-    0xf57c0faf,
-    0x4787c62a,
-    0xa8304613,
-    0xfd469501,
-    0x698098d8,
-    0x8b44f7af,
-    0xffff5bb1,
-    0x895cd7be,
-    0x6b901122,
-    0xfd987193,
-    0xa679438e,
-    0x49b40821,
-  ];
+  const K = Array.from(
+    { length: 64 },
+    (_, index) => Math.floor(Math.abs(Math.sin(index + 1)) * 0x100000000) >>> 0
+  );
 
   const s = [
     7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
