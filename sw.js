@@ -1,7 +1,7 @@
 /* global PRECACHE_ASSETS */
 importScripts('./precache-manifest.js');
 
-const CACHE_NAME = 'dev-tools-v15';
+const CACHE_NAME = 'dev-tools-v16';
 const CORE_ASSETS = ['./', './index.html', './app.js', './styles.css', './manifest.json', './favicon.svg'];
 const EXTERNAL_ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css',

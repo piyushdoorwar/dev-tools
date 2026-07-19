@@ -42,7 +42,12 @@ jobs:
       - name: Run regression suite
         run: npm test
       - name: Build site artifact
-        run: npm run build
+        env:
+          CACHE_VERSION: ${{ github.run_number }}
+        run: |
+          npm run build
+          grep -F "const CACHE_NAME = 'dev-tools-v${CACHE_VERSION}';" dist/sw.js
+          echo "Cache version: dev-tools-v${CACHE_VERSION}" >> "$GITHUB_STEP_SUMMARY"
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
