@@ -298,8 +298,8 @@ test('QR country metadata and flags load without runtime external requests', asy
     if (!request.url().startsWith('http://127.0.0.1:4173')) externalRequests.push(request.url());
   });
   await page.goto('/tools/qr-generator/');
+  await page.getByRole('button', { name: 'Mobile' }).click();
   await page.locator('#phoneCode').fill('91');
-  await page.locator('#phoneCode').dispatchEvent('input');
   await expect(page.locator('#phoneFlag')).toHaveAttribute('src', /^data:image\/svg\+xml/);
   expect(externalRequests).toEqual([]);
 });
