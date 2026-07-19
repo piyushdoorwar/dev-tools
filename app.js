@@ -369,7 +369,19 @@ function createWelcomeToolButton(tool, options = {}) {
     button.classList.add("has-badge");
     const badge = document.createElement("span");
     badge.className = "empty__feature-badge";
-    badge.textContent = options.badge;
+    if (options.badge === "Pinned") {
+      badge.classList.add("is-pinned");
+      badge.setAttribute("aria-label", "Pinned");
+      badge.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 17v5"></path>
+          <path d="M5 17h14"></path>
+          <path d="M6 17l1-7-3-3V5h16v2l-3 3 1 7"></path>
+        </svg>
+      `;
+    } else {
+      badge.textContent = options.badge;
+    }
     button.appendChild(badge);
   }
 

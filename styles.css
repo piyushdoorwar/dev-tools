@@ -1300,6 +1300,24 @@ body {
   text-transform: uppercase;
 }
 
+.empty__feature-badge.is-pinned {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  place-items: center;
+}
+
+.empty__feature-badge.is-pinned svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .empty__recent-empty {
   grid-column: 1 / -1;
   min-height: 78px;
@@ -1485,11 +1503,13 @@ body {
 
 .frame.is-visible {
   display: block;
+  pointer-events: auto;
 }
 
 .frame-host {
   position: absolute;
   inset: 0;
+  pointer-events: none;
 }
 
 .frame-loader {
