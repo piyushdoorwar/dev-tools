@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFile } from 'node:fs/promises';
 import { injectCacheVersion, resolveCacheVersion } from '../scripts/cache-version.mjs';
 
 test('uses an explicit cache version first', () => {
@@ -17,6 +18,12 @@ test('keeps local builds deterministic', () => {
 test('rejects unsafe cache versions', () => {
   assert.throws(() => resolveCacheVersion({ CACHE_VERSION: '../bad' }), /positive integer/);
   assert.throws(() => resolveCacheVersion({ CACHE_VERSION: '0' }), /positive integer/);
+});
+
+test('service worker only removes old dev-tools cache namespaces', async () => {
+  const source = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
+  assert.match(source, /cacheName\.startsWith\(CACHE_PREFIX\) && cacheName !== CACHE_NAME/);
+  assert.doesNotMatch(source, /\.filter\(\(cacheName\) => cacheName !== CACHE_NAME\)/);
 });
 
 test('rewrites only the deployment cache declaration', () => {

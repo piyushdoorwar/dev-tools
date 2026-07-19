@@ -144,9 +144,26 @@ htmlEditor.on('change', scheduleRefresh);
 cssEditor.on('change', scheduleRefresh);
 scriptEditor.on('change', scheduleRefresh);
 
+function buildExportHtml(html) {
+  const stylesheet = '<link rel="stylesheet" href="styles.css">';
+  const script = '<script src="script.js"><\/script>';
+
+  if (/<html(?:\s|>)/i.test(html)) {
+    let exportHtml = /<\/head>/i.test(html)
+      ? html.replace(/<\/head>/i, `  ${stylesheet}\n</head>`)
+      : `${stylesheet}\n${html}`;
+    exportHtml = /<\/body>/i.test(exportHtml)
+      ? exportHtml.replace(/<\/body>/i, `  ${script}\n</body>`)
+      : `${exportHtml}\n${script}`;
+    return exportHtml;
+  }
+
+  return `<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  ${stylesheet}\n</head>\n<body>\n${html}\n  ${script}\n</body>\n</html>\n`;
+}
+
 function downloadZip() {
   const zip = new JSZip();
-  zip.file('index.html', htmlEditor.getValue());
+  zip.file('index.html', buildExportHtml(htmlEditor.getValue()));
   zip.file('styles.css', cssEditor.getValue());
   zip.file('script.js', scriptEditor.getValue());
   zip.generateAsync({ type: 'blob' }).then(function(content) {

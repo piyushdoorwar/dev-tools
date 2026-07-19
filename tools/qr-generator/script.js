@@ -280,7 +280,6 @@ function normalizePhoneWithNumber(code, number) {
 const dialCodeCache = new Map();
 let dialCodeLoadPromise = null;
 const dialCodeTimers = new Map();
-const flagRenderTokens = new Map();
 const regionDisplayNames = typeof Intl !== "undefined" && Intl.DisplayNames
   ? new Intl.DisplayNames(["en"], { type: "region" })
   : null;
@@ -292,17 +291,20 @@ function normalizeDialCode(value) {
   return digits;
 }
 
-function setFlagImage(imgEl, flagUrl, iso2) {
+function flagDataUrl(flag, iso2) {
+  const label = flag || iso2?.toUpperCase() || "";
+  if (!label) return "";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="32" viewBox="0 0 48 32"><rect width="48" height="32" rx="4" fill="#f4f4f5"/><text x="24" y="22" text-anchor="middle" font-family="Arial, sans-serif" font-size="20">${escapeXml(label)}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function setFlagImage(imgEl, flag, iso2) {
   if (!imgEl) return;
   const slot = imgEl.closest(".flag-slot");
   if (!slot) return;
-  if (!flagUrl) {
-    const previousUrl = imgEl.dataset.objectUrl;
-    if (previousUrl && previousUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(previousUrl);
-    }
+  const source = flagDataUrl(flag, iso2);
+  if (!source) {
     imgEl.removeAttribute("src");
-    imgEl.dataset.objectUrl = "";
     imgEl.alt = "";
     slot.classList.remove("is-visible");
     return;
@@ -313,66 +315,23 @@ function setFlagImage(imgEl, flagUrl, iso2) {
   } else {
     imgEl.alt = "Country flag";
   }
-  const nextToken = (flagRenderTokens.get(imgEl) || 0) + 1;
-  flagRenderTokens.set(imgEl, nextToken);
-
-  resolveFlagSource(flagUrl)
-    .then((src) => {
-      if (flagRenderTokens.get(imgEl) !== nextToken) {
-        if (src && src.startsWith("blob:")) {
-          URL.revokeObjectURL(src);
-        }
-        return;
-      }
-      const previousUrl = imgEl.dataset.objectUrl;
-      if (previousUrl && previousUrl.startsWith("blob:") && previousUrl !== src) {
-        URL.revokeObjectURL(previousUrl);
-      }
-      imgEl.src = src || flagUrl;
-      imgEl.dataset.objectUrl = src && src.startsWith("blob:") ? src : "";
-      slot.classList.add("is-visible");
-    })
-    .catch(() => {
-      if (flagRenderTokens.get(imgEl) !== nextToken) return;
-      imgEl.src = flagUrl;
-      imgEl.dataset.objectUrl = "";
-      slot.classList.add("is-visible");
-    });
-}
-
-async function resolveFlagSource(flagUrl) {
-  if (!flagUrl) return "";
-  if (!("caches" in window)) return flagUrl;
-  try {
-    const cache = await caches.open("qr-flag-cache-v1");
-    const cached = await cache.match(flagUrl);
-    if (cached) {
-      const blob = await cached.blob();
-      return URL.createObjectURL(blob);
-    }
-    const response = await fetch(flagUrl, { mode: "cors" });
-    if (!response.ok) return flagUrl;
-    await cache.put(flagUrl, response.clone());
-    const blob = await response.blob();
-    return URL.createObjectURL(blob);
-  } catch {
-    return flagUrl;
-  }
+  imgEl.src = source;
+  slot.classList.add("is-visible");
 }
 
 function buildDialCodeCache(countries) {
   countries.forEach((country) => {
-    if (!country || !country.idd || !country.flags) return;
+    if (!country || !country.idd) return;
     const root = typeof country.idd.root === "string" ? country.idd.root : "";
     const suffixes = Array.isArray(country.idd.suffixes) ? country.idd.suffixes : [];
-    const flagUrl = country.flags.svg || country.flags.png || "";
+    const flag = country.flag || "";
     const iso2 = country.cca2 || "";
     const rootDigits = root.replace(/\D/g, "");
-    if (!rootDigits || !flagUrl) return;
+    if (!rootDigits) return;
 
     if (suffixes.length === 0) {
       if (!dialCodeCache.has(rootDigits)) {
-        dialCodeCache.set(rootDigits, { flagUrl, iso2 });
+        dialCodeCache.set(rootDigits, { flag, iso2 });
       }
       return;
     }
@@ -382,7 +341,7 @@ function buildDialCodeCache(countries) {
       const fullCode = `${rootDigits}${suffixDigits}`;
       if (!fullCode) return;
       if (!dialCodeCache.has(fullCode)) {
-        dialCodeCache.set(fullCode, { flagUrl, iso2 });
+        dialCodeCache.set(fullCode, { flag, iso2 });
       }
     });
   });
@@ -390,7 +349,8 @@ function buildDialCodeCache(countries) {
 
 async function ensureDialCodeCache() {
   if (dialCodeLoadPromise) return dialCodeLoadPromise;
-  dialCodeLoadPromise = fetch("https://restcountries.com/v3.1/all?fields=idd,flags,cca2")
+  const countriesUrl = new URL("../../vendor/world-countries/5.1.0/countries.json", window.location.href);
+  dialCodeLoadPromise = fetch(countriesUrl)
     .then((response) => {
       if (!response.ok) return [];
       return response.json();
@@ -419,7 +379,7 @@ function updateFlagForCodeInput(inputEl, imgEl) {
       setFlagImage(imgEl, "");
       return;
     }
-    setFlagImage(imgEl, cached.flagUrl, cached.iso2);
+    setFlagImage(imgEl, cached.flag, cached.iso2);
   });
 }
 

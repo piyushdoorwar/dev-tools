@@ -29,29 +29,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
       - name: Install dependencies
         run: npm ci
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Run regression suite
+        env:
+          CACHE_VERSION: ${{ github.run_number }}
         run: npm test
-      - name: Build site artifact
+      - name: Verify site artifact
         env:
           CACHE_VERSION: ${{ github.run_number }}
         run: |
-          npm run build
           grep -F "const CACHE_NAME = 'dev-tools-v${CACHE_VERSION}';" dist/sw.js
           echo "Cache version: dev-tools-v${CACHE_VERSION}" >> "$GITHUB_STEP_SUMMARY"
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: './dist'
       - name: Deploy to GitHub Pages

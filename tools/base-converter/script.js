@@ -48,7 +48,23 @@ const DOWNLOAD_NAMES = {
 let isUpdating = false;
 
 function showToast(message, type = "info") {
-  return;
+  if (!toastContainer) return;
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  const icon = document.createElement("span");
+  icon.className = "toast-icon";
+  icon.textContent = type === "success" ? "✓" : type === "error" ? "✕" : "ℹ";
+  const text = document.createElement("span");
+  text.className = "toast-message";
+  text.textContent = String(message);
+  toast.append(icon, text);
+  toastContainer.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add("show"));
+  setTimeout(() => {
+    toast.classList.remove("show");
+    toast.classList.add("hide");
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
 }
 
 function splitTokens(value) {
@@ -102,6 +118,9 @@ function parseNumericInput(raw, options) {
     if (!Number.isFinite(value)) {
       return { values: [], error: `Invalid ${label} value: "${token}"` };
     }
+    if (value < 0 || value > 255) {
+      return { values: [], error: `${label} bytes must be between 0 and 255` };
+    }
     values.push(value);
   }
   return { values, error: null };
@@ -111,18 +130,13 @@ function parseTextInput(raw) {
   if (!raw) {
     return { values: [], error: null };
   }
-  const values = Array.from(raw).map((char) => char.codePointAt(0));
+  const values = Array.from(new TextEncoder().encode(raw));
   return { values, error: null };
 }
 
 function valuesToText(values) {
-  let output = "";
-  values.forEach((value) => {
-    if (!Number.isFinite(value)) return;
-    const safe = Math.max(0, Math.min(0x10ffff, Math.round(value)));
-    output += String.fromCodePoint(safe);
-  });
-  return output;
+  const bytes = Uint8Array.from(values, (value) => Math.max(0, Math.min(255, Math.round(value))));
+  return new TextDecoder().decode(bytes);
 }
 
 function formatValues(values, base, pad) {

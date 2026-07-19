@@ -50,7 +50,7 @@
                             <label class="field-label" for="text-input">
                                 <span class="converter-icon">T</span>
                                 <span class="converter-label-text">Text</span>
-                                <span class="field-tag">ASCII</span>
+                                <span class="field-tag">UTF-8</span>
                             </label>
                             <div class="converter-row-actions">
                                 <button class="copy-btn" data-action="copy-field" data-target="text" aria-label="Copy text">
@@ -76,7 +76,7 @@
                         <div class="converter-row-header">
                             <label class="field-label" for="decimal-input">
                                 <span class="converter-icon">#</span>
-                                <span class="converter-label-text">Decimal (ASCII)</span>
+                                <span class="converter-label-text">Decimal Bytes</span>
                                 <span class="field-tag">Base 10</span>
                             </label>
                             <div class="converter-row-actions">
@@ -202,8 +202,8 @@
                         <div class="legend-row">
                             <div class="legend-swatch added"></div>
                             <div>
-                                <div class="legend-title">ASCII / Text</div>
-                                <div class="legend-desc">ASCII is a standard table that maps characters to numbers. Text input shows readable characters.</div>
+                                <div class="legend-title">UTF-8 / Text</div>
+                                <div class="legend-desc">Text is encoded as UTF-8 bytes, so ASCII and international text round-trip consistently.</div>
                             </div>
                         </div>
                         <div class="legend-row">
@@ -224,7 +224,7 @@
                             <div class="legend-swatch removed"></div>
                             <div>
                                 <div class="legend-title">Decimal (Base 10)</div>
-                                <div class="legend-desc">Human-friendly numbers. ASCII codes are typically shown in decimal.</div>
+                                <div class="legend-desc">Human-friendly byte values from 0 through 255.</div>
                             </div>
                         </div>
                         <div class="legend-row">

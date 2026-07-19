@@ -1,17 +1,18 @@
 ﻿# Base Converter
 
-A real-time ASCII/base converter with a clean, single-screen layout. Enter text or numeric ASCII values and instantly see the corresponding Binary, Hex, Decimal, and Octal representations.
+A real-time UTF-8 byte/base converter with a clean, single-screen layout. Enter text or numeric byte values and instantly see the corresponding Binary, Hex, Decimal, and Octal representations.
 
 ## Features
-- Live, bidirectional conversion between Text (ASCII), Binary, Hexadecimal, Decimal, and Octal
+- Live, bidirectional conversion between Text (UTF-8), Binary, Hexadecimal, Decimal, and Octal
 - Per-field copy and download actions (saves as `text.txt`, `decimal.txt`, `binary.txt`, `hex.txt`, `octal.txt`)
 - Sample load and clear actions in the header
 - Animated SVG favicon themed to the app palette
-- Keyboard-friendly modal with concise base/ASCII explanations
+- Keyboard-friendly modal with concise byte/base explanations
 
 ## How It Works
 - Type in any field to update the other four instantly.
 - Numeric fields accept space- or comma-separated values.
+- Numeric byte values must be between 0 and 255.
 - Binary/Hex/Octal accept grouped bytes (8/2/3 digits).
 
 ## Run Locally

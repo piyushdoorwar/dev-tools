@@ -39,6 +39,11 @@ export const EXTERNAL_ASSETS = [
     integrity: 'sha384-ZYmwuq4n2gOcNxMSiJ6jyTj+BbIrilr7p6dlq6q5nmSWKmsH9UU4K1qqjycMkfmR',
   },
   {
+    source: 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js',
+    output: 'vendor/codemirror/5.65.16/mode/xml/xml.min.js',
+    integrity: 'sha384-xPpkMo5nDgD98fIcuRVYhxkZV6/9Y4L8s3p0J5c4MxgJkyKJ8BJr+xfRkq7kn6Tw',
+  },
+  {
     source: 'https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js',
     output: 'vendor/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js',
     integrity: 'sha384-xYIbc5F55vPi7pb/lUnFj3wu24HlpAMZdtBHkNrb2YhPzJV3pX7+eqXT2PXSNMrw',
@@ -68,6 +73,12 @@ export const EXTERNAL_ASSETS = [
     output: 'vendor/sql-formatter/15.4.2/sql-formatter.min.js',
     integrity: 'sha384-7L46T4Kl2EnzUo/gQTjxNfalcv8uvTUmtMfBDjO7Cxef+mWAUErtpikKl3Qnsg4M',
   },
+  {
+    source: 'https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json',
+    output: 'vendor/world-countries/5.1.0/countries.json',
+    integrity: 'sha384-J2799pXmuGfHQjOErUWJG6CC1C6fRQA4HemJ3jbYJlqpVFudfJdz793JMcC/1hsr',
+    htmlReference: false,
+  },
 ];
 
 export function verifyIntegrity(bytes, integrity) {
@@ -85,12 +96,35 @@ export function localizeExternalReferences(html, htmlPath) {
   return localized;
 }
 
+export async function fetchExternalAsset(source, fetchImplementation = fetch, options = {}) {
+  const attempts = options.attempts ?? 3;
+  const timeoutMs = options.timeoutMs ?? 20_000;
+  let lastError;
+
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetchImplementation(source, { signal: controller.signal });
+      if (response.ok) return response;
+      lastError = new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      lastError = error;
+    } finally {
+      clearTimeout(timeout);
+    }
+
+    if (attempt < attempts) {
+      await new Promise((resolve) => setTimeout(resolve, 250 * attempt));
+    }
+  }
+
+  throw new Error(`Unable to download ${source} after ${attempts} attempts: ${lastError?.message || 'unknown error'}`);
+}
+
 export async function downloadExternalAssets(outputDirectory, fetchImplementation = fetch) {
   await Promise.all(EXTERNAL_ASSETS.map(async (asset) => {
-    const response = await fetchImplementation(asset.source);
-    if (!response.ok) {
-      throw new Error(`Unable to download ${asset.source}: HTTP ${response.status}`);
-    }
+    const response = await fetchExternalAsset(asset.source, fetchImplementation);
 
     const bytes = Buffer.from(await response.arrayBuffer());
     if (!verifyIntegrity(bytes, asset.integrity)) {

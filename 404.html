@@ -207,7 +207,7 @@
 
     <!-- PWA Service Worker Registration -->
     <script>
-      if ('serviceWorker' in navigator) {
+      if (!window.__DEV_TOOLS_DISABLE_SERVICE_WORKER__ && 'serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
             .then(registration => {

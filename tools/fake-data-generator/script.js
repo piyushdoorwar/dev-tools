@@ -493,10 +493,19 @@ function generateRecord(fields) {
     if (structureMode === "nested") {
       setNestedValue(record, field.name, value);
     } else {
-      record[field.name] = value;
+      setOwnValue(record, field.name, value);
     }
   });
   return record;
+}
+
+function setOwnValue(target, key, value) {
+  Object.defineProperty(target, key, {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    value
+  });
 }
 
 function generateValue(field) {
@@ -700,11 +709,12 @@ function setNestedValue(target, path, value) {
   let current = target;
   parts.forEach((part, index) => {
     if (index === parts.length - 1) {
-      current[part] = value;
+      setOwnValue(current, part, value);
       return;
     }
-    if (!current[part] || typeof current[part] !== "object") {
-      current[part] = {};
+    const existing = Object.prototype.hasOwnProperty.call(current, part) ? current[part] : null;
+    if (!existing || typeof existing !== "object") {
+      setOwnValue(current, part, {});
     }
     current = current[part];
   });

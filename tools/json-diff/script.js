@@ -113,10 +113,13 @@ function showToast(message, type = "info") {
   if (type === "success") icon = "✓";
   else if (type === "error") icon = "✕";
   
-  toast.innerHTML = `
-    <span class="toast-icon">${icon}</span>
-    <span class="toast-message">${message}</span>
-  `;
+  const iconElement = document.createElement("span");
+  iconElement.className = "toast-icon";
+  iconElement.textContent = icon;
+  const messageElement = document.createElement("span");
+  messageElement.className = "toast-message";
+  messageElement.textContent = String(message);
+  toast.append(iconElement, messageElement);
   
   toastContainer.appendChild(toast);
   

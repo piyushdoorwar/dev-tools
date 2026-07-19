@@ -586,9 +586,9 @@ function jsonToToon(obj, indentSpaces = 2, delimiter = '|') {
         return samePrimitiveFields ? keys : null;
     }
 
-    function convert(value, key, level) {
+    function convert(value, key, level, isRoot = false) {
         const indent = indentStr.repeat(level);
-        const keyText = formatKey(key);
+        const keyText = isRoot ? '@root' : formatKey(key);
 
         if (indentSpaces === 0 && value !== null && typeof value === 'object') {
             lines.push(`${keyText}: ${JSON.stringify(value)}`);
@@ -624,9 +624,14 @@ function jsonToToon(obj, indentSpaces = 2, delimiter = '|') {
     }
 
     if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
-        Object.entries(obj).forEach(([key, value]) => convert(value, key, 0));
+        const entries = Object.entries(obj);
+        if (entries.length === 0) {
+            lines.push('@root: {}');
+        } else {
+            entries.forEach(([key, value]) => convert(value, key, 0));
+        }
     } else {
-        convert(obj, '@root', 0);
+        convert(obj, '@root', 0, true);
     }
 
     return lines.join('\n');
@@ -784,8 +789,13 @@ function toonToJSON(toonString) {
     }
 
     if (lines.length === 0) throw new Error('Empty Toon string');
-    const parsed = parseBlock(0, lines[0].indent).value;
-    return Object.keys(parsed).length === 1 && Object.prototype.hasOwnProperty.call(parsed, '@root')
+    const hasRootMarker = /^@root(?:\[|:)/.test(lines[0].content);
+    const rootBlock = parseBlock(0, lines[0].indent);
+    if (rootBlock.index !== lines.length) {
+        throw new Error(`Invalid indentation near: ${lines[rootBlock.index].content}`);
+    }
+    const parsed = rootBlock.value;
+    return hasRootMarker && Object.keys(parsed).length === 1 && Object.prototype.hasOwnProperty.call(parsed, '@root')
         ? parsed['@root']
         : parsed;
 }
@@ -795,6 +805,7 @@ function validateToon(toonString) {
     if (!toonString || !toonString.trim()) {
         throw new Error('Empty Toon string');
     }
+    toonToJSON(toonString);
     return true;
 }
 

@@ -12,6 +12,22 @@
     balanced: 'deflate',
     maximum: 'zstd',
   };
+  const MAX_QUEUE_BYTES = 500 * 1024 * 1024;
+  const MAX_QUEUE_FILES = 5_000;
+  const ZIP_UTF8_FLAG = 0x0800;
+  const ZIP_LZMA_EOS_FLAG = 0x0002;
+
+  function validateQueueLimits(fileCount, totalBytes) {
+    if (fileCount > MAX_QUEUE_FILES) {
+      return `Select no more than ${MAX_QUEUE_FILES.toLocaleString()} files per archive.`;
+    }
+    if (totalBytes > MAX_QUEUE_BYTES) {
+      return 'The selected files exceed the 500 MB in-browser archive limit.';
+    }
+    return '';
+  }
+
+  globalThis.FileCompressorValidation = Object.freeze({ validateQueueLimits });
 
   const state = {
     files: [],
@@ -41,6 +57,7 @@
     estOutput: $('#estOutput'),
     generateBtn: $('#generateBtn'),
     idleState: $('#idleState'),
+    idleText: $('#idleState .idle-text'),
     activeState: $('#activeState'),
     doneState: $('#doneState'),
     progStatus: $('#progStatus'),
@@ -153,6 +170,24 @@
     throw new Error('Unsupported binary payload returned by compressor.');
   }
 
+  function toZipLzmaPayload(lzmaAloneData) {
+    const bytes = normalizeBytes(lzmaAloneData);
+    if (bytes.length <= 13) {
+      throw new Error('The LZMA runtime returned an invalid stream.');
+    }
+
+    const properties = bytes.subarray(0, 5);
+    const compressed = bytes.subarray(13);
+    const payload = new Uint8Array(4 + properties.length + compressed.length);
+    payload[0] = 9;
+    payload[1] = 4;
+    payload[2] = properties.length;
+    payload[3] = 0;
+    payload.set(properties, 4);
+    payload.set(compressed, 4 + properties.length);
+    return payload;
+  }
+
   function writeU16(value, buffer, offset) {
     const normalized = value & 0xFFFF;
     buffer[offset] = normalized;
@@ -168,6 +203,9 @@
   }
 
   function buildZip(entries) {
+    if (entries.length > 0xffff) {
+      throw new Error('ZIP archives cannot contain more than 65,535 entries.');
+    }
     const encoder = new TextEncoder();
     const now = new Date();
     const time = toDOSTime(now);
@@ -176,10 +214,20 @@
     let dirSize = 0;
     const prepared = entries.map((entry) => {
       const nameBytes = encoder.encode(entry.name);
+      if (nameBytes.length > 0xffff) {
+        throw new Error(`The path for ${entry.name} is too long for a ZIP archive.`);
+      }
+      if (entry.rawData.length > 0xffffffff || entry.compData.length > 0xffffffff) {
+        throw new Error(`${entry.name} exceeds the ZIP32 size limit.`);
+      }
       localSize += 30 + nameBytes.length + entry.compData.length;
       dirSize += 46 + nameBytes.length;
-      return { ...entry, nameBytes, crc: crc32(entry.rawData), versionNeeded: entry.versionNeeded || 20 };
+      const flags = ZIP_UTF8_FLAG | (entry.method === ALGO.lzma.zipMethod ? ZIP_LZMA_EOS_FLAG : 0);
+      return { ...entry, flags, nameBytes, crc: crc32(entry.rawData), versionNeeded: entry.versionNeeded || 20 };
     });
+    if (localSize + dirSize + 22 > 0xffffffff) {
+      throw new Error('The resulting archive exceeds the ZIP32 size limit.');
+    }
     const buffer = new Uint8Array(localSize + dirSize + 22);
     const offsets = [];
     let offset = 0;
@@ -187,7 +235,7 @@
       offsets.push(offset);
       writeU32(0x04034B50, buffer, offset); offset += 4;
       writeU16(entry.versionNeeded, buffer, offset); offset += 2;
-      writeU16(0, buffer, offset); offset += 2;
+      writeU16(entry.flags, buffer, offset); offset += 2;
       writeU16(entry.method, buffer, offset); offset += 2;
       writeU16(time, buffer, offset); offset += 2;
       writeU16(date, buffer, offset); offset += 2;
@@ -205,7 +253,7 @@
       writeU32(0x02014B50, buffer, offset); offset += 4;
       writeU16(entry.versionNeeded, buffer, offset); offset += 2;
       writeU16(entry.versionNeeded, buffer, offset); offset += 2;
-      writeU16(0, buffer, offset); offset += 2;
+      writeU16(entry.flags, buffer, offset); offset += 2;
       writeU16(entry.method, buffer, offset); offset += 2;
       writeU16(time, buffer, offset); offset += 2;
       writeU16(date, buffer, offset); offset += 2;
@@ -378,6 +426,11 @@
     }
   }
 
+  function setIdleMessage(message, isError = false) {
+    if (el.idleText) el.idleText.textContent = message;
+    if (isError) setStatusBadge('Limit exceeded', 'idle');
+  }
+
   function renderFileTable() {
     if (state.files.length === 0) {
       if (!state.isCompressing) setStatusBadge('Idle', 'idle');
@@ -409,17 +462,24 @@
 
   function addFiles(list) {
     const seen = new Set(state.files.map((entry) => fileIdentity(entry.file)));
-    let added = false;
+    const pending = [];
     for (const file of list) {
       const key = fileIdentity(file);
       if (seen.has(key)) continue;
       seen.add(key);
-      state.files.push({ id: state.nextId++, file });
-      added = true;
+      pending.push(file);
     }
-    if (added) {
-      invalidateArchiveResult();
+
+    const pendingBytes = pending.reduce((sum, file) => sum + file.size, 0);
+    const limitError = validateQueueLimits(state.files.length + pending.length, totalRawSize() + pendingBytes);
+    if (limitError) {
+      setIdleMessage(limitError, true);
+      return;
     }
+
+    pending.forEach((file) => state.files.push({ id: state.nextId++, file }));
+    if (pending.length) invalidateArchiveResult();
+    setIdleMessage(state.files.length ? 'Queue ready. Generate the archive when you are ready.' : 'Add files to start building a local archive.');
     renderFileTable();
   }
 
@@ -537,7 +597,7 @@
         setProgress(base, 'Compressing ' + entry.file.name + '...', entry.name);
         const zstd = await zstdModule();
         const zstdData = entry.rawData.length > 100
-          ? normalizeBytes(await zstd.ZstdSimple.compress(entry.rawData, zstdLevel()))
+          ? normalizeBytes(await zstd.ZstdStream.compress(entry.rawData, zstdLevel()))
           : null;
         if (zstdData && zstdData.length < entry.rawData.length) {
           compData = zstdData;
@@ -555,7 +615,7 @@
             if (error) {
               reject(error);
             } else {
-              resolve(normalizeBytes(result));
+              resolve(toZipLzmaPayload(result));
             }
           }, (progress) => {
             const value = progress > 1 ? progress : progress * 100;

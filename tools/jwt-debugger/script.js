@@ -315,7 +315,7 @@ function derToJwtEcSignature(der) {
 function parseJwt(token) {
   if (!token) return null;
   const parts = token.split('.');
-  if (parts.length < 2) return null;
+  if (parts.length < 2 || parts.length > 3) return null;
   const header = base64UrlDecode(parts[0]);
   const payload = base64UrlDecode(parts[1]);
   if (!header || !payload) return null;
@@ -324,6 +324,7 @@ function parseJwt(token) {
       header: JSON.parse(header),
       payload: JSON.parse(payload),
       signature: parts[2] || '',
+      signingInput: `${parts[0]}.${parts[1]}`,
     };
   } catch (error) {
     return null;
@@ -660,13 +661,22 @@ if (verifyBtn) {
         return;
       }
     }
-    const data = base64UrlEncode(JSON.stringify(tokenMeta.header)) + '.' + base64UrlEncode(JSON.stringify(tokenMeta.payload));
+    const data = tokenMeta.signingInput;
     try {
       let isValid = false;
       if (algo === 'HS256') {
         const secretValue = secretTextarea.value;
-        const expected = await computeSignature(data, secretValue, 'HS256');
-        isValid = expected === tokenMeta.signature;
+        const key = await crypto.subtle.importKey(
+          'raw',
+          new TextEncoder().encode(secretValue),
+          { name: 'HMAC', hash: 'SHA-256' },
+          false,
+          ['verify']
+        );
+        const signatureBytes = base64UrlDecodeBytes(tokenMeta.signature);
+        isValid = Boolean(signatureBytes) && await crypto.subtle.verify(
+          'HMAC', key, signatureBytes, new TextEncoder().encode(data)
+        );
       } else if (algo === 'RS256' || algo === 'PS256') {
         const publicKey = publicKeyTextarea.value;
         const pubKey = await importRsaPublicKey(publicKey, algo);

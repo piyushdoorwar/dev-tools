@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import {
   EXTERNAL_ASSETS,
+  fetchExternalAsset,
   localizeExternalReferences,
   verifyIntegrity,
 } from '../scripts/external-assets.mjs';
@@ -23,7 +24,7 @@ test('tracks every external script and stylesheet used by the source pages', asy
 
   assert.deepEqual(
     [...discoveredSources].sort(),
-    EXTERNAL_ASSETS.map((asset) => asset.source).sort(),
+    EXTERNAL_ASSETS.filter((asset) => asset.htmlReference !== false).map((asset) => asset.source).sort(),
   );
 });
 
@@ -52,4 +53,16 @@ test('checks downloaded bytes against their integrity digest', () => {
     true,
   );
   assert.equal(verifyIntegrity(Buffer.from('changed'), EXTERNAL_ASSETS[0].integrity), false);
+});
+
+test('retries transient external download failures', async () => {
+  let attempts = 0;
+  const response = await fetchExternalAsset('https://example.test/asset.js', async () => {
+    attempts += 1;
+    if (attempts < 3) throw new Error('temporary network failure');
+    return { ok: true, status: 200 };
+  }, { attempts: 3, timeoutMs: 100 });
+
+  assert.equal(response.ok, true);
+  assert.equal(attempts, 3);
 });

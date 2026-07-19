@@ -1,4 +1,13 @@
 import { expect, test } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { inflateRawSync, zstdDecompressSync } from 'node:zlib';
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__DEV_TOOLS_DISABLE_SERVICE_WORKER__ = true;
+  });
+});
 
 const TOOL_ROUTES = [
   'base-converter',
@@ -21,6 +30,8 @@ const TOOL_ROUTES = [
 
 test('quick launch and recently used cards open their tools', async ({ page }) => {
   await page.goto('/');
+  await page.waitForLoadState('load');
+  expect(await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length)).toBe(0);
   await page.locator('#quickLaunchTools [data-tool-id="markdown-editor"]').click();
   await expect(page.locator('iframe[data-tool-id="markdown-editor"]')).toHaveClass(/is-visible/);
   await expect(page).toHaveURL(/#markdown-editor$/);
@@ -108,6 +119,8 @@ test('TOON conversion round-trips nested and delimiter-sensitive JSON', async ({
         rows: [{ id: 1, label: 'one|first' }, { id: 2, label: 'two' }],
       },
       [1, 'root|value', { nested: ['x', false] }],
+      {},
+      { '@root': { preserved: true } },
     ];
     return fixtures.map((fixture) => {
       const toon = jsonToToon(fixture, 2, '|');
@@ -117,6 +130,19 @@ test('TOON conversion round-trips nested and delimiter-sensitive JSON', async ({
 
   for (const item of result) expect(item.parsed).toEqual(item.fixture);
   expect(result[0].toon).toContain('rows[2]');
+});
+
+test('TOON validation rejects malformed input', async ({ page }) => {
+  await page.goto('/tools/json-toon-converter/');
+  const result = await page.evaluate(() => {
+    try {
+      validateToon('this is not Toon syntax');
+      return 'accepted';
+    } catch (error) {
+      return error.message;
+    }
+  });
+  expect(result).toContain('Invalid Toon line');
 });
 
 test('JSON/XML conversion emits valid XML for arrays and invalid XML key names', async ({ page }) => {
@@ -184,6 +210,149 @@ test('JWT signing and verification work for HMAC, RSA-PSS, and ECDSA', async ({ 
       { name: 'ECDSA', hash: 'SHA-256' }, pair.publicKey, signature, new TextEncoder().encode(data));
   });
   expect(esValid).toBe(true);
+});
+
+test('JWT verification uses the original encoded signing input', async ({ page }) => {
+  await page.goto('/tools/jwt-debugger/');
+  const token = await page.evaluate(async () => {
+    const header = base64UrlEncode('{"typ":"JWT",  "alg":"HS256"}');
+    const payload = base64UrlEncode('{"sub":"123",  "admin":true}');
+    const data = `${header}.${payload}`;
+    return `${data}.${await computeSignature(data, 'test-secret', 'HS256')}`;
+  });
+  await page.locator('#jwtInput').fill(token);
+  await page.locator('#jwtInput').dispatchEvent('input');
+  await page.locator('#secretTextarea').fill('test-secret');
+  await page.locator('#verifyBtn').click();
+  await expect(page.locator('.status-label')).toHaveText('Signature verified');
+});
+
+test('HTML Preview loads HTML mode and exports connected assets', async ({ page }) => {
+  await page.goto('/tools/html-preview/');
+  const result = await page.evaluate(() => {
+    htmlEditor.setValue('<main><h1>Hello</h1></main>');
+    htmlEditor.refresh();
+    return {
+      hasXmlMode: Boolean(CodeMirror.modes.xml),
+      tags: htmlEditor.getWrapperElement().querySelectorAll('.cm-tag').length,
+      exported: buildExportHtml('<main>Hello</main>'),
+    };
+  });
+  expect(result.hasXmlMode).toBe(true);
+  expect(result.tags).toBeGreaterThan(0);
+  expect(result.exported).toContain('href="styles.css"');
+  expect(result.exported).toContain('src="script.js"');
+});
+
+test('JSON Diff renders error messages as text', async ({ page }) => {
+  await page.goto('/tools/json-diff/');
+  const result = await page.evaluate(async () => {
+    window.__toastInjection = false;
+    showToast('<img src=x onerror="window.__toastInjection=true">', 'error');
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const message = document.querySelector('.toast-message');
+    return {
+      executed: window.__toastInjection,
+      text: message?.textContent,
+      childCount: message?.children.length,
+    };
+  });
+  expect(result.executed).toBe(false);
+  expect(result.text).toContain('<img src=x');
+  expect(result.childCount).toBe(0);
+});
+
+test('nested fake-data fields cannot pollute object prototypes', async ({ page }) => {
+  await page.goto('/tools/fake-data-generator/');
+  const result = await page.evaluate(() => {
+    delete Object.prototype.devToolsPolluted;
+    const target = {};
+    setNestedValue(target, '__proto__.devToolsPolluted', 'yes');
+    const output = JSON.stringify(target);
+    const polluted = ({}).devToolsPolluted;
+    delete Object.prototype.devToolsPolluted;
+    return { output, polluted };
+  });
+  expect(result.polluted).toBeUndefined();
+  expect(result.output).toBe('{"__proto__":{"devToolsPolluted":"yes"}}');
+});
+
+test('Base Converter treats text as UTF-8 bytes and rejects oversized values', async ({ page }) => {
+  await page.goto('/tools/base-converter/');
+  await page.locator('#text-input').fill('😀');
+  await page.locator('#text-input').dispatchEvent('input');
+  await expect(page.locator('#decimal-input')).toHaveValue('240 159 152 128');
+  await expect(page.locator('#hex-input')).toHaveValue('F0 9F 98 80');
+
+  await page.locator('#decimal-input').fill('99999999');
+  await page.locator('#decimal-input').dispatchEvent('input');
+  await expect(page.locator('[data-row="decimal"]')).toHaveClass(/is-invalid/);
+
+  await page.evaluate(() => showToast('Copy failed', 'error'));
+  await expect(page.locator('#toast-container .toast-message', { hasText: 'Copy failed' })).toHaveText('Copy failed');
+});
+
+test('QR country metadata and flags load without runtime external requests', async ({ page }) => {
+  const externalRequests = [];
+  page.on('request', (request) => {
+    if (!request.url().startsWith('http://127.0.0.1:4173')) externalRequests.push(request.url());
+  });
+  await page.goto('/tools/qr-generator/');
+  await page.locator('#phoneCode').fill('91');
+  await page.locator('#phoneCode').dispatchEvent('input');
+  await expect(page.locator('#phoneFlag')).toHaveAttribute('src', /^data:image\/svg\+xml/);
+  expect(externalRequests).toEqual([]);
+});
+
+test('File Compressor creates compatible ZIP data for every algorithm', async ({ page }, testInfo) => {
+  await page.goto('/tools/file-compressor/');
+  const limitMessages = await page.evaluate(() => ({
+    files: FileCompressorValidation.validateQueueLimits(5_001, 1),
+    bytes: FileCompressorValidation.validateQueueLimits(1, 501 * 1024 * 1024),
+  }));
+  expect(limitMessages.files).toContain('5,000 files');
+  expect(limitMessages.bytes).toContain('500 MB');
+  const expected = Buffer.from('The quick brown fox jumps over the lazy dog.\n'.repeat(400));
+
+  for (const algorithm of ['store', 'deflate', 'lzma', 'zstd']) {
+    await page.locator('#fileInput').setInputFiles({
+      name: 'café-文件.txt',
+      mimeType: 'text/plain',
+      buffer: expected,
+    });
+    await page.locator('#algorithmTrigger').click();
+    await page.locator(`.algo-option[data-value="${algorithm}"]`).click();
+    await page.locator('#generateBtn').click();
+    await expect(page.locator('#doneState')).not.toHaveClass(/hidden/, { timeout: 30_000 });
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('#downloadBtn').click();
+    const download = await downloadPromise;
+    const archivePath = testInfo.outputPath(`${algorithm}.zip`);
+    await download.saveAs(archivePath);
+
+    const archive = readFileSync(archivePath);
+    const flags = archive.readUInt16LE(6);
+    const method = archive.readUInt16LE(8);
+    const compressedSize = archive.readUInt32LE(18);
+    const nameLength = archive.readUInt16LE(26);
+    const extraLength = archive.readUInt16LE(28);
+    const payloadOffset = 30 + nameLength + extraLength;
+    const payload = archive.subarray(payloadOffset, payloadOffset + compressedSize);
+    expect(flags & 0x0800).toBe(0x0800);
+
+    if (method === 0) expect(payload).toEqual(expected);
+    if (method === 8) expect(inflateRawSync(payload)).toEqual(expected);
+    if (method === 14) {
+      const output = execFileSync('python3', [
+        '-c',
+        'import sys,zipfile; z=zipfile.ZipFile(sys.argv[1]); i=z.infolist()[0]; assert i.filename == "café-文件.txt"; sys.stdout.buffer.write(z.read(i))',
+        archivePath,
+      ]);
+      expect(output).toEqual(expected);
+    }
+    if (method === 93) expect(zstdDecompressSync(payload)).toEqual(expected);
+    await page.locator('#clearBtn').click();
+  }
 });
 
 test('regex evaluation is interrupted before a catastrophic pattern freezes the page', async ({ page }) => {
