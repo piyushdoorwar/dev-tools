@@ -47,6 +47,8 @@ npm run build
 
 This regenerates `precache-manifest.js` and creates a deployable `dist/` directory containing only public application assets. GitHub Actions runs the full test suite before publishing that directory to GitHub Pages.
 
+The build also downloads the browser libraries referenced by the tools, verifies their pinned SHA-384 digests, and writes them to `dist/vendor/`. Generated HTML uses those local copies, and the service worker precaches them, so the deployed tools do not depend on third-party CDNs at runtime.
+
 Deployment builds use the GitHub Actions run number as the service-worker cache version. Each published deployment therefore receives a new cache namespace automatically. Local builds remain on the committed fallback version unless `CACHE_VERSION` is supplied:
 
 ```bash
@@ -55,7 +57,7 @@ CACHE_VERSION=123 npm run build
 
 ## Progressive Web App
 
-The service worker precaches the dashboard and every local tool asset. Navigations use a network-first strategy so deployments appear promptly, while static assets use stale-while-revalidate for fast repeat visits and offline support. Version-pinned third-party libraries are cached when available.
+The service worker precaches the dashboard, every local tool asset, and the build-vendored browser libraries. Navigations use a network-first strategy so deployments appear promptly, while static assets use stale-while-revalidate for fast repeat visits and offline support.
 
 When adding or removing public files, run `npm run precache` and commit the updated manifest.
 
