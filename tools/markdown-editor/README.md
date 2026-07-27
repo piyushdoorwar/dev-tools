@@ -6,8 +6,9 @@ A modern, feature-rich markdown editor with live preview and an elegant dark the
 
 - **Live Preview**: See your markdown rendered instantly as you type
 - **Line Numbers**: Professional code editor with synchronized line numbering
+- **Open Local Files**: Load `.md`, `.markdown`, or plain-text files directly from your system
 - **Comprehensive Toolbar**: Quick access to all markdown formatting options
-  - File operations: Undo, Copy, Paste, Download
+  - File operations: Open, Undo, Copy, Paste, Download
   - Text formatting: Headings, Font Family (dropdown selector), Bold, Italic, Underline, Strikethrough
   - Text highlighting: Color picker for highlighting text with custom colors
   - Code blocks: Inline code and code blocks
@@ -26,6 +27,7 @@ Simply open `index.html` in a modern web browser. No build process or dependenci
 ### Keyboard Shortcuts
 
 - `Ctrl+B` / `Cmd+B` - Bold
+- `Ctrl+O` / `Cmd+O` - Open a local markdown file
 - `Ctrl+I` / `Cmd+I` - Italic
 - `Ctrl+Z` / `Cmd+Z` - Undo
 - `Ctrl+Y` / `Cmd+Y` - Redo
@@ -36,6 +38,8 @@ Simply open `index.html` in a modern web browser. No build process or dependenci
 **Selection-Based Actions**: Some actions like Strikethrough, Link, and Comment require text to be selected first. These buttons will be disabled until you select text.
 
 **Download**: Export your markdown as a `.md` file with one click.
+
+**Open**: Choose a markdown or plain-text file from your system. Its contents replace the editor text and immediately appear in the live preview.
 
 **Resizable Panels**: Drag the vertical divider between editor and preview to customize your workspace layout (20-80% range).
 
@@ -49,4 +53,3 @@ Simply open `index.html` in a modern web browser. No build process or dependenci
 ## License
 
 See LICENSE file for details.
-

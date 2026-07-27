@@ -65,6 +65,19 @@ test('markdown preview renders formatting and strips executable HTML', async ({ 
   expect(await page.evaluate(() => window.__markdownXss)).toBe(false);
 });
 
+test('markdown editor opens a local file and renders its contents', async ({ page }) => {
+  await page.goto('/tools/markdown-editor/');
+  await page.locator('#markdownFileInput').setInputFiles({
+    name: 'notes.md',
+    mimeType: 'text/markdown',
+    buffer: Buffer.from('# Imported note\n\nOpened from the file system.'),
+  });
+
+  await expect(page.locator('#editor')).toHaveValue('# Imported note\n\nOpened from the file system.');
+  await expect(page.locator('#preview h1')).toHaveText('Imported note');
+  await expect(page.locator('#preview')).toContainText('Opened from the file system.');
+});
+
 test('ID generators match standards and decode current timestamps', async ({ page }) => {
   await page.goto('/tools/id-generator/');
   const result = await page.evaluate(async () => {

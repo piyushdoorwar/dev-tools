@@ -2,11 +2,13 @@ const editor = document.getElementById('editor');
 const preview = document.getElementById('preview');
 const lineNumbers = document.getElementById('line-numbers');
 const resizer = document.getElementById('resizer');
+const markdownFileInput = document.getElementById('markdownFileInput');
 
 let history = [];
 let historyIndex = -1;
 let isResizing = false;
 let isUndoRedoAction = false;
+let currentFileName = 'markdown.md';
 
 const initialMarkdown = `# Markdown Editor Guide
 
@@ -233,6 +235,9 @@ const insertAtLine = (text) => {
 };
 
 const actions = {
+  open: () => {
+    markdownFileInput.click();
+  },
   undo: () => {
     if (historyIndex > 0) {
       isUndoRedoAction = true;
@@ -279,7 +284,7 @@ const actions = {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'markdown.md';
+    a.download = currentFileName;
     a.click();
     URL.revokeObjectURL(url);
   },
@@ -371,6 +376,27 @@ const actions = {
   }
 };
 
+markdownFileInput.addEventListener('change', async () => {
+  const file = markdownFileInput.files?.[0];
+  if (!file) return;
+
+  try {
+    editor.value = await file.text();
+    currentFileName = file.name;
+    saveToHistory();
+    updateLineNumbers();
+    render();
+    updateButtonStates();
+    editor.focus();
+  } catch (error) {
+    console.error('Unable to open markdown file:', error);
+    alert('Unable to open that file. Please try again.');
+  } finally {
+    // Allow selecting the same file again after it changes on disk.
+    markdownFileInput.value = '';
+  }
+});
+
 // Attach toolbar button listeners
 document.querySelectorAll('.toolbar-btn').forEach(btn => {
   btn.addEventListener('click', (e) => {
@@ -437,6 +463,10 @@ editor.addEventListener('keydown', (e) => {
       case 'i':
         e.preventDefault();
         actions.italic();
+        break;
+      case 'o':
+        e.preventDefault();
+        actions.open();
         break;
       case 'z':
         e.preventDefault();
