@@ -25,6 +25,13 @@
       <div class="toolbar">
         <div class="toolbar-group">
           <span class="toolbar-label">File</span>
+          <button class="toolbar-btn" data-action="open" data-tooltip="Open Markdown File (Ctrl+O)" aria-label="Open Markdown File">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v1"/>
+              <path d="M3 8h18l-2 11H5L3 8z"/>
+            </svg>
+          </button>
+          <input id="markdownFileInput" type="file" accept=".md,.markdown,text/markdown,text/plain" hidden>
           <button class="toolbar-btn" data-action="undo" data-tooltip="Undo (Ctrl+Z)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 7v6h6"/>
