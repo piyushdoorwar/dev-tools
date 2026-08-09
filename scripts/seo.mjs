@@ -96,17 +96,13 @@ function renderToolLinks() {
 function renderToolAbout(tool) {
   const capabilities = tool.capabilities.map((capability) => `<li>${escapeHtml(capability)}</li>`).join('');
   return `<!-- SEO_TOOL_ABOUT_START -->
-          <aside class="tool-about" id="toolAbout">
-            <details>
-              <summary>About <span id="toolAboutLabel">${escapeHtml(tool.name)}</span></summary>
-              <div class="tool-about__content">
-                <h1 id="toolAboutTitle">${escapeHtml(tool.name)}</h1>
-                <p id="toolAboutDescription">${escapeHtml(tool.description)}</p>
-                <ul id="toolAboutCapabilities">${capabilities}</ul>
-                <p class="tool-about__privacy">Your input is processed locally in your browser and is not uploaded by Dev Tools.</p>
-              </div>
-            </details>
-          </aside>
+            <section class="modal__tool-about" id="toolAbout" aria-labelledby="toolAboutTitle">
+              <p class="modal__tool-about-label">About <span id="toolAboutLabel">${escapeHtml(tool.name)}</span></p>
+              <h3 class="modal__tool-about-title" id="toolAboutTitle">${escapeHtml(tool.name)}</h3>
+              <p class="modal__tool-about-description" id="toolAboutDescription">${escapeHtml(tool.description)}</p>
+              <ul class="modal__tool-about-capabilities" id="toolAboutCapabilities">${capabilities}</ul>
+              <p class="modal__tool-about-privacy">Your input is processed locally in your browser and is not uploaded by Dev Tools.</p>
+            </section>
           <!-- SEO_TOOL_ABOUT_END -->`;
 }
 

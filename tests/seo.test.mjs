@@ -32,7 +32,7 @@ test('homepage and every tool route have indexable, unique server-rendered SEO d
     assert.equal(description, tool.description.replaceAll('&', '&amp;').replaceAll('"', '&quot;'));
     assert.match(html, new RegExp(`<link rel="canonical" href="${toolURL(tool)}"`));
     assert.match(html, /<meta name="robots" content="index, follow,/);
-    assert.match(html, new RegExp(`<h1 id="toolAboutTitle">${tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</h1>`));
+    assert.match(html, new RegExp(`<h3 class="modal__tool-about-title" id="toolAboutTitle">${tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</h3>`));
     const json = html.match(/<script id="seoStructuredData" type="application\/ld\+json">([^<]+)<\/script>/)?.[1];
     const data = JSON.parse(json);
     assert.ok(data['@graph'].some((item) => item['@type'] === 'WebApplication' && item.url === toolURL(tool)));

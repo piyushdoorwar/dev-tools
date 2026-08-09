@@ -100,6 +100,29 @@ test('clean tool routes are indexable pages with crawlable navigation and route 
   await expect(page.locator('#allToolLinks a[href]')).toHaveCount(19);
 });
 
+test('info modal keeps the basic content and appends details for the active tool', async ({ page }) => {
+  await page.goto('/');
+
+  await page.locator('#supportBtn').click();
+  await expect(page.locator('#supportModal')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('#supportModal')).toContainText('piyushdoorwar+devtools@gmail.com');
+  await expect(page.locator('#toolAbout')).toBeHidden();
+  await page.locator('#modalClose').click();
+
+  await page.locator('#toolList .menu__item[data-tool-id="image-converter"]').click();
+  await page.locator('#supportBtn').click();
+  await expect(page.locator('#toolAbout')).toBeVisible();
+  await expect(page.locator('#toolAboutLabel')).toHaveText('Image Converter');
+  await expect(page.locator('#toolAboutDescription')).toContainText('Convert PNG, JPEG, WebP, SVG, and BMP');
+  await expect(page.locator('#toolAboutCapabilities li')).toHaveCount(3);
+  await page.locator('#modalClose').click();
+
+  await page.locator('#toolList .menu__item[data-tool-id="jwt-debugger"]').click();
+  await page.locator('#supportBtn').click();
+  await expect(page.locator('#toolAboutLabel')).toHaveText('JWT Debugger');
+  await expect(page.locator('#toolAboutDescription')).toContainText('JSON Web Tokens');
+});
+
 test('dashboard creates an iframe only for the selected tool', async ({ page }) => {
   await page.goto('/');
   for (const link of await page.locator('#toolList .menu__item').all()) {
