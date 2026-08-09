@@ -26,6 +26,13 @@ test('service worker only removes old dev-tools cache namespaces', async () => {
   assert.doesNotMatch(source, /\.filter\(\(cacheName\) => cacheName !== CACHE_NAME\)/);
 });
 
+test('service worker always returns a Response for handled request failures', async () => {
+  const source = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
+  assert.match(source, /return fallback \|\| Response\.error\(\)/);
+  assert.match(source, /return Response\.error\(\)/);
+  assert.doesNotMatch(source, /\.catch\(\(\) => cached\)/);
+});
+
 test('rewrites only the deployment cache declaration', () => {
   const source = "const CACHE_NAME = 'dev-tools-v16';\nconst value = 'dev-tools-v16';\n";
   assert.equal(

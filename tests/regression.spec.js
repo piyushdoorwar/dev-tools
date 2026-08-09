@@ -94,6 +94,15 @@ test('pinned cards use an icon without visible pinned text', async ({ page }) =>
   await expect(badge).toHaveText('');
 });
 
+test('dashboard search filters tools without an external utility library', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#toolSearch').fill('image');
+  await expect(page.locator('#toolList .menu__item')).toHaveCount(1);
+  await expect(page.locator('#toolList .menu__item')).toContainText('Image Converter');
+  await page.locator('#toolSearch').fill('no-such-tool');
+  await expect(page.locator('#toolList')).toContainText('No matching tools.');
+});
+
 test('markdown preview renders formatting and strips executable HTML', async ({ page }) => {
   await page.goto('/tools/markdown-editor/');
   await page.evaluate(() => { window.__markdownXss = false; });

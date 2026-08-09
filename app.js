@@ -839,10 +839,9 @@ function applySearch() {
     return;
   }
 
-  // Using Lodash filter for better performance
-  const filtered = _.filter(TOOLS, (t) => {
+  const filtered = TOOLS.filter((t) => {
     const hay = `${t.name} ${t.id} ${t.url}`.toLowerCase();
-    return _.includes(hay, q);
+    return hay.includes(q);
   });
   renderList(filtered, { showPinnedSection: true });
 }
