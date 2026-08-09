@@ -57,7 +57,7 @@ test('quick launch and recently used cards open their tools', async ({ page }) =
   expect(await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length)).toBe(0);
   await page.locator('#quickLaunchTools [data-tool-id="markdown-editor"]').click();
   await expect(page.locator('iframe[data-tool-id="markdown-editor"]')).toHaveClass(/is-visible/);
-  await expect(page).toHaveURL(/\/markdown-editor$/);
+  await expect(page).toHaveURL(/\/markdown-editor\/$/);
 
   await page.locator('#brandHome').click();
   const recent = page.locator('#recentTools [data-tool-id="markdown-editor"]');
@@ -68,17 +68,48 @@ test('quick launch and recently used cards open their tools', async ({ page }) =
 
 test('dashboard uses clean routes and migrates legacy or direct-load URLs', async ({ page }) => {
   await page.goto('/#toon-to-json-converter');
-  await expect(page).toHaveURL(/\/toon-to-json-converter$/);
+  await expect(page).toHaveURL(/\/toon-to-json-converter\/$/);
   await expect(page.locator('iframe[data-tool-id="toon-json-converter"]')).toHaveClass(/is-visible/);
 
   await page.goto('/?route=image-converter');
-  await expect(page).toHaveURL(/\/image-converter$/);
+  await expect(page).toHaveURL(/\/image-converter\/$/);
   await expect(page.locator('iframe[data-tool-id="image-converter"]')).toHaveClass(/is-visible/);
 
   await page.locator('[data-tool-id="markdown-editor"].menu__item').click();
-  await expect(page).toHaveURL(/\/markdown-editor$/);
+  await expect(page).toHaveURL(/\/markdown-editor\/$/);
   await page.goBack();
-  await expect(page).toHaveURL(/\/image-converter$/);
+  await expect(page).toHaveURL(/\/image-converter\/$/);
+  await expect(page.locator('iframe[data-tool-id="image-converter"]')).toHaveClass(/is-visible/);
+});
+
+test('clean tool routes are indexable pages with crawlable navigation and route metadata', async ({ page }) => {
+  const response = await page.goto('/html-preview/');
+  expect(response?.status()).toBe(200);
+  await expect(page).toHaveTitle('HTML Preview — Free Online Developer Tool | Dev Tools');
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    'href',
+    /\/html-preview\/$/,
+  );
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /HTML, CSS, and JavaScript/);
+  await expect(page.locator('#toolAbout')).toBeAttached();
+  await expect(page.locator('#toolAboutTitle')).toHaveText('HTML Preview');
+  await expect(page.locator('#toolList a.menu__item[href]')).toHaveCount(19);
+
+  await page.locator('#brandHome').click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('#allToolLinks a[href]')).toHaveCount(19);
+});
+
+test('dashboard creates an iframe only for the selected tool', async ({ page }) => {
+  await page.goto('/');
+  for (const link of await page.locator('#toolList .menu__item').all()) {
+    await link.hover();
+  }
+  await page.waitForTimeout(250);
+  await expect(page.locator('#frameHost iframe')).toHaveCount(0);
+
+  await page.locator('#toolList .menu__item[data-tool-id="image-converter"]').click();
+  await expect(page.locator('#frameHost iframe')).toHaveCount(1);
   await expect(page.locator('iframe[data-tool-id="image-converter"]')).toHaveClass(/is-visible/);
 });
 

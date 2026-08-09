@@ -17,6 +17,7 @@ test('tracks every external script and stylesheet used by the source pages', asy
     const html = await readFile(htmlFile, 'utf8');
     const tags = html.match(/<(?:script|link)\b[^>]*(?:src|href)=["']https:\/\/[^>]+>/gi) || [];
     for (const tag of tags) {
+      if (/<link\b[^>]*\brel=["']canonical["']/i.test(tag)) continue;
       const source = tag.match(/(?:src|href)=["'](https:\/\/[^"']+)/i)?.[1];
       if (source) discoveredSources.add(source);
     }

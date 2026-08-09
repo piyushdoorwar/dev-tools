@@ -50,6 +50,8 @@ This regenerates `precache-manifest.js` and creates a deployable `dist/` directo
 
 The build also downloads the browser libraries referenced by the tools, verifies their pinned SHA-384 digests, and writes them to `dist/vendor/`. Generated HTML uses those local copies, and the service worker precaches them, so the deployed tools do not depend on third-party CDNs at runtime.
 
+The build generates an HTTP-200 page for every clean tool route, plus unique metadata, canonical URLs, JSON-LD, `sitemap.xml`, `robots.txt`, `llms.txt`, and `llms-full.txt`. The public route catalog and all discovery files are generated from `tool-catalog.js` so they remain synchronized.
+
 Deployment builds use the GitHub Actions run number as the service-worker cache version. Each published deployment therefore receives a new cache namespace automatically. Local builds remain on the committed fallback version unless `CACHE_VERSION` is supplied:
 
 ```bash
@@ -65,7 +67,7 @@ When adding or removing public files, run `npm run precache` and commit the upda
 ## Add a tool
 
 1. Add the tool under `tools/<tool-id>/`.
-2. Register it in the `TOOLS` array in `app.js`.
+2. Register its route, description, and capabilities in `tool-catalog.js`.
 3. Reuse `tools/main.css` and `tools/main.js` for shared styling and accessibility helpers.
 4. Add a focused regression test when the tool introduces new behavior.
 5. Run `npm run build` and `npm test`.
@@ -78,11 +80,13 @@ dev-tools/
 ├── scripts/               # Cache generation, syntax checks, and site build
 ├── tests/                 # Playwright regression tests
 ├── tools/                 # Standalone developer utilities
-├── app.js                 # Dashboard behavior and tool registry
+├── app.js                 # Dashboard behavior
 ├── index.html             # Dashboard shell
 ├── manifest.json          # Web app manifest
 ├── precache-manifest.js   # Generated offline asset inventory
+├── social-preview.png     # Open Graph and social sharing image
 ├── styles.css             # Dashboard styles
+├── tool-catalog.js        # Shared route, content, and SEO metadata
 └── sw.js                  # Service worker caching strategies
 ```
 

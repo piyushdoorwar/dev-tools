@@ -492,10 +492,6 @@
   el.dropZone.addEventListener('drop', (event) => selectFile(event.dataTransfer?.files?.[0]));
   window.addEventListener('dragover', (event) => event.preventDefault());
   window.addEventListener('drop', (event) => event.preventDefault());
-  window.addEventListener('beforeunload', () => {
-    revokeUrl('sourceUrl');
-    revokeUrl('resultUrl');
-  });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && el.infoModal.classList.contains('is-open')) closeInfo();
   });

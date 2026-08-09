@@ -9,6 +9,7 @@ for (const htmlFile of htmlFiles) {
   const html = await readFile(htmlFile, 'utf8');
   const externalTags = html.match(/<(?:script|link)\b[^>]*(?:src|href)=["']https:\/\/[^>]+>/gi) || [];
   for (const tag of externalTags) {
+    if (/<link\b[^>]*\brel=["']canonical["']/i.test(tag)) continue;
     if (!/\bintegrity=["']sha384-/i.test(tag) || !/\bcrossorigin=["']anonymous["']/i.test(tag)) {
       failures.push(`${htmlFile}: external asset is missing SHA-384 integrity metadata: ${tag}`);
     }

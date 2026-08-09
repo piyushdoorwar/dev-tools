@@ -1,8 +1,6 @@
 const APP_ROOT_URL = new URL("./", document.currentScript?.src || window.location.href);
 const APP_ROOT_PATH = APP_ROOT_URL.pathname.endsWith("/") ? APP_ROOT_URL.pathname : `${APP_ROOT_URL.pathname}/`;
 const BASE = new URL("tools/", APP_ROOT_URL).href;
-const PRELOAD_ON_HOVER = true;
-const PRELOAD_DELAY_MS = 160;
 const PINNED_TOOLS_KEY = "devtools:pinned-tools";
 const RECENT_TOOLS_KEY = "devtools:recent-tools";
 const RECENT_TOOLS_LIMIT = 5;
@@ -15,116 +13,16 @@ const QUICK_LAUNCH_TOOL_IDS = [
   "base-converter",
 ];
 const NEW_TOOL_IDS = new Set(["image-converter", "base-converter", "json-toon-converter", "toon-json-converter"]);
+const TOOL_CATALOG = globalThis.DEV_TOOLS_CATALOG;
 
-// NOTE: Assumption: each tool lives at `${BASE}${id}/` and exposes `${BASE}${id}/favicon.svg`.
-// If any URL differs, just edit it here.
-const TOOLS = [
-  {
-    id: "base-converter",
-    name: "Base Converter",
-    url: `${BASE}base-converter/`,
-  },
-  {
-    id: "crypto-generator",
-    name: "Crypto Generator",
-    url: `${BASE}crypto-generator/`,
-  },
-  {
-    id: "fake-data-generator",
-    name: "Fake Data Generator",
-    url: `${BASE}fake-data-generator/`,
-  },
-  {
-    id: "file-compressor",
-    name: "File Compressor",
-    url: `${BASE}file-compressor/`,
-  },
-  {
-    id: "html-preview",
-    name: "HTML Preview",
-    url: `${BASE}html-preview/`,
-  },
-  {
-    id: "image-converter",
-    name: "Image Converter",
-    url: `${BASE}image-converter/`,
-  },
-  {
-    id: "id-generator",
-    name: "ID Generator",
-    url: `${BASE}id-generator/`,
-  },
-  {
-    id: "json-diff",
-    name: "JSON Diff",
-    url: `${BASE}json-diff/`,
-  },
-  {
-    id: "json-toon-converter",
-    name: "JSON to Toon Converter",
-    url: `${BASE}json-toon-converter`,
-    endpoint: "#json-toon",
-  },
-  {
-    id: "json-xml-converter",
-    name: "JSON to XML Converter",
-    url: `${BASE}json-xml-converter`,
-    endpoint: "#json-xml",
-  },
-  {
-    id: "jwt-debugger",
-    name: "JWT Debugger",
-    url: `${BASE}jwt-debugger/`,
-  },
-  {
-    id: "markdown-editor",
-    name: "Markdown Editor",
-    url: `${BASE}markdown-editor/`,
-  },
-  {
-    id: "qr-generator",
-    name: "QR Generator",
-    url: `${BASE}qr-generator/`,
-  },
-  {
-    id: "regex-tester",
-    name: "Regex Tester",
-    url: `${BASE}regex-tester/`,
-  },
-  {
-    id: "sql-formatter",
-    name: "SQL Formatter",
-    url: `${BASE}sql-formatter/`,
-  },
-  {
-    id: "text-diff",
-    name: "Text Diff",
-    url: `${BASE}text-diff/`,
-  },
-  {
-    id: "toon-json-converter",
-    name: "Toon to JSON Converter",
-    url: `${BASE}json-toon-converter`,
-    endpoint: "#toon-json",
-  },
-  {
-    id: "unit-converter",
-    name: "Unit Converter",
-    url: `${BASE}unit-converter/`,
-  },
-  {
-    id: "xml-json-converter",
-    name: "XML to JSON Converter",
-    url: `${BASE}json-xml-converter`,
-    endpoint: "#xml-json",
-  },
-].map((t) => ({
-  ...t,
-  route: t.route || toolNameToRoute(t.name),
-  url: t.url + (t.endpoint || ''),
-  faviconUrl: t.endpoint 
-    ? `${t.url}/favicon${t.endpoint.replace('#', '-')}.svg`
-    : `${BASE}${t.id}/favicon.svg`,
+if (!Array.isArray(TOOL_CATALOG) || TOOL_CATALOG.length === 0) {
+  throw new Error("Dev Tools catalog failed to load.");
+}
+
+const TOOLS = TOOL_CATALOG.map((tool) => ({
+  ...tool,
+  url: `${BASE}${tool.toolPath}/${tool.endpoint}`,
+  faviconUrl: `${BASE}${tool.toolPath}/${tool.favicon}`,
 }));
 
 const els = {
@@ -148,13 +46,128 @@ const els = {
   commandPaletteList: document.getElementById("commandPaletteList"),
   recentTools: document.getElementById("recentTools"),
   quickLaunchTools: document.getElementById("quickLaunchTools"),
+  allToolLinks: document.getElementById("allToolLinks"),
+  toolAbout: document.getElementById("toolAbout"),
+  toolAboutLabel: document.getElementById("toolAboutLabel"),
+  toolAboutTitle: document.getElementById("toolAboutTitle"),
+  toolAboutDescription: document.getElementById("toolAboutDescription"),
+  toolAboutCapabilities: document.getElementById("toolAboutCapabilities"),
 };
+
+const HOME_SEO = {
+  title: "Dev Tools — Fast, Private Browser Utilities",
+  description: "Use fast, free developer tools for formatting, conversion, testing, generation, and file processing directly in your browser.",
+};
+
+function canonicalURL(tool = null) {
+  return new URL(tool ? `${tool.route}/` : "", APP_ROOT_URL).href;
+}
+
+function setMetaContent(selector, value) {
+  const element = document.querySelector(selector);
+  if (element) element.setAttribute("content", value);
+}
+
+function structuredDataFor(tool = null) {
+  const website = {
+    "@type": "WebSite",
+    "@id": `${canonicalURL()}#website`,
+    name: "Dev Tools",
+    url: canonicalURL(),
+    description: HOME_SEO.description,
+  };
+
+  if (!tool) {
+    return {
+      "@context": "https://schema.org",
+      "@graph": [
+        website,
+        {
+          "@type": "ItemList",
+          name: "Free browser developer tools",
+          itemListElement: TOOLS.map((item, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: item.name,
+            url: canonicalURL(item),
+          })),
+        },
+      ],
+    };
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      website,
+      {
+        "@type": "WebApplication",
+        "@id": `${canonicalURL(tool)}#app`,
+        name: tool.name,
+        url: canonicalURL(tool),
+        description: tool.description,
+        applicationCategory: "DeveloperApplication",
+        operatingSystem: "Any",
+        browserRequirements: "Requires a modern browser with JavaScript enabled.",
+        featureList: tool.capabilities,
+        isAccessibleForFree: true,
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "USD",
+        },
+        isPartOf: { "@id": `${canonicalURL()}#website` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Dev Tools", item: canonicalURL() },
+          { "@type": "ListItem", position: 2, name: tool.name, item: canonicalURL(tool) },
+        ],
+      },
+    ],
+  };
+}
+
+function updatePageSEO(tool = null) {
+  const title = tool ? `${tool.name} — Free Online Developer Tool | Dev Tools` : HOME_SEO.title;
+  const description = tool?.description || HOME_SEO.description;
+  const url = canonicalURL(tool);
+  document.title = title;
+  setMetaContent('meta[name="description"]', description);
+  setMetaContent('meta[property="og:title"]', title);
+  setMetaContent('meta[property="og:description"]', description);
+  setMetaContent('meta[property="og:url"]', url);
+  setMetaContent('meta[name="twitter:title"]', title);
+  setMetaContent('meta[name="twitter:description"]', description);
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) canonical.setAttribute("href", url);
+  const structuredData = document.getElementById("seoStructuredData");
+  if (structuredData) structuredData.textContent = JSON.stringify(structuredDataFor(tool));
+
+  if (!els.toolAbout) return;
+  els.toolAbout.hidden = !tool;
+  if (!tool) return;
+  els.toolAboutLabel.textContent = tool.name;
+  els.toolAboutTitle.textContent = tool.name;
+  els.toolAboutDescription.textContent = tool.description;
+  els.toolAboutCapabilities.innerHTML = "";
+  for (const capability of tool.capabilities) {
+    const item = document.createElement("li");
+    item.textContent = capability;
+    els.toolAboutCapabilities.appendChild(item);
+  }
+}
+
+function handleInternalToolClick(event, tool) {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  setActive(tool);
+}
 
 let activeToolId = null;
 let activeFrame = null;
 const framesById = new Map();
-let preloadTimer = null;
-let pendingPreloadId = null;
 let loaderInterval = null;
 let loaderStart = 0;
 let pinnedToolIds = loadPinnedToolIds();
@@ -299,25 +312,6 @@ function getOrCreateFrame(tool, opts = {}) {
   return frame;
 }
 
-function schedulePreload(tool) {
-  if (!PRELOAD_ON_HOVER || !tool) return;
-  if (framesById.has(tool.id)) return;
-  pendingPreloadId = tool.id;
-  if (preloadTimer) {
-    clearTimeout(preloadTimer);
-  }
-  preloadTimer = setTimeout(() => {
-    preloadTimer = null;
-    const id = pendingPreloadId;
-    pendingPreloadId = null;
-    if (!id) return;
-    const match = TOOLS.find((t) => t.id === id);
-    if (match && !framesById.has(match.id)) {
-      getOrCreateFrame(match, { loading: "lazy" });
-    }
-  }, PRELOAD_DELAY_MS);
-}
-
 function normalize(text) {
   return String(text || "").trim().toLowerCase();
 }
@@ -331,7 +325,7 @@ function getMatchingTools(query) {
   if (!q) return source;
 
   return source.filter((tool) => {
-    const hay = `${tool.name} ${tool.id} ${tool.url}`.toLowerCase();
+    const hay = `${tool.name} ${tool.id} ${tool.description} ${tool.capabilities.join(" ")}`.toLowerCase();
     return hay.includes(q);
   });
 }
@@ -341,9 +335,9 @@ function getToolById(toolId) {
 }
 
 function createWelcomeToolButton(tool, options = {}) {
-  const button = document.createElement("button");
+  const button = document.createElement("a");
   button.className = "empty__feature";
-  button.type = "button";
+  button.href = canonicalURL(tool);
   button.dataset.toolId = tool.id;
 
   const icon = document.createElement("span");
@@ -394,9 +388,7 @@ function createWelcomeToolButton(tool, options = {}) {
 
   button.appendChild(icon);
   button.appendChild(copy);
-  button.addEventListener("click", () => setActive(tool));
-  button.addEventListener("mouseenter", () => schedulePreload(tool));
-  button.addEventListener("focus", () => schedulePreload(tool));
+  button.addEventListener("click", (event) => handleInternalToolClick(event, tool));
   return button;
 }
 
@@ -432,11 +424,6 @@ function renderWelcomeTools() {
   });
 }
 
-// Convert tool name to URL-friendly format
-function toolNameToRoute(name) {
-  return name.toLowerCase().replace(/\s+/g, "-");
-}
-
 // Convert URL route to tool ID
 function routeToToolId(route) {
   if (!route) return null;
@@ -461,7 +448,7 @@ function getCurrentRoute() {
 
 // Update URL without triggering navigation
 function updateURL(route, replaceState = false) {
-  const newURL = route ? `${APP_ROOT_PATH}${route}` : APP_ROOT_PATH;
+  const newURL = route ? `${APP_ROOT_PATH}${route}/` : APP_ROOT_PATH;
   if (replaceState) {
     window.history.replaceState(null, "", newURL);
   } else {
@@ -471,9 +458,10 @@ function updateURL(route, replaceState = false) {
 
 function setActive(tool, updateHistory = true) {
   activeToolId = tool?.id ?? null;
+  updatePageSEO(tool);
 
   // Update menu selection
-  for (const btn of els.list.querySelectorAll("button[data-tool-id]")) {
+  for (const btn of els.list.querySelectorAll(".menu__item[data-tool-id]")) {
     const isActive = btn.dataset.toolId === activeToolId;
     btn.setAttribute("aria-current", isActive ? "true" : "false");
   }
@@ -728,9 +716,9 @@ function createToolListItem(tool) {
   const li = document.createElement("li");
   li.className = "menu__row";
 
-  const btn = document.createElement("button");
-  btn.type = "button";
+  const btn = document.createElement("a");
   btn.className = "menu__item";
+  btn.href = canonicalURL(tool);
   btn.dataset.toolId = tool.id;
   btn.title = tool.name;
   btn.setAttribute("aria-current", tool.id === activeToolId ? "true" : "false");
@@ -771,14 +759,11 @@ function createToolListItem(tool) {
 
   btn.appendChild(icon);
   btn.appendChild(label);
-  btn.addEventListener("click", () => setActive(tool));
+  btn.addEventListener("click", (event) => handleInternalToolClick(event, tool));
   pin.addEventListener("click", (event) => {
     event.stopPropagation();
     togglePinnedTool(tool.id);
   });
-  btn.addEventListener("mouseenter", () => schedulePreload(tool));
-  btn.addEventListener("focus", () => schedulePreload(tool));
-
   li.appendChild(btn);
   li.appendChild(pin);
   return li;
@@ -840,7 +825,7 @@ function applySearch() {
   }
 
   const filtered = TOOLS.filter((t) => {
-    const hay = `${t.name} ${t.id} ${t.url}`.toLowerCase();
+    const hay = `${t.name} ${t.id} ${t.description} ${t.capabilities.join(" ")}`.toLowerCase();
     return hay.includes(q);
   });
   renderList(filtered, { showPinnedSection: true });
@@ -851,6 +836,13 @@ syncCommandShortcutLabels();
 renderWelcomeTools();
 renderList(TOOLS, { showPinnedSection: true });
 
+els.allToolLinks?.addEventListener("click", (event) => {
+  const link = event.target.closest("a[data-tool-id]");
+  if (!link) return;
+  const tool = getToolById(link.dataset.toolId);
+  if (tool) handleInternalToolClick(event, tool);
+});
+
 // Load tool from URL on page load
 function loadFromURL() {
   const route = getCurrentRoute();
@@ -859,7 +851,7 @@ function loadFromURL() {
     const tool = TOOLS.find(t => t.id === toolId);
     if (tool) {
       setActive(tool, false); // Don't update history on initial load
-      const expectedPath = `${APP_ROOT_PATH}${tool.route}`;
+      const expectedPath = `${APP_ROOT_PATH}${tool.route}/`;
       if (window.location.pathname !== expectedPath || window.location.search || window.location.hash) {
         updateURL(tool.route, true);
       }
@@ -883,7 +875,7 @@ els.search.addEventListener("input", applySearch);
 // Keyboard: Enter loads first visible tool
 els.search.addEventListener("keydown", (e) => {
   if (e.key !== "Enter") return;
-  const firstBtn = els.list.querySelector("button.menu__item");
+  const firstBtn = els.list.querySelector(".menu__item");
   if (firstBtn) firstBtn.click();
 });
 

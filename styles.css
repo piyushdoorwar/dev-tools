@@ -483,6 +483,7 @@ body {
   color: var(--text);
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
   transition: all 0.2s ease;
 }
 
@@ -1190,6 +1191,7 @@ body {
   color: var(--text);
   font: inherit;
   text-align: left;
+  text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   position: relative;
@@ -1259,6 +1261,36 @@ body {
 
 .empty__feature:hover .empty__feature-icon svg {
   color: var(--text);
+}
+
+.seo-tool-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.seo-tool-link {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.seo-tool-link:hover,
+.seo-tool-link:focus-visible {
+  border-color: var(--purple-light);
+  background: var(--bg-elevated);
+  color: var(--text);
+  outline: none;
 }
 
 .empty__feature-copy {
@@ -1510,6 +1542,73 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
+}
+
+.tool-about {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 6;
+  width: min(420px, calc(100% - 36px));
+  color: var(--text);
+}
+
+.tool-about details {
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  background: rgba(20, 20, 24, 0.96);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.tool-about summary {
+  padding: 11px 14px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.tool-about details[open] summary {
+  border-bottom: 1px solid var(--border);
+  color: var(--yellow);
+}
+
+.tool-about__content {
+  max-height: min(420px, 55vh);
+  overflow: auto;
+  padding: 16px;
+}
+
+.tool-about__content h1 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.tool-about__content p,
+.tool-about__content li {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.tool-about__content p {
+  margin: 0;
+}
+
+.tool-about__content ul {
+  display: grid;
+  gap: 4px;
+  margin: 12px 0;
+  padding-left: 20px;
+}
+
+.tool-about__privacy {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 
 .frame-loader {

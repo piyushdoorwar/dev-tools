@@ -10,8 +10,10 @@ const ROOT_ASSETS = new Set([
   'manifest.json',
   'styles.css',
   'sw.js',
+  'social-preview.png',
+  'tool-catalog.js',
 ]);
-const PUBLIC_EXTENSIONS = new Set(['.css', '.html', '.js', '.json', '.svg']);
+const PUBLIC_EXTENSIONS = new Set(['.css', '.html', '.js', '.json', '.png', '.svg']);
 
 async function walk(directory, rootDirectory) {
   const entries = await readdir(directory, { withFileTypes: true });

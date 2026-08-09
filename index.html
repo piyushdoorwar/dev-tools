@@ -4,16 +4,33 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#0d0d0d" />
-    <meta name="description" content="Developer utilities in one place - A beautiful, modern dev tools dashboard" />
-    <meta name="keywords" content="developer tools, utilities, markdown editor, jwt debugger, html preview" />
+    <meta name="description" content="Use fast, free developer tools for formatting, conversion, testing, generation, and file processing directly in your browser." />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="author" content="Dev Tools" />
     <meta name="github-repo" content="piyushdoorwar/dev-tools" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Dev Tools - All Your Developer Utilities</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Dev Tools" />
+    <meta property="og:title" content="Dev Tools — Fast, Private Browser Utilities" />
+    <meta property="og:description" content="Use fast, free developer tools for formatting, conversion, testing, generation, and file processing directly in your browser." />
+    <meta property="og:url" content="https://piyushdoorwar.github.io/dev-tools/" />
+    <meta property="og:image" content="https://piyushdoorwar.github.io/dev-tools/social-preview.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Dev Tools — fast, private browser utilities" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Dev Tools — Fast, Private Browser Utilities" />
+    <meta name="twitter:description" content="Use fast, free developer tools for formatting, conversion, testing, generation, and file processing directly in your browser." />
+    <meta name="twitter:image" content="https://piyushdoorwar.github.io/dev-tools/social-preview.png" />
+    <meta name="twitter:image:alt" content="Dev Tools — fast, private browser utilities" />
+    <link rel="canonical" href="https://piyushdoorwar.github.io/dev-tools/" />
+    <link rel="alternate" type="text/plain" href="./llms.txt" title="LLM content index" />
+    <title>Dev Tools — Fast, Private Browser Utilities</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="stylesheet" href="./styles.css" />
+    <script id="seoStructuredData" type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Dev Tools","url":"https://piyushdoorwar.github.io/dev-tools/"}</script>
   </head>
   <body>
     <div class="app" id="app">
@@ -192,6 +209,19 @@
                 </div>
                 <div class="empty__features" id="quickLaunchTools"></div>
               </section>
+
+              <section class="empty__section" aria-labelledby="allToolsTitle">
+                <div class="empty__section-header">
+                  <div>
+                    <h2 id="allToolsTitle" class="empty__section-title">All developer tools</h2>
+                    <p class="empty__section-subtitle">Browse every free browser utility.</p>
+                  </div>
+                  <span class="empty__section-meta">19 tools</span>
+                </div>
+                <nav class="seo-tool-links" id="allToolLinks" aria-label="All developer tools">
+                  <!-- SEO_TOOL_LINKS -->
+                </nav>
+              </section>
               
               <div class="empty__cta">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -214,6 +244,20 @@
               </div>
             </div>
           </div>
+
+          <!-- SEO_TOOL_ABOUT_START -->
+          <aside class="tool-about" id="toolAbout" hidden>
+            <details>
+              <summary>About <span id="toolAboutLabel">this tool</span></summary>
+              <div class="tool-about__content">
+                <h1 id="toolAboutTitle">Developer Tool</h1>
+                <p id="toolAboutDescription"></p>
+                <ul id="toolAboutCapabilities"></ul>
+                <p class="tool-about__privacy">Your input is processed locally in your browser and is not uploaded by Dev Tools.</p>
+              </div>
+            </details>
+          </aside>
+          <!-- SEO_TOOL_ABOUT_END -->
         </section>
       </main>
     </div>
@@ -221,19 +265,16 @@
     <!-- Cloudflare Web Analytics -->
     <script src="./analytics.js"></script>
     <!-- End Cloudflare Web Analytics -->
+    <script src="./tool-catalog.js"></script>
     <script src="./app.js"></script>
     
     <!-- PWA Service Worker Registration -->
     <script>
       if (!window.__DEV_TOOLS_DISABLE_SERVICE_WORKER__ && 'serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(registration => {
-              console.log('SW registered:', registration);
-            })
-            .catch(error => {
-              console.log('SW registration failed:', error);
-            });
+          navigator.serviceWorker.register('./sw.js').catch(error => {
+            console.error('SW registration failed:', error);
+          });
         });
       }
     </script>
