@@ -10,6 +10,7 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - File Compressor
 - HTML Preview
 - ID Generator
+- Image Converter
 - JSON Diff
 - JSON to TOON / TOON to JSON Converter
 - JSON to XML / XML to JSON Converter

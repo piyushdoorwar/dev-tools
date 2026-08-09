@@ -12,7 +12,7 @@ const QUICK_LAUNCH_TOOL_IDS = [
   "id-generator",
   "base-converter",
 ];
-const NEW_TOOL_IDS = new Set(["base-converter", "json-toon-converter", "toon-json-converter"]);
+const NEW_TOOL_IDS = new Set(["image-converter", "base-converter", "json-toon-converter", "toon-json-converter"]);
 
 // NOTE: Assumption: each tool lives at `${BASE}${id}/` and exposes `${BASE}${id}/favicon.svg`.
 // If any URL differs, just edit it here.
@@ -41,6 +41,11 @@ const TOOLS = [
     id: "html-preview",
     name: "HTML Preview",
     url: `${BASE}html-preview/`,
+  },
+  {
+    id: "image-converter",
+    name: "Image Converter",
+    url: `${BASE}image-converter/`,
   },
   {
     id: "id-generator",

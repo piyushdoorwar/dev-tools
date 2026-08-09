@@ -16,6 +16,7 @@ const TOOL_ROUTES = [
   'file-compressor',
   'html-preview',
   'id-generator',
+  'image-converter',
   'json-diff',
   'json-toon-converter',
   'json-xml-converter',
@@ -255,6 +256,97 @@ test('HTML Preview loads HTML mode and exports connected assets', async ({ page 
   expect(result.tags).toBeGreaterThan(0);
   expect(result.exported).toContain('href="styles.css"');
   expect(result.exported).toContain('src="script.js"');
+});
+
+test('Image Converter detects formats, converts locally, and honors metadata cleanup', async ({ page }) => {
+  await page.goto('/tools/image-converter/');
+  await page.evaluate(async () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 3;
+    canvas.height = 2;
+    const context = canvas.getContext('2d');
+    context.fillStyle = '#ff3366';
+    context.fillRect(0, 0, 3, 2);
+    const original = new Uint8Array(await new Promise((resolve) => {
+      canvas.toBlob(async (blob) => resolve(await blob.arrayBuffer()), 'image/png');
+    }));
+
+    const type = new TextEncoder().encode('tEXt');
+    const data = new TextEncoder().encode('Comment\0AI-MARKER-123');
+    const crcInput = new Uint8Array(type.length + data.length);
+    crcInput.set(type);
+    crcInput.set(data, type.length);
+    let crc = 0xffffffff;
+    for (const byte of crcInput) {
+      crc ^= byte;
+      for (let bit = 0; bit < 8; bit += 1) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+    }
+    crc = (crc ^ 0xffffffff) >>> 0;
+    const chunk = new Uint8Array(12 + data.length);
+    new DataView(chunk.buffer).setUint32(0, data.length);
+    chunk.set(type, 4);
+    chunk.set(data, 8);
+    new DataView(chunk.buffer).setUint32(8 + data.length, crc);
+
+    const withMetadata = new Uint8Array(original.length + chunk.length);
+    withMetadata.set(original.slice(0, -12));
+    withMetadata.set(chunk, original.length - 12);
+    withMetadata.set(original.slice(-12), original.length - 12 + chunk.length);
+    const transfer = new DataTransfer();
+    transfer.items.add(new File([withMetadata], 'private-photo.png', { type: 'application/octet-stream' }));
+    const input = document.querySelector('#fileInput');
+    input.files = transfer.files;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  await expect(page.locator('#sourceStatus')).toHaveText('Loaded');
+  await expect(page.locator('#sourceFormat')).toHaveText('PNG');
+  await expect(page.locator('#sourceDimensions')).toHaveText('3 × 2');
+  await expect(page.locator('#outputFormat')).toHaveValue('jpeg');
+  await page.locator('#convertBtn').click();
+  await expect(page.locator('#resultPanel')).toBeVisible();
+  await expect(page.locator('#resultFormat')).toHaveText('JPEG');
+  const jpegResult = await page.evaluate(async () => {
+    const blob = await fetch(document.querySelector('#resultImage').src).then((response) => response.blob());
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    return {
+      type: blob.type,
+      signature: [...bytes.slice(0, 3)],
+      hasMarker: new TextDecoder().decode(bytes).includes('AI-MARKER-123'),
+    };
+  });
+  expect(jpegResult).toEqual({ type: 'image/jpeg', signature: [255, 216, 255], hasMarker: false });
+
+  await page.locator('#outputFormat').selectOption('png');
+  await page.locator('#stripMetadata').uncheck();
+  await expect(page.locator('#formatHelp')).toContainText('preserve the original file bytes');
+  await page.locator('#convertBtn').click();
+  const preservedMarker = await page.evaluate(async () => {
+    const bytes = await fetch(document.querySelector('#resultImage').src).then((response) => response.arrayBuffer());
+    return new TextDecoder().decode(bytes).includes('AI-MARKER-123');
+  });
+  expect(preservedMarker).toBe(true);
+
+  await page.locator('#stripMetadata').check();
+  await page.locator('#convertBtn').click();
+  const strippedMarker = await page.evaluate(async () => {
+    const bytes = await fetch(document.querySelector('#resultImage').src).then((response) => response.arrayBuffer());
+    return new TextDecoder().decode(bytes).includes('AI-MARKER-123');
+  });
+  expect(strippedMarker).toBe(false);
+});
+
+test('Image Converter rejects animated GIFs instead of flattening them', async ({ page }) => {
+  await page.goto('/tools/image-converter/');
+  await page.evaluate(() => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File([new TextEncoder().encode('GIF89a')], 'animation.gif', { type: 'image/gif' }));
+    const input = document.querySelector('#fileInput');
+    input.files = transfer.files;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await expect(page.locator('#toast')).toContainText('Animated GIFs are not supported');
+  await expect(page.locator('#sourceStatus')).toHaveText('Waiting');
 });
 
 test('JSON Diff renders error messages as text', async ({ page }) => {
