@@ -35,13 +35,29 @@ test('quick launch and recently used cards open their tools', async ({ page }) =
   expect(await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length)).toBe(0);
   await page.locator('#quickLaunchTools [data-tool-id="markdown-editor"]').click();
   await expect(page.locator('iframe[data-tool-id="markdown-editor"]')).toHaveClass(/is-visible/);
-  await expect(page).toHaveURL(/#markdown-editor$/);
+  await expect(page).toHaveURL(/\/markdown-editor$/);
 
   await page.locator('#brandHome').click();
   const recent = page.locator('#recentTools [data-tool-id="markdown-editor"]');
   await expect(recent).toBeVisible();
   await recent.click();
   await expect(page.locator('iframe[data-tool-id="markdown-editor"]')).toHaveClass(/is-visible/);
+});
+
+test('dashboard uses clean routes and migrates legacy or direct-load URLs', async ({ page }) => {
+  await page.goto('/#toon-to-json-converter');
+  await expect(page).toHaveURL(/\/toon-to-json-converter$/);
+  await expect(page.locator('iframe[data-tool-id="toon-json-converter"]')).toHaveClass(/is-visible/);
+
+  await page.goto('/?route=image-converter');
+  await expect(page).toHaveURL(/\/image-converter$/);
+  await expect(page.locator('iframe[data-tool-id="image-converter"]')).toHaveClass(/is-visible/);
+
+  await page.locator('[data-tool-id="markdown-editor"].menu__item').click();
+  await expect(page).toHaveURL(/\/markdown-editor$/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/image-converter$/);
+  await expect(page.locator('iframe[data-tool-id="image-converter"]')).toHaveClass(/is-visible/);
 });
 
 test('pinned cards use an icon without visible pinned text', async ({ page }) => {

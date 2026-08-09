@@ -1,4 +1,6 @@
-const BASE = "./tools/";
+const APP_ROOT_URL = new URL("./", document.currentScript?.src || window.location.href);
+const APP_ROOT_PATH = APP_ROOT_URL.pathname.endsWith("/") ? APP_ROOT_URL.pathname : `${APP_ROOT_URL.pathname}/`;
+const BASE = new URL("tools/", APP_ROOT_URL).href;
 const PRELOAD_ON_HOVER = true;
 const PRELOAD_DELAY_MS = 160;
 const PINNED_TOOLS_KEY = "devtools:pinned-tools";
@@ -118,6 +120,7 @@ const TOOLS = [
   },
 ].map((t) => ({
   ...t,
+  route: t.route || toolNameToRoute(t.name),
   url: t.url + (t.endpoint || ''),
   faviconUrl: t.endpoint 
     ? `${t.url}/favicon${t.endpoint.replace('#', '-')}.svg`
@@ -437,19 +440,28 @@ function toolNameToRoute(name) {
 // Convert URL route to tool ID
 function routeToToolId(route) {
   if (!route) return null;
-  const tool = TOOLS.find(t => toolNameToRoute(t.name) === route);
+  const normalizedRoute = String(route).replace(/^\/+|\/+$/g, "").toLowerCase();
+  const tool = TOOLS.find(t => t.route === normalizedRoute || t.id === normalizedRoute);
   return tool?.id ?? null;
 }
 
 // Get current route from URL
 function getCurrentRoute() {
-  const hash = window.location.hash.slice(1); // Remove #
-  return hash || null;
+  const queryRoute = new URLSearchParams(window.location.search).get("route");
+  if (queryRoute) return queryRoute.replace(/^\/+|\/+$/g, "");
+
+  const legacyHash = window.location.hash.slice(1);
+  if (legacyHash) return legacyHash.replace(/^\/+|\/+$/g, "");
+
+  let pathname = window.location.pathname;
+  if (pathname.startsWith(APP_ROOT_PATH)) pathname = pathname.slice(APP_ROOT_PATH.length);
+  const route = pathname.replace(/^\/+|\/+$/g, "");
+  return route && route !== "index.html" ? route : null;
 }
 
 // Update URL without triggering navigation
 function updateURL(route, replaceState = false) {
-  const newURL = route ? `#${route}` : window.location.pathname;
+  const newURL = route ? `${APP_ROOT_PATH}${route}` : APP_ROOT_PATH;
   if (replaceState) {
     window.history.replaceState(null, "", newURL);
   } else {
@@ -475,7 +487,7 @@ function setActive(tool, updateHistory = true) {
     els.hint.textContent = "";
     hideLoader();
     if (updateHistory) {
-      updateURL(null, true);
+      updateURL(null);
     }
     return;
   }
@@ -497,8 +509,7 @@ function setActive(tool, updateHistory = true) {
 
   // Update URL
   if (updateHistory) {
-    const route = toolNameToRoute(tool.name);
-    updateURL(route);
+    updateURL(tool.route);
   }
 }
 
@@ -849,10 +860,15 @@ function loadFromURL() {
     const tool = TOOLS.find(t => t.id === toolId);
     if (tool) {
       setActive(tool, false); // Don't update history on initial load
+      const expectedPath = `${APP_ROOT_PATH}${tool.route}`;
+      if (window.location.pathname !== expectedPath || window.location.search || window.location.hash) {
+        updateURL(tool.route, true);
+      }
       return;
     }
   }
   setActive(null, false);
+  if (route || window.location.search || window.location.hash) updateURL(null, true);
 }
 
 // Handle browser back/forward buttons
