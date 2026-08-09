@@ -1,5 +1,6 @@
 const PRECACHE_ASSETS = [
   "./404.html",
+  "./analytics.js",
   "./app.js",
   "./favicon.svg",
   "./index.html",

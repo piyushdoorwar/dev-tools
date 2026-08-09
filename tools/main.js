@@ -1,6 +1,15 @@
 (function () {
   "use strict";
 
+  const sharedScriptUrl = document.currentScript?.src;
+  if (sharedScriptUrl && !document.querySelector('script[data-dev-tools-analytics]')) {
+    const analytics = document.createElement('script');
+    analytics.src = new URL('../analytics.js', sharedScriptUrl).href;
+    analytics.async = true;
+    analytics.dataset.devToolsAnalytics = '';
+    document.head.appendChild(analytics);
+  }
+
   const root = window.DevToolsMain || {};
 
   root.$ = root.$ || ((selector, scope = document) => scope.querySelector(selector));

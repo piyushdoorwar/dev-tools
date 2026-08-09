@@ -5,7 +5,29 @@ import { inflateRawSync, zstdDecompressSync } from 'node:zlib';
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
+    window.__DEV_TOOLS_DISABLE_ANALYTICS__ = true;
     window.__DEV_TOOLS_DISABLE_SERVICE_WORKER__ = true;
+  });
+});
+
+test('Cloudflare Analytics uses the configured token on the dashboard', async ({ page }) => {
+  await page.route('https://static.cloudflareinsights.com/beacon.min.js', (route) => route.fulfill({
+    contentType: 'text/javascript',
+    body: 'export {};',
+  }));
+  await page.goto('/');
+  const loaded = await page.evaluate(() => {
+    window.__DEV_TOOLS_DISABLE_ANALYTICS__ = false;
+    window.DevToolsAnalytics.load();
+    const beacon = document.querySelector('script[src="https://static.cloudflareinsights.com/beacon.min.js"]');
+    return {
+      type: beacon?.type,
+      config: JSON.parse(beacon?.dataset.cfBeacon || '{}'),
+    };
+  });
+  expect(loaded).toEqual({
+    type: 'module',
+    config: { token: 'e9cd556fb46f4880a8842d37e2dfe3fb' },
   });
 });
 

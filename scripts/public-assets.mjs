@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const ROOT_ASSETS = new Set([
   '404.html',
+  'analytics.js',
   'app.js',
   'favicon.svg',
   'index.html',
