@@ -258,11 +258,22 @@ body {
   min-height: 2.75rem;
   padding: 0 2.5rem 0 0.8rem;
   appearance: none;
+  color-scheme: dark;
   border: 1px solid var(--control-border);
   border-radius: 0.72rem;
   background: var(--control-bg);
   color: var(--text-primary);
   outline: none;
+}
+
+.select-wrap select option {
+  background-color: var(--panel-bg);
+  color: var(--text-primary);
+}
+
+.select-wrap select option:checked {
+  background: linear-gradient(var(--accent-purple), var(--accent-purple));
+  color: var(--text-primary);
 }
 
 .select-wrap select:focus { border-color: var(--accent-purple-light); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12); }
