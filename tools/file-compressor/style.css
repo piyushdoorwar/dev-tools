@@ -1,3 +1,7 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
 html {
   font-size: 15px;
 }
@@ -1227,4 +1231,5 @@ button {
   .modal-card {
     flex-direction: column;
   }
+}
 }

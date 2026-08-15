@@ -1,3 +1,7 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
 body {
   margin: 0;
   min-height: 100vh;
@@ -894,4 +898,5 @@ input:disabled {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+}
 }

@@ -1,3 +1,7 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
 * {
   box-sizing: border-box;
   margin: 0;
@@ -1045,4 +1049,5 @@ textarea:hover {
     bottom: 16px;
     max-width: calc(100vw - 32px);
   }
+}
 }

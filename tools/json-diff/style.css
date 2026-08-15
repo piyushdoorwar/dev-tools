@@ -1,3 +1,7 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
 * {
     margin: 0;
     padding: 0;
@@ -1075,4 +1079,5 @@ body {
 .setting-input,
 .setting-select {
     font-family: var(--font-mono);
+}
 }
