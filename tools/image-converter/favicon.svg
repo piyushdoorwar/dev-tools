@@ -1,12 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Image Converter</title>
   <defs>
-    <linearGradient id="bg" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#8b5cf6"/><stop offset="1" stop-color="#5b21b6"/>
+    <linearGradient id="tile" x1="8" y1="6" x2="58" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9b6cff"/>
+      <stop offset="1" stop-color="#5b21b6"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="39" y1="38" x2="57" y2="58" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#242127"/>
+      <stop offset="1" stop-color="#121214"/>
     </linearGradient>
   </defs>
-  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#bg)"/>
-  <rect x="14" y="16" width="36" height="27" rx="5" fill="none" stroke="#fff" stroke-width="3"/>
-  <circle cx="25" cy="25" r="4" fill="#ffd700"/>
-  <path d="M17 39l9-9 7 7 5-5 9 8" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M23 50h20l-5-5m5 5l-5 5" fill="none" stroke="#ffd700" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="3" y="3" width="58" height="58" rx="17" fill="url(#tile)"/>
+  <path fill="#fff" fill-rule="evenodd" d="M48.25 45.5c0 1.52-1.23 2.75-2.75 2.75h-7.106L28.263 37.986 40 26.25l8.25 8.25v11ZM12.5 48.25a2.75 2.75 0 0 1-2.75-2.75v-1.291l10.925-9.785L34.5 48.25h-22ZM18 12.5a5.5 5.5 0 1 1 0 11 5.5 5.5 0 0 1 0-11Zm27.5-5.5h-33A5.5 5.5 0 0 0 7 12.5v33a5.5 5.5 0 0 0 5.5 5.5h33a5.5 5.5 0 0 0 5.5-5.5v-33A5.5 5.5 0 0 0 45.5 7ZM18 20.75a2.75 2.75 0 1 0 0-5.5 2.75 2.75 0 0 0 0 5.5Z"/>
+  <circle cx="48" cy="48" r="12.25" fill="url(#badge)" stroke="#b999ff" stroke-width="1.5"/>
+  <path d="M41.5 44.25h10l-3-3m3 3-3 3M54.5 51.75h-10l3 3m-3-3 3-3" fill="none" stroke="#ffd700" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
