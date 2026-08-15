@@ -74,11 +74,11 @@ body {
 .modal-close {
   display: inline-grid;
   place-items: center;
-  width: 2.55rem;
-  height: 2.55rem;
+  width: var(--control-h);
+  height: var(--control-h);
   padding: 0;
   border: 1px solid var(--control-border);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-control);
   background: var(--surface-strong);
   color: var(--text-secondary);
   transition: 180ms ease;
@@ -267,38 +267,21 @@ body {
 .field-help { margin: 0.5rem 0 0; color: var(--text-disabled); font-size: 0.7rem; line-height: 1.5; }
 
 .select-wrap { position: relative; margin-top: 0.48rem; }
+/* Shape, chevron and focus ring come from main.css */
 .select-wrap select {
   width: 100%;
-  min-height: 2.75rem;
-  padding: 0 2.5rem 0 0.8rem;
-  appearance: none;
-  color-scheme: dark;
-  border: 1px solid var(--control-border);
-  border-radius: 0.72rem;
-  background: var(--control-bg);
-  color: var(--text-primary);
-  outline: none;
 }
 
-.select-wrap select option {
-  background-color: var(--panel-bg);
-  color: var(--text-primary);
-}
-
-.select-wrap select option:checked {
-  background: linear-gradient(var(--accent-purple), var(--accent-purple));
-  color: var(--text-primary);
-}
-
-.select-wrap select:focus { border-color: var(--accent-purple-light); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12); }
-.select-icon { position: absolute; top: 50%; right: 0.8rem; width: 1rem; transform: translateY(-50%); pointer-events: none; stroke: var(--text-secondary); stroke-width: 2; }
+/* The shared chevron in main.css replaces this bespoke SVG, so hide it
+   rather than render two arrows on top of each other. */
+.select-icon { display: none; }
 .quality-value { color: var(--accent-yellow); font-size: 0.78rem; font-weight: 750; }
 
 .range { width: 100%; margin: 0.8rem 0 0.25rem; accent-color: var(--accent-purple-light); }
 .range-labels { display: flex; justify-content: space-between; color: var(--text-disabled); font-size: 0.62rem; }
 
 .color-control { display: grid; grid-template-columns: 3rem 1fr; gap: 0.55rem; margin-top: 0.48rem; }
-.color-control input { min-height: 2.65rem; border: 1px solid var(--control-border); border-radius: 0.68rem; background: var(--control-bg); color: var(--text-primary); }
+.color-control input { min-height: 2.65rem; }
 .color-control input[type="color"] { width: 3rem; padding: 0.24rem; }
 .color-control input[type="text"] { width: 100%; padding: 0 0.75rem; font-family: var(--font-mono); text-transform: uppercase; outline: none; }
 .color-control input:focus { border-color: var(--accent-purple-light); }

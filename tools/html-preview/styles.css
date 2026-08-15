@@ -2,7 +2,7 @@ body {
   margin: 0;
   height: 100vh;
   overflow: hidden;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -44,7 +44,7 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 }
 
 .title-yellow,
@@ -96,7 +96,7 @@ body {
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   border: none;
   min-width: 36px;
   min-height: 36px;
@@ -301,7 +301,7 @@ body {
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
 }
 
 .tab-button {
@@ -397,7 +397,7 @@ body {
   border-radius: 12px;
   border: 1px solid var(--accent-purple);
   color: var(--text);
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.95rem;
   padding: 1rem;
   line-height: 1.6;
@@ -419,7 +419,7 @@ body {
   background: rgba(0, 0, 0, 0.4);
   border-radius: 12px;
   border: 1px solid var(--accent-purple);
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: var(--font-mono);
   font-size: 0.95rem;
   line-height: 1.7;
   box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -445,30 +445,6 @@ body {
 .CodeMirror-gutter-filler {
   background-color: transparent;
 }
-
-.CodeMirror-vscrollbar::-webkit-scrollbar,
-.CodeMirror-hscrollbar::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-.CodeMirror-vscrollbar::-webkit-scrollbar-track,
-.CodeMirror-hscrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-}
-
-.CodeMirror-vscrollbar::-webkit-scrollbar-thumb,
-.CodeMirror-hscrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-dark));
-  border-radius: 10px;
-}
-
-.CodeMirror-vscrollbar::-webkit-scrollbar-thumb:hover,
-.CodeMirror-hscrollbar::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--accent-purple-light), var(--accent-purple));
-}
-
 /* CodeMirror cursor color */
 .CodeMirror-cursor {
   border-left: 2px solid var(--accent-yellow) !important;
@@ -499,49 +475,6 @@ body {
   background: var(--bg-secondary);
   box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.4);
 }
-
-/* Scrollbar styling for iframe content */
-.preview-panel iframe::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-}
-
-.preview-panel iframe::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-  border-radius: 10px;
-}
-
-.preview-panel iframe::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-dark));
-  border-radius: 10px;
-  border: 2px solid var(--bg-secondary);
-}
-
-.preview-panel iframe::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--purple-light), var(--purple));
-}
-
-/* Global scrollbar styling */
-::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-dark));
-  border-radius: 10px;
-  border: 2px solid var(--bg-secondary);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--purple-light), var(--purple));
-}
-
 @media (max-width: 900px) {
   .panels {
     flex-direction: column !important;

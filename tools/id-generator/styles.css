@@ -3,31 +3,11 @@
   margin: 0;
   padding: 0;
 }
-
-/* Main scrollbar */
-::-webkit-scrollbar {
-  width: 12px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--accent-purple);
-  border-radius: 6px;
-  transition: background 0.2s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-purple-light);
-}
-
 body {
   margin: 0;
   min-height: 100vh;
   color: var(--text-primary);
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-family: var(--font-body);
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
@@ -77,9 +57,8 @@ body {
   width: auto;
   position: relative;
   padding-bottom: 1rem;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 }
-
 
 @keyframes fadeInDown {
   from {
@@ -194,21 +173,20 @@ input,
 select,
 textarea {
   font-family: inherit;
-  font-size: 0.9375rem;
 }
 
 .btn {
   padding: 10px 18px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   border: 1px solid var(--border-light);
   background: rgba(255, 255, 255, 0.03);
   color: var(--text-primary);
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
-  font-size: 0.875rem;
+  font-size: var(--text-md);
   letter-spacing: 0.01em;
   min-height: 36px;
 }
@@ -249,7 +227,7 @@ textarea {
   border-radius: var(--radius-md);
   padding: 14px 16px;
   color: var(--text-primary);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   font-size: 0.9375rem;
 }
 
@@ -258,8 +236,8 @@ select:focus,
 textarea:focus {
   outline: none;
   background: var(--panel-bg);
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 0 3px rgba(103, 57, 183, 0.2);
+  border-color: var(--focus-border);
+  box-shadow: var(--focus-ring);
 }
 
 .input-field::placeholder {
@@ -289,7 +267,7 @@ textarea:focus {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   position: relative;
   flex-shrink: 0;
 }
@@ -355,7 +333,7 @@ textarea:focus {
   border-radius: var(--radius-md);
   padding: 12px 16px;
   color: var(--text-primary);
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   letter-spacing: 0.02em;
 }
@@ -417,30 +395,19 @@ textarea:focus {
   flex-wrap: wrap;
 }
 
+/* Shape, chevron and focus ring come from main.css */
 select,
 textarea,
 .counter-input,
 .namespace-input,
 .name-input {
   width: 100%;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  padding: 12px 16px;
-  appearance: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  min-height: 36px;
 }
 
+/* Chevron comes from main.css so every tool's dropdown matches */
 select {
   min-width: 140px;
   max-width: 160px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FFD700' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 40px;
 }
 
 .id-type-dropdown {
@@ -486,7 +453,7 @@ select {
 .precision-trigger:focus-visible {
   outline: none;
   border-color: var(--accent-purple-light);
-  box-shadow: 0 0 0 2px rgba(103, 57, 183, 0.2);
+  box-shadow: var(--focus-ring);
 }
 
 .id-type-dropdown.open .precision-trigger {
@@ -604,7 +571,7 @@ select:hover,
   color: var(--bg);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
   font-size: 0.8125rem;
@@ -653,7 +620,7 @@ select:hover,
   overflow: visible;
   height: 400px;
   max-height: 400px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
 }
 
 .editor-wrapper:hover {
@@ -662,8 +629,8 @@ select:hover,
 }
 
 .editor-wrapper:focus-within {
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 0 3px rgba(103, 57, 183, 0.2);
+  border-color: var(--focus-border);
+  box-shadow: var(--focus-ring);
 }
 
 /* Editor Toolbar with system captions */
@@ -703,7 +670,7 @@ select:hover,
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   padding: 0;
 }
 
@@ -732,7 +699,7 @@ select:hover,
 .code-editor {
   flex: 1;
   padding: 18px;
-  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   line-height: 1.6;
   color: var(--text-primary);
@@ -748,29 +715,9 @@ select:hover,
   content: attr(data-placeholder);
   color: var(--text-muted);
   font-style: italic;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-body);
   white-space: normal;
 }
-
-.code-editor::-webkit-scrollbar {
-  width: 10px;
-}
-
-.code-editor::-webkit-scrollbar-track {
-  background: var(--bg);
-  border-radius: 5px;
-}
-
-.code-editor::-webkit-scrollbar-thumb {
-  background: var(--accent-purple);
-  border-radius: 5px;
-  transition: background 0.2s ease;
-}
-
-.code-editor::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-purple-light);
-}
-
 textarea {
   min-height: 300px;
   border-radius: var(--radius-lg);
@@ -778,18 +725,18 @@ textarea {
   background: var(--bg);
   padding: 18px;
   resize: vertical;
-  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.02em;
   color: var(--text-primary);
   line-height: 1.6;
   font-size: 0.875rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
 }
 
 textarea::placeholder {
   color: var(--text-muted);
   font-style: italic;
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-body);
 }
 
 textarea:hover {
@@ -923,14 +870,14 @@ textarea:hover {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
 }
 
 .gear-button svg {
   width: 20px;
   height: 20px;
   fill: var(--text-secondary);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .gear-button:hover {
@@ -972,7 +919,7 @@ textarea:hover {
   transition: opacity 0.2s ease, transform 0.2s ease;
   z-index: 10050;
   box-shadow: var(--shadow-md);
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.01em;
 }
 

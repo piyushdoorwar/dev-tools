@@ -2,7 +2,7 @@ body {
   margin: 0;
   height: 100vh;
   overflow: hidden;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -180,7 +180,7 @@ body {
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   transition: all 0.2s ease;
 }
 
@@ -277,23 +277,20 @@ body {
   transform: translateX(-50%) translateY(0);
 }
 
-.toolbar-select,
+/* .toolbar-select inherits the shared select shape from main.css */
 .toolbar-color {
   position: relative;
   padding: 0.5rem 0.75rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  background: var(--surface-strong);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-control);
   color: var(--text);
-  font-size: 0.8rem;
-  font-family: inherit;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-control);
 }
 
 .toolbar-select {
   min-width: 120px;
-  padding-right: 1.5rem;
 }
 
 .toolbar-field {
@@ -334,7 +331,6 @@ body {
 .toolbar-check input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: var(--accent-purple);
 }
 
 .toolbar-input {
@@ -342,7 +338,6 @@ body {
   width: 60px;
   padding-right: 0.75rem;
 }
-Case Settings
 /* Modals */
 .modal {
   display: none;
@@ -503,36 +498,10 @@ Case Settings
   min-width: 200px;
 }
 
+/* Shape, hover, focus ring and option colours come from main.css */
 .modal-select,
 .modal-input {
   width: 100%;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--text);
-  font-size: 0.9rem;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.modal-select:hover,
-.modal-input:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--accent-purple);
-}
-
-.modal-select:focus,
-.modal-input:focus {
-  outline: none;
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 0 3px rgba(103, 57, 183, 0.2);
-}
-
-.modal-select option {
-  background: var(--panel-bg);
-  color: var(--text);
 }
 
 .modal-checkbox {
@@ -557,7 +526,6 @@ Case Settings
 .modal-checkbox input[type="checkbox"] {
   width: 20px;
   height: 20px;
-  accent-color: var(--accent-purple);
   cursor: pointer;
 }
 
@@ -570,8 +538,8 @@ Case Settings
 .btn {
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 12px;
-  font-size: 0.9rem;
+  border-radius: var(--radius-control);
+  font-size: var(--text-md);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -579,14 +547,14 @@ Case Settings
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-light));
-  color: var(--text);
+  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-yellow-dark));
+  color: var(--bg);
   box-shadow: var(--shadow-purple);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(103, 57, 183, 0.4);
+  box-shadow: var(--shadow-yellow);
 }
 
 .btn-primary:active {
@@ -594,7 +562,7 @@ Case Settings
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--surface-strong);
   color: var(--text);
   border: 1px solid var(--border);
 }
@@ -634,7 +602,7 @@ Case Settings
 }
 
 .case-btn text {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   letter-spacing: 0.02em;
 }
 
@@ -685,22 +653,14 @@ Case Settings
   transform: translateX(-50%) translateY(0);
 }
 
-.toolbar-select option {
-  background: var(--panel-bg);
-  color: var(--text);
-  padding: 0.4rem;
-}
-
-.toolbar-select:hover,
 .toolbar-color:hover {
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--accent-purple);
-  box-shadow: var(--shadow-purple);
+  border-color: var(--control-border-hover);
+  box-shadow: var(--shadow-sm);
 }
 
-.toolbar-select:disabled,
 .toolbar-color:disabled {
-  opacity: 0.3;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
@@ -720,7 +680,7 @@ Case Settings
   border-radius: 4px;
 }
 
-.toolbar-select::after,
+/* Note: ::after never renders on <select>, only .toolbar-color gets a tooltip */
 .toolbar-color::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -743,7 +703,6 @@ Case Settings
   font-weight: 500;
 }
 
-.toolbar-select:hover::after,
 .toolbar-color:hover::after {
   opacity: 1;
   visibility: visible;
@@ -792,37 +751,11 @@ Case Settings
   min-height: 0;
   border: 1px solid rgba(255, 255, 255, 0.03);
 }
-
-/* Custom Scrollbar Styles */
-textarea::-webkit-scrollbar,
-.preview::-webkit-scrollbar {
-  width: 8px;
-}
-
-textarea::-webkit-scrollbar-track,
-.preview::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-}
-
-textarea::-webkit-scrollbar-thumb,
-.preview::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-light));
-  border-radius: 10px;
-  border: 2px solid rgba(0, 0, 0, 0.3);
-}
-
-textarea::-webkit-scrollbar-thumb:hover,
-.preview::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--accent-purple-light), var(--accent-yellow));
-  box-shadow: var(--shadow-purple);
-}
-
 .line-numbers {
   padding: 1rem 0.75rem 1rem 1rem;
   background: rgba(0, 0, 0, 0.3);
   color: var(--text-disabled);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 1rem;
   line-height: 1.6;
   text-align: right;
@@ -843,38 +776,16 @@ textarea {
   padding: 1rem;
   background: transparent;
   color: var(--text);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 1rem;
   line-height: 1.6;
   resize: none;
   outline: none;
   overflow-y: auto;
 }
-
-textarea::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-textarea::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-}
-
-textarea::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-light));
-  border-radius: 10px;
-  border: 2px solid rgba(0, 0, 0, 0.3);
-}
-
-textarea::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--accent-purple-light), var(--accent-yellow));
-  box-shadow: var(--shadow-purple);
-}
-
 textarea {
   scrollbar-width: thin;
-  scrollbar-color: var(--accent-purple) rgba(0, 0, 0, 0.3);
+  scrollbar-color: var(--accent-purple) transparent;
 }
 
 textarea::selection {
@@ -909,7 +820,7 @@ textarea::selection {
   padding: 1rem 0.75rem 1rem 1rem;
   background: rgba(0, 0, 0, 0.3);
   color: var(--text-disabled);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 1rem;
   line-height: 1.6;
   text-align: right;
@@ -938,48 +849,6 @@ textarea::selection {
   min-width: 100%;
   display: inline-block;
 }
-
-.output-container::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
-}
-
-.output-container::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-}
-
-.output-container::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-light));
-  border-radius: 10px;
-  border: 2px solid rgba(0, 0, 0, 0.3);
-}
-
-.output-container::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--accent-purple-light), var(--accent-yellow));
-  box-shadow: var(--shadow-purple);
-}
-
-.output-container pre::-webkit-scrollbar {
-  height: 8px;
-}
-
-.output-container pre::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-}
-
-.output-container pre::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-light));
-  border-radius: 10px;
-  border: 2px solid rgba(0, 0, 0, 0.3);
-}
-
-.output-container pre::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--accent-purple-light), var(--accent-yellow));
-  box-shadow: var(--shadow-purple);
-}
-
 .preview h1,
 .preview h2,
 .preview h3,
@@ -1010,7 +879,7 @@ textarea::selection {
   background: transparent;
   padding: 0;
   border-radius: 0;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   border: none;
 }
 
@@ -1267,28 +1136,8 @@ textarea::selection {
 
 #settingsModal .modal-body-split {
   scrollbar-width: thin;
-  scrollbar-color: var(--accent-purple) rgba(0, 0, 0, 0.25);
+  scrollbar-color: var(--accent-purple) transparent;
 }
-
-#settingsModal .modal-body-split::-webkit-scrollbar {
-  width: 10px;
-}
-
-#settingsModal .modal-body-split::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 999px;
-}
-
-#settingsModal .modal-body-split::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--accent-purple), var(--accent-yellow));
-  border-radius: 999px;
-  border: 2px solid rgba(0, 0, 0, 0.25);
-}
-
-#settingsModal .modal-body-split::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, var(--accent-purple-light), var(--accent-yellow));
-}
-
 #settingsModal .modal-footer {
   margin-top: auto;
 }
@@ -1348,32 +1197,18 @@ textarea::selection {
 .form-group input[type="text"],
 .form-group input[type="number"],
 .form-group input[type="url"],
+/* Shape and focus ring come from main.css */
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 0.875rem 1.25rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--text);
-  font-size: 1rem;
-  font-family: inherit;
-  transition: all 0.2s ease;
 }
 
 .language-select {
-  background: rgba(255, 255, 255, 0.08);
   font-weight: 600;
-  cursor: pointer;
-}
-
-.language-select option {
-  background: var(--panel-bg);
-  color: var(--text);
 }
 
 .form-group textarea {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   resize: vertical;
   min-height: 120px;
 }
@@ -1473,7 +1308,7 @@ textarea::selection {
 .language-select-toolbar:focus {
   outline: none;
   border-color: var(--accent-yellow);
-  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+  box-shadow: var(--focus-ring);
 }
 
 .language-select-toolbar option {
@@ -1495,7 +1330,7 @@ textarea::selection {
   padding: 1rem 0.75rem;
   background: rgba(0, 0, 0, 0.5);
   color: var(--text-disabled);
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 0.95rem;
   line-height: 1.6;
   text-align: right;
@@ -1515,7 +1350,7 @@ textarea::selection {
   flex: 1;
   background: rgba(0, 0, 0, 0.4);
   border: none;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 0.95rem;
   line-height: 1.6;
   padding: 1rem;
@@ -1536,24 +1371,10 @@ textarea::selection {
 .code-editor-with-lines:focus {
   outline: none;
 }
-
-.code-editor-with-lines::-webkit-scrollbar {
-  width: 8px;
-}
-
-.code-editor-with-lines::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
-}
-
-.code-editor-with-lines::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-light));
-  border-radius: 10px;
-}
-
 .code-editor {
   background: rgba(0, 0, 0, 0.4) !important;
   border: 1px solid rgba(103, 57, 183, 0.3) !important;
-  font-family: 'JetBrains Mono', 'Courier New', monospace !important;
+  font-family: var(--font-mono);
   font-size: 0.95rem !important;
   line-height: 1.6 !important;
   padding: 1.25rem !important;
@@ -1566,7 +1387,7 @@ textarea::selection {
 .code-editor:focus {
   border-color: var(--accent-purple) !important;
   background: rgba(0, 0, 0, 0.5) !important;
-  box-shadow: 0 0 0 3px rgba(103, 57, 183, 0.2) !important;
+  box-shadow: var(--focus-ring) !important;
 }
 
 .code-editor::placeholder {
@@ -1595,16 +1416,16 @@ textarea::selection {
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: var(--accent-purple);
+  border-color: var(--focus-border);
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(103, 57, 183, 0.15);
+  box-shadow: var(--focus-ring);
 }
 
 .btn {
   padding: 0.875rem 1.75rem;
   border: none;
-  border-radius: 12px;
-  font-size: 1rem;
+  border-radius: var(--radius-control);
+  font-size: var(--text-md);
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
@@ -1621,7 +1442,7 @@ textarea::selection {
 
 .btn-primary:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(255, 215, 0, 0.5);
+  box-shadow: var(--shadow-yellow);
 }
 
 .btn-primary:active {
@@ -1629,7 +1450,7 @@ textarea::selection {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-strong);
   color: var(--text);
   border: 1px solid var(--border);
 }
@@ -1748,9 +1569,9 @@ textarea::selection {
 
 .table-size-input:focus {
   outline: none;
-  border-color: var(--accent-purple);
+  border-color: var(--focus-border);
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(103, 57, 183, 0.15);
+  box-shadow: var(--focus-ring);
 }
 
 .table-size-separator {

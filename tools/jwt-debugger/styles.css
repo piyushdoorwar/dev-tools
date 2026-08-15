@@ -11,24 +11,8 @@ body {
 
 html,
 body {
-  scrollbar-color: var(--accent-purple) rgba(255, 255, 255, 0.06);
+  scrollbar-color: var(--accent-purple) transparent;
 }
-
-*::-webkit-scrollbar {
-  height: 10px;
-  width: 10px;
-}
-
-*::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 999px;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-purple-light));
-  border-radius: 999px;
-}
-
 .app-shell {
   min-height: 100vh;
   display: grid;
@@ -113,9 +97,9 @@ body {
 }
 
 .ghost-btn {
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   border: 1px solid var(--border);
-  background: transparent;
+  background: var(--surface-strong);
   color: #fff;
   padding: 6px 12px;
   font-size: 12px;
@@ -150,7 +134,7 @@ body {
   line-height: 1.6;
   font-family: var(--font-mono);
   resize: vertical;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
@@ -260,7 +244,7 @@ body {
 .main-actions button:focus-visible {
   outline: none;
   border-color: transparent;
-  box-shadow: 0 0 0 3px rgba(103, 57, 183, 0.18);
+  box-shadow: var(--focus-ring);
 }
 
 .main-actions button svg {
@@ -318,37 +302,10 @@ input:disabled {
   color: var(--text-disabled);
 }
 
+/* Shape, hover, focus ring and option colours come from main.css */
 .algo select {
   margin-top: 4px;
-  height: 40px;
-  background: rgba(37, 37, 37, 0.6);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: 0 12px;
-  color: var(--text-primary);
-  font-size: 13px;
   font-weight: 500;
-  font-family: var(--font-body);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.algo select:hover {
-  background: rgba(37, 37, 37, 0.85);
-  border-color: var(--accent-purple);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-}
-
-.algo select:focus {
-  outline: none;
-  border-color: var(--accent-purple-light);
-  background: rgba(37, 37, 37, 0.95);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2), var(--shadow-purple);
-}
-
-.algo select option {
-  background: var(--panel-bg-elevated);
-  color: var(--text-primary);
 }
 
 .decode-panel {
@@ -417,7 +374,7 @@ input:disabled {
   word-break: break-word;
   outline: none; /* for contenteditable */
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .card pre:focus,
@@ -439,7 +396,7 @@ input:disabled {
   line-height: 1.5;
   font-family: var(--font-mono);
   resize: vertical;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
   outline: none;
 }
@@ -509,7 +466,7 @@ input:disabled {
 .mini:focus-visible {
   outline: none;
   border-color: transparent;
-  box-shadow: 0 0 0 3px rgba(103, 57, 183, 0.18);
+  box-shadow: var(--focus-ring);
 }
 
 .mini svg {
@@ -687,23 +644,17 @@ input:disabled {
   color: var(--text-disabled);
 }
 
+/* Shape, colour and focus ring come from main.css */
 .modal-field input {
   width: 100%;
-  padding: 0.75rem 0.9rem;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  color: var(--text-primary);
-  font-size: 0.95rem;
   font-family: var(--font-mono);
-  transition: all 0.2s ease;
 }
 
 .modal-field input:focus {
   outline: none;
   border-color: var(--accent-purple-light);
   background: rgba(0, 0, 0, 0.5);
-  box-shadow: 0 0 0 3px rgba(103, 57, 183, 0.18);
+  box-shadow: var(--focus-ring);
 }
 
 .relative-pill {
@@ -731,8 +682,8 @@ input:disabled {
 .btn {
   padding: 0.875rem 1.25rem;
   border: none;
-  border-radius: 12px;
-  font-size: 0.9rem;
+  border-radius: var(--radius-control);
+  font-size: var(--text-md);
   font-weight: 800;
   font-family: inherit;
   cursor: pointer;
@@ -749,7 +700,7 @@ input:disabled {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(255, 215, 0, 0.35);
+  box-shadow: var(--shadow-yellow);
 }
 
 .btn-primary:active {
@@ -757,7 +708,7 @@ input:disabled {
 }
 
 .btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-strong);
   color: var(--text-primary);
   border: 1px solid var(--border);
 }

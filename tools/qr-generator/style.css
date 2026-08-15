@@ -56,9 +56,9 @@ body {
 }
 
 .icon-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
+  width: var(--control-h);
+  height: var(--control-h);
+  border-radius: var(--radius-control);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(0, 0, 0, 0.22);
   color: var(--text-muted);
@@ -82,9 +82,9 @@ body {
 
 .ghost-btn {
   padding: 10px 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--surface-strong);
   color: var(--text-secondary);
   font-weight: 600;
   cursor: pointer;
@@ -194,7 +194,7 @@ body {
 .pill:focus-visible {
   outline: none;
   border-color: rgba(255, 215, 0, 0.45);
-  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.18);
+  box-shadow: var(--focus-ring);
 }
 
 .pill.active {
@@ -310,26 +310,16 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--text-muted);
-  font-family: "JetBrains Mono", "Consolas", monospace;
+  font-family: var(--font-mono);
 }
 
-input:not([type="checkbox"]):not([type="radio"]),
-textarea,
-select {
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.3);
-  color: var(--text-primary);
-  font-size: 14px;
-  transition: border 0.2s ease, box-shadow 0.2s ease;
-}
+/* Input/textarea/select shape, chevron and focus ring come from main.css */
 
 input[type="date"] {
   color-scheme: dark;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  font-family: "JetBrains Mono", "Consolas", monospace;
+  font-family: var(--font-mono);
   padding-right: 44px;
   position: relative;
 }
@@ -438,16 +428,8 @@ textarea {
   padding-left: 46px;
   padding-right: 10px;
   text-align: center;
-  font-family: "JetBrains Mono", "Consolas", monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.02em;
-}
-
-input:not([type="checkbox"]):not([type="radio"]):focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
 }
 
 .checkbox-field {
@@ -465,7 +447,6 @@ select:focus {
 .checkbox-field input {
   width: 16px;
   height: 16px;
-  accent-color: var(--accent-purple-light);
 }
 
 .tab-list {
@@ -791,7 +772,7 @@ select:focus {
 .btn {
   flex: 1;
   padding: 12px 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-control);
   border: 1px solid transparent;
   font-weight: 600;
   cursor: pointer;
@@ -804,14 +785,14 @@ select:focus {
 }
 
 .btn-secondary {
-  background: rgba(0, 0, 0, 0.35);
+  background: var(--surface-strong);
   border-color: var(--border);
   color: var(--text-secondary);
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-light));
-  color: #fff;
+  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-yellow-dark));
+  color: var(--bg);
 }
 
 .btn:disabled {
@@ -828,7 +809,7 @@ select:focus {
   margin-top: 16px;
   font-size: 12px;
   color: var(--text-muted);
-  font-family: "JetBrains Mono", "Consolas", monospace;
+  font-family: var(--font-mono);
 }
 
 .status-pill {
@@ -840,7 +821,7 @@ select:focus {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 10px;
-  font-family: "JetBrains Mono", "Consolas", monospace;
+  font-family: var(--font-mono);
 }
 
 .status-pill.is-warning {
@@ -870,7 +851,7 @@ select:focus {
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   z-index: 2000;
   backdrop-filter: blur(6px);
 }

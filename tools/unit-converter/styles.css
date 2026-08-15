@@ -2,7 +2,7 @@ body {
   margin: 0;
   height: 100vh;
   overflow: hidden;
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-body);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -210,7 +210,7 @@ body {
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.18s ease;
+  transition: all 0.2s ease;
   letter-spacing: 0.01em;
 }
 
@@ -243,7 +243,7 @@ body {
   background: rgba(255, 255, 255, 0.05);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.2s ease;
   backdrop-filter: blur(4px);
 }
 
@@ -384,7 +384,7 @@ body {
 .field-select:focus,
 .toolbar-select:focus {
   border-color: var(--accent-purple-light);
-  box-shadow: 0 0 0 3px rgba(103, 57, 183, 0.2);
+  box-shadow: var(--focus-ring);
 }
 
 .unit-row {
@@ -405,32 +405,8 @@ body {
   padding: 0.25rem;
   margin: -0.25rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(139, 92, 246, 0.65) rgba(255, 255, 255, 0.06);
+  scrollbar-color: var(--accent-purple) transparent;
 }
-
-.unit-picker::-webkit-scrollbar,
-.all-results::-webkit-scrollbar {
-  width: 10px;
-}
-
-.unit-picker::-webkit-scrollbar-track,
-.all-results::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 999px;
-}
-
-.unit-picker::-webkit-scrollbar-thumb,
-.all-results::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(139, 92, 246, 0.85), rgba(103, 57, 183, 0.85));
-  border-radius: 999px;
-  border: 2px solid rgba(0, 0, 0, 0.18);
-}
-
-.unit-picker::-webkit-scrollbar-thumb:hover,
-.all-results::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, rgba(167, 119, 255, 0.95), rgba(118, 70, 199, 0.95));
-}
-
 .unit-row .unit-picker {
   flex: 1;
 }
@@ -445,7 +421,7 @@ body {
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.2s ease;
   letter-spacing: 0.01em;
 }
 
@@ -494,7 +470,7 @@ body {
 
 .result-value {
   margin-top: 0.35rem;
-  font-family: "Gilroy", "Inter", sans-serif;
+  font-family: var(--font-headline);
   font-size: clamp(1.4rem, 4vw, 2rem);
   font-weight: 800;
   letter-spacing: -0.02em;
@@ -540,7 +516,7 @@ body {
   flex-direction: column;
   gap: 0.5rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(139, 92, 246, 0.65) rgba(255, 255, 255, 0.06);
+  scrollbar-color: var(--accent-purple) transparent;
 }
 
 .result-row {
@@ -566,7 +542,7 @@ body {
 }
 
 .result-row-value {
-  font-family: "Gilroy", "Inter", sans-serif;
+  font-family: var(--font-headline);
   font-weight: 700;
 }
 
