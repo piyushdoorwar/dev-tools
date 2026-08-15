@@ -350,7 +350,8 @@ body {
   backdrop-filter: blur(8px);
 }
 .modal-backdrop.is-open { display: grid; }
-.modal-panel { width: min(36rem, 100%); max-height: calc(100vh - 2rem); overflow: auto; padding: 1rem; border: 1px solid var(--border-light); border-radius: 1.25rem; background: var(--panel-bg); box-shadow: var(--shadow-lg); }
+.modal-panel {
+  width: var(--modal-w-md); max-height: calc(100vh - 2rem); overflow: auto; }
 .modal-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
 .modal-header h2 { margin: 0; font-size: 1.08rem; }
 .modal-body { display: grid; gap: 0.7rem; padding-top: 0.8rem; }

@@ -866,7 +866,7 @@ textarea {
 }
 
 .modal-content {
-  width: min(900px, 92vw);
+  width: var(--modal-w-lg);
   max-height: 90vh;
   background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(22, 22, 22, 0.98) 55%, rgba(36, 36, 36, 0.95) 100%);
   border: 1px solid var(--border);

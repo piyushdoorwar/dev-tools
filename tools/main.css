@@ -121,6 +121,13 @@
   --radius-panel: 16px;   /* panels, cards                  */
   --radius-modal: 20px;   /* modals, popovers               */
   --radius-menu: 12px;   /* popovers, dropdown lists */
+
+  /* Modal width scale — modals differ in content, so they share a scale
+     rather than a single width. */
+  --modal-w-sm: min(440px, 92vw);
+  --modal-w-md: min(600px, 92vw);
+  --modal-w-lg: min(900px, 94vw);
+  --modal-w-xl: min(1180px, 94vw);
   --radius-pill: 999px;
 
   /* --- Spacing (4px rhythm) ---------------------------------------------- */
@@ -967,11 +974,28 @@ select[size]:not([size='1']) {
   .modal-content,
   .modal-panel,
   .settings-content {
+    position: relative;
     border: 1px solid var(--border-light);
     border-radius: var(--radius-modal);
     background: var(--panel-bg);
     box-shadow: var(--shadow-lg);
     color: var(--text-primary);
+  }
+
+  /* One brand edge on every modal. Tools previously had four different bars
+     (1px white, 2px, 3px and 4px gradients) or none at all. */
+  .modal-content::before,
+  .modal-panel::before,
+  .settings-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-radius: var(--radius-modal) var(--radius-modal) 0 0;
+    background: linear-gradient(90deg, var(--accent-purple-light), var(--accent-yellow));
+    pointer-events: none;
   }
 
   /* --- Modal header ------------------------------------------------------ */
@@ -995,6 +1019,12 @@ select[size]:not([size='1']) {
     font-weight: 700;
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
+    /* Tools variously used plain white, a purple gradient or a yellow one.
+       Settle on the brand gradient used by the page titles. */
+    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-purple-light) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
     color: var(--text-primary);
   }
 
@@ -1019,10 +1049,49 @@ select[size]:not([size='1']) {
     border-top: 1px solid var(--border);
   }
 
-  /* Inner content blocks inside a modal body */
+  /* Inner content blocks inside a modal body. Each tool had invented its own
+     card: .legend-row, .legend-intro, .security-note, .tip-list li, ... */
   .modal-card,
+  .modal-body .legend-row,
+  .modal-body .legend-intro,
+  .modal-body .security-note,
+  .modal-body .info-row,
+  .modal-body .tip-list li {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface-soft);
+    color: var(--text-secondary);
+    font-size: var(--chrome-md);
+    line-height: var(--leading-normal);
+  }
+
+  .modal-body .legend-intro strong,
+  .modal-card h3,
+  .modal-card h4 {
+    color: var(--text-primary);
+    font-size: var(--chrome-md);
+    font-weight: 700;
+  }
+
   .modal-section {
     border-radius: var(--radius-lg);
+  }
+
+  /* Section headings inside a modal: sql-formatter used yellow with a purple
+     rule, the diff tools used plain white. One treatment for all. */
+  .modal-section-title,
+  .legend-title,
+  .settings-section-title {
+    margin: 0 0 var(--space-3);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+    font-family: var(--font-headline);
+    font-size: var(--chrome-md);
+    font-weight: 700;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
   }
 
   /* --- Modal close ------------------------------------------------------- */

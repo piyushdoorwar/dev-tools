@@ -692,11 +692,10 @@ textarea::selection {
 }
 
 .modal-content {
+  width: var(--modal-w-md);
   background: var(--panel-bg);
   border: 1px solid var(--border-light);
   border-radius: 24px;
-  width: 90%;
-  max-width: 500px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -717,11 +716,11 @@ textarea::selection {
 }
 
 .modal-content-small {
-  max-width: 380px;
+  width: var(--modal-w-sm);
 }
 
 .modal-content-large {
-  max-width: 700px;
+  width: var(--modal-w-lg);
   max-height: 85vh;
 }
 

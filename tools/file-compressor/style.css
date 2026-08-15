@@ -1031,7 +1031,7 @@ button {
 }
 
 .modal-panel {
-  width: min(100%, 38rem);
+  width: var(--modal-w-md);
   border-radius: 28px;
   border: 1px solid rgba(139, 92, 246, 0.22);
   background:

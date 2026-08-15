@@ -372,12 +372,11 @@ body {
 }
 
 .modal-content {
+  width: var(--modal-w-md);
   background: var(--panel-bg);
   border: 1px solid var(--border-light);
   border-radius: 24px;
   padding: 0;
-  max-width: 600px;
-  width: 90%;
   max-height: 90vh;
   overflow: hidden;
   box-shadow: var(--shadow-lg);
@@ -387,7 +386,7 @@ body {
 }
 
 .modal-content-wide {
-  max-width: 1400px;
+  width: var(--modal-w-xl);
   max-height: 95vh;
 }
 

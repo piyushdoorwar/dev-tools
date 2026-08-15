@@ -288,13 +288,12 @@ body {
 }
 
 .settings-content {
+  width: var(--modal-w-sm);
     position: relative;
     z-index: 10001;
     background: var(--panel-bg-elevated);
     border: 1px solid var(--border-light);
     border-radius: 16px;
-    width: 90%;
-    max-width: 480px;
     box-shadow: var(--shadow-lg);
     transform: scale(0.9);
     transition: transform 0.3s ease;
@@ -397,13 +396,12 @@ body {
 }
 
 .modal-content {
+  width: var(--modal-w-sm);
     position: relative;
     z-index: 10001;
     background: var(--panel-bg-elevated);
     border: 1px solid var(--border-light);
     border-radius: 16px;
-    width: 90%;
-    max-width: 420px;
     box-shadow: var(--shadow-lg);
     transform: scale(0.9);
     transition: transform 0.3s ease;
