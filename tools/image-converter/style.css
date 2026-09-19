@@ -52,18 +52,6 @@ body {
   text-transform: uppercase;
 }
 
-.app-header h1 {
-  margin: 0;
-  font-family: var(--font-headline);
-  font-size: clamp(1.9rem, 3vw, 2.8rem);
-  line-height: 1;
-  letter-spacing: -0.04em;
-  background: linear-gradient(135deg, var(--accent-yellow), #dcb8ff 52%, var(--accent-purple-light));
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
 .ui-icon {
   width: 1.25rem;
   height: 1.25rem;

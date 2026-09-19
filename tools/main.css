@@ -94,7 +94,12 @@
   --text-md: 0.875rem;    /* 14px — comfortable body, code  */
   --text-lg: 1rem;        /* 16px — inputs, emphasis        */
   --text-xl: 1.25rem;     /* 20px — panel / modal titles    */
-  --text-2xl: 1.75rem;    /* 28px — page titles             */
+  --text-2xl: 1.75rem;    /* 28px — section titles          */
+  /* px, not rem: file-compressor and image-converter set
+     html { font-size: 15px }, which would shrink a rem-based title.
+     Clamped so it still steps down on narrow screens — each tool used to
+     carry its own mobile override. */
+  --text-page-title: clamp(24px, 4vw, 32px); /* the tool name in the header */
 
   /* Shared chrome is sized in px so a tool's root font-size cannot change it.
      Content keeps the rem scale above and still respects user zoom. */
@@ -918,6 +923,51 @@ select[size]:not([size='1']) {
    ========================================================================== */
 
 @layer shared {
+
+  /* --- Typography ---------------------------------------------------------
+     One page title and one section-heading treatment for every tool.
+
+     Measured before consolidating, the page title rendered in two fonts
+     (Gilroy / Inter), three sizes (32px / 38.4px), two weights (700 / 800),
+     and one tool had no gradient at all. Section headings were worse.
+     ------------------------------------------------------------------------ */
+
+  .app-title,
+  .app-header h1,
+  .page-title {
+    margin: 0;
+    font-family: var(--font-headline);
+    font-size: var(--text-page-title);
+    font-weight: 800;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    background: linear-gradient(135deg, var(--accent-yellow), var(--accent-purple-light));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* The line under a page title: same in every tool that has one. */
+  .app-subtitle,
+  .app-header .subtitle {
+    margin: var(--space-1) 0 0;
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    font-weight: 400;
+    letter-spacing: var(--tracking-normal);
+  }
+
+  /* Section headings — real h2/h3, not the small uppercase panel labels,
+     which keep their own scale. */
+  h2,
+  h3 {
+    font-family: var(--font-headline);
+    font-weight: 700;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+  }
 
   /* --- Icon sprite --------------------------------------------------------
      The symbol sheet injected by main.js. It must be in the document to be

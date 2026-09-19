@@ -39,18 +39,6 @@ body {
   flex-direction: column;
 }
 
-.app-header h1 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-purple-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-family: var(--font-body);
-}
-
 .title-yellow,
 .title-purple {
   /* Gradient handled by parent h1 */
@@ -427,10 +415,6 @@ body {
 @media (max-width: 900px) {
   .panels {
     flex-direction: column !important;
-  }
-
-  .app-header h1 {
-    font-size: 1.75rem;
   }
   
   .app-shell {

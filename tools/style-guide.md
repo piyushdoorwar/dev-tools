@@ -293,9 +293,41 @@ includes `visibility`, so for a frame or more after opening the panel is still
 `visibility: hidden` and `focus()` is silently refused. The component retries
 across frames until focus lands rather than assuming a fixed delay.
 
-### Still to extract
+### Type scale — done
 
-Heading scale.
+| Role | Token / class | Treatment |
+| --- | --- | --- |
+| Page title | `.app-title`, `.app-header h1` | Gilroy 800, `--text-page-title`, yellow→purple gradient |
+| Subtitle | `.app-subtitle` | Inter 400, `--text-md`, `--text-secondary` |
+| Section heading | `h2`, `h3` | Gilroy 700, tight tracking |
+| Panel labels | unchanged | small uppercase chrome, `--chrome-sm` |
+
+Measured before consolidating, the page title rendered in **two faces**
+(Gilroy / Inter), **three sizes** (32px / 38.4px / 30px), **two weights**
+(700 / 800), and one tool had no gradient at all. Every tool also carried its
+own mobile override.
+
+**`--text-page-title` is a px clamp, not rem.** `file-compressor` and
+`image-converter` set `html { font-size: 15px }`, so a rem-based title silently
+rendered 2px smaller in those two. The clamp — `clamp(24px, 4vw, 32px)` —
+also replaces the per-tool mobile overrides.
+
+A gradient title is painted with a transparent fill over a clipped background,
+so if the clip breaks it goes **invisible rather than wrong**. The tests assert
+the title occupies space, not just that it has the right properties.
+
+Child `<span>`s inside a title inherit the transparent fill and pick up the
+parent gradient — `html-preview`'s two-tone markup needed no change.
+
+`jwt-debugger` was the one structural outlier: its `<h1>` held the tagline and
+the tool name sat in a small eyebrow above it. The name is now the `h1` and the
+tagline is an `.app-subtitle`, matching every other tool.
+
+### All components extracted
+
+Dropdown · icons · split resizer · toast · modal · type scale.
+Scrollbars were already tokenised. When adding a tool, use these rather than
+writing local equivalents — that is how the drift documented above happened.
 These currently exist as per-tool variants skinned by shared selector lists in
 `main.css`; each should become a real component like `.dd`.
 Scrollbars are already fully tokenised and shared.

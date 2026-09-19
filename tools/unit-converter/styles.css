@@ -35,17 +35,6 @@ body {
   flex-shrink: 0;
 }
 
-.app-header h1 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-purple-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 .toolbar {
   display: flex;
   flex-wrap: wrap;
