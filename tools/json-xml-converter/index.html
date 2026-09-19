@@ -60,20 +60,19 @@
                                 <line x1="18" y1="6" x2="18" y2="18"/>
                             </svg>
                         </button>
-                        <div class="dropdown json-only">
-                            <button class="action-btn dropdown-toggle" data-action="change-case" aria-label="Change case" data-tooltip="Change case">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <div class="dd dd--menu json-only" data-dd="menu" aria-label="Change case">
+                            <button class="dd__trigger dd__trigger--plain action-btn" type="button" data-action="change-case" aria-label="Change case" data-tooltip="Change case">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                     <path d="M4 7V4h16v3"/>
                                     <path d="M9 20h6"/>
                                     <path d="M12 4v16"/>
                                 </svg>
-                                <span class="dropdown-arrow">▼</span>
                             </button>
-                            <div class="dropdown-menu">
-                                <button class="dropdown-item" data-case="camel">camelCase</button>
-                                <button class="dropdown-item" data-case="snake">snake_case</button>
-                                <button class="dropdown-item" data-case="pascal">PascalCase</button>
-                                <button class="dropdown-item" data-case="kebab">kebab-case</button>
+                            <div class="dd__menu" role="menu">
+                                <button class="dd__option" type="button" role="menuitem" data-value="camel">camelCase</button>
+                                <button class="dd__option" type="button" role="menuitem" data-value="snake">snake_case</button>
+                                <button class="dd__option" type="button" role="menuitem" data-value="pascal">PascalCase</button>
+                                <button class="dd__option" type="button" role="menuitem" data-value="kebab">kebab-case</button>
                             </div>
                         </div>
                         <button class="action-btn" data-action="copy-left" aria-label="Copy" data-tooltip="Copy">

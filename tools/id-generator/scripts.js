@@ -14,7 +14,7 @@ const idTypeSelect = document.getElementById("id-type");
 const idTypeDropdown = document.getElementById("id-type-dropdown");
 const idTypeTrigger = document.getElementById("id-type-trigger");
 const idTypeValue = document.getElementById("id-type-value");
-const idTypeOptions = document.querySelectorAll("#id-type-menu .precision-option");
+const idTypeOptions = document.querySelectorAll("#id-type-menu .dd__option");
 const caseToggle = document.querySelector(".case-toggle");
 const caseOptionButtons = document.querySelectorAll(".case-option");
 const countInput = document.getElementById("count-input");
@@ -258,15 +258,9 @@ function syncIdTypeUi(value) {
     idTypeValue.textContent = selectedOption.textContent;
   }
 
-  idTypeOptions.forEach(optionButton => {
-    const isActive = optionButton.dataset.value === selectedOption?.value;
-    optionButton.classList.toggle("active", isActive);
-    if (isActive) {
-      optionButton.setAttribute("aria-selected", "true");
-    } else {
-      optionButton.removeAttribute("aria-selected");
-    }
-  });
+  // Mirror the native <select> onto the shared .dd component without firing
+  // another change event back at ourselves.
+  window.DevToolsMain.selectDropdownValue(idTypeDropdown, selectedOption?.value, { emit: false });
 }
 
 function setIdType(value, shouldEmit = true) {
@@ -285,36 +279,9 @@ function setIdType(value, shouldEmit = true) {
 
 function bindIdTypeDropdown() {
   if (!idTypeDropdown || !idTypeTrigger || !idTypeSelect) return;
-
+  // The shared .dd component owns interaction and mirrors the choice into
+  // #id-type (data-dd-select), whose change handler drives the rest of the UI.
   syncIdTypeUi(idTypeSelect.value);
-
-  idTypeTrigger.addEventListener("click", () => {
-    const isOpen = idTypeDropdown.classList.toggle("open");
-    idTypeTrigger.setAttribute("aria-expanded", String(isOpen));
-  });
-
-  idTypeOptions.forEach(optionButton => {
-    optionButton.addEventListener("click", () => {
-      setIdType(optionButton.dataset.value, true);
-      idTypeDropdown.classList.remove("open");
-      idTypeTrigger.setAttribute("aria-expanded", "false");
-      idTypeTrigger.focus();
-    });
-  });
-
-  document.addEventListener("click", event => {
-    if (!idTypeDropdown.contains(event.target)) {
-      idTypeDropdown.classList.remove("open");
-      idTypeTrigger.setAttribute("aria-expanded", "false");
-    }
-  });
-
-  document.addEventListener("keydown", event => {
-    if (event.key === "Escape") {
-      idTypeDropdown.classList.remove("open");
-      idTypeTrigger.setAttribute("aria-expanded", "false");
-    }
-  });
 }
 
 function updateHashInputs() {

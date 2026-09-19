@@ -27,19 +27,16 @@
         <div class="toolbar-divider"></div>
         <div class="toolbar-group">
           <span class="toolbar-label">Precision</span>
-          <div id="precision-dropdown" class="precision-dropdown" aria-label="Decimal precision">
-            <button id="precision-trigger" class="precision-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-              <span id="precision-value">4</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
+          <div id="precision-dropdown" class="dd" data-dd aria-label="Decimal precision">
+            <button id="precision-trigger" class="dd__trigger" type="button" aria-label="Decimal precision">
+              <span id="precision-value" class="dd__value">4</span>
             </button>
-            <div id="precision-menu" class="precision-menu" role="listbox" aria-label="Precision options">
-              <button class="precision-option" type="button" role="option" data-value="2">2</button>
-              <button class="precision-option active" type="button" role="option" data-value="4" aria-selected="true">4</button>
-              <button class="precision-option" type="button" role="option" data-value="6">6</button>
-              <button class="precision-option" type="button" role="option" data-value="8">8</button>
-              <button class="precision-option" type="button" role="option" data-value="10">10</button>
+            <div id="precision-menu" class="dd__menu" role="listbox" aria-label="Precision options">
+              <button class="dd__option" type="button" role="option" data-value="2">2</button>
+              <button class="dd__option is-active" type="button" role="option" data-value="4" aria-selected="true">4</button>
+              <button class="dd__option" type="button" role="option" data-value="6">6</button>
+              <button class="dd__option" type="button" role="option" data-value="8">8</button>
+              <button class="dd__option" type="button" role="option" data-value="10">10</button>
             </div>
           </div>
         </div>

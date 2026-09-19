@@ -2,6 +2,11 @@
    `base, tool, shared`, so the shared component layer wins without
    needing higher specificity here. */
 @layer tool {
+
+/* Layout only — the dropdown's appearance comes from .dd in main.css. */
+#precision-dropdown .dd__trigger {
+  width: 70px;
+}
 body {
   margin: 0;
   height: 100vh;
@@ -96,77 +101,6 @@ body {
 .toolbar-select option {
   background: #1f1f1f;
   color: var(--text);
-}
-
-.precision-dropdown {
-  position: relative;
-}
-
-.precision-trigger {
-  width: 70px;
-  height: 32px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text);
-  font-size: 0.95rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.precision-trigger svg {
-  width: 14px;
-  height: 14px;
-  transition: transform 0.2s ease;
-}
-
-.precision-dropdown.open .precision-trigger {
-  border-color: var(--accent-purple-light);
-  box-shadow: 0 0 0 2px rgba(103, 57, 183, 0.2);
-}
-
-.precision-dropdown.open .precision-trigger svg {
-  transform: rotate(180deg);
-}
-
-.precision-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 70px;
-  background: #1f1f1f;
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-  box-shadow: var(--shadow-md);
-  padding: 0.25rem;
-  display: none;
-  z-index: 50;
-}
-
-.precision-dropdown.open .precision-menu {
-  display: block;
-}
-
-.precision-option {
-  width: 100%;
-  border: none;
-  background: transparent;
-  color: var(--text);
-  text-align: left;
-  border-radius: 8px;
-  padding: 0.3rem 0.4rem;
-  font-size: 0.95rem;
-  cursor: pointer;
-}
-
-.precision-option:hover,
-.precision-option.active {
-  background: rgba(103, 57, 183, 0.35);
 }
 
 .category-list {

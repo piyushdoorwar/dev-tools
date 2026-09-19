@@ -128,47 +128,16 @@ function showError(message) {
 
 function setPrecision(value) {
   selectedPrecision = value;
-  precisionValue.textContent = String(value);
-
-  precisionMenu.querySelectorAll(".precision-option").forEach((option) => {
-    const isActive = Number(option.dataset.value) === value;
-    option.classList.toggle("active", isActive);
-    if (isActive) {
-      option.setAttribute("aria-selected", "true");
-    } else {
-      option.removeAttribute("aria-selected");
-    }
-  });
-
-  precisionDropdown.classList.remove("open");
-  precisionTrigger.setAttribute("aria-expanded", "false");
+  // Open/close, outside click, Escape and keyboard nav all live in the shared
+  // .dd component (DevToolsMain.initDropdowns); this only syncs the selection.
+  window.DevToolsMain.selectDropdownValue(precisionDropdown, String(value), { emit: false });
+  window.DevToolsMain.closeDropdown(precisionDropdown);
 }
 
 function bindPrecisionDropdown() {
-  precisionTrigger.addEventListener("click", () => {
-    const isOpen = precisionDropdown.classList.toggle("open");
-    precisionTrigger.setAttribute("aria-expanded", String(isOpen));
-  });
-
-  precisionMenu.querySelectorAll(".precision-option").forEach((option) => {
-    option.addEventListener("click", () => {
-      setPrecision(Number(option.dataset.value));
-      convertAndRender();
-    });
-  });
-
-  document.addEventListener("click", (event) => {
-    if (!precisionDropdown.contains(event.target)) {
-      precisionDropdown.classList.remove("open");
-      precisionTrigger.setAttribute("aria-expanded", "false");
-    }
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      precisionDropdown.classList.remove("open");
-      precisionTrigger.setAttribute("aria-expanded", "false");
-    }
+  precisionDropdown.addEventListener("dd:change", (event) => {
+    selectedPrecision = Number(event.detail.value);
+    convertAndRender();
   });
 }
 

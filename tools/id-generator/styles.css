@@ -2,6 +2,21 @@
    `base, tool, shared`, so the shared component layer wins without
    needing higher specificity here. */
 @layer tool {
+
+/* Layout only — the dropdown's appearance comes from .dd in main.css. */
+.id-type-dropdown {
+  min-width: 140px;
+  max-width: 170px;
+  flex-shrink: 0;
+}
+
+.id-type-dropdown .dd__trigger {
+  width: 100%;
+}
+
+.id-type-dropdown .dd__menu {
+  min-width: 170px;
+}
 * {
   box-sizing: border-box;
   margin: 0;
@@ -412,103 +427,6 @@ textarea,
 select {
   min-width: 140px;
   max-width: 160px;
-}
-
-.id-type-dropdown {
-  position: relative;
-  min-width: 140px;
-  max-width: 170px;
-  flex-shrink: 0;
-}
-
-.precision-trigger {
-  width: 100%;
-  min-height: 36px;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background-color: rgba(255, 255, 255, 0.035);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0;
-  padding: 0 0.6rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-align: left;
-  transition: all 0.2s ease;
-}
-
-.precision-trigger svg {
-  width: 14px;
-  height: 14px;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.precision-trigger:hover {
-  border-color: var(--accent-purple-light);
-  box-shadow: 0 0 0 2px rgba(103, 57, 183, 0.2);
-}
-
-.precision-trigger:focus,
-.precision-trigger:focus-visible {
-  outline: none;
-  border-color: var(--accent-purple-light);
-  box-shadow: var(--focus-ring);
-}
-
-.id-type-dropdown.open .precision-trigger {
-  border-color: var(--accent-purple-light);
-  box-shadow: 0 0 0 2px rgba(103, 57, 183, 0.2);
-}
-
-.id-type-dropdown.open .precision-trigger svg {
-  transform: rotate(180deg);
-}
-
-.precision-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 170px;
-  background: #1f1f1f;
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-  box-shadow: var(--shadow-md);
-  padding: 0.25rem;
-  display: none;
-  z-index: 60;
-}
-
-.id-type-dropdown.open .precision-menu {
-  display: block;
-}
-
-.precision-option {
-  width: 100%;
-  border: none;
-  background: transparent;
-  color: var(--text-primary);
-  text-align: left;
-  border-radius: 8px;
-  padding: 0.38rem 0.48rem;
-  font-size: 0.95rem;
-  line-height: 1.2;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.precision-option:hover,
-.precision-option.active {
-  background: rgba(103, 57, 183, 0.35);
-}
-
-.precision-option:focus-visible {
-  outline: 2px solid var(--accent-yellow);
-  outline-offset: 1px;
 }
 
 .id-type-hidden {
@@ -988,10 +906,6 @@ textarea:hover {
   }
 
   select {
-    min-width: 160px;
-  }
-
-  .id-type-dropdown {
     min-width: 160px;
   }
 }

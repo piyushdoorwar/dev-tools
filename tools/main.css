@@ -208,6 +208,9 @@
   /* --- Select chevron (shared, so every dropdown gets the same arrow) ----- */
   --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b8b8b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
 
+  /* Tick for the selected dropdown option. Masked, so it inherits its colour. */
+  --dd-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+
   /* --- Legacy aliases (kept so existing tool CSS keeps resolving) --------- */
   --purple: var(--accent-purple);
   --purple-light: var(--accent-purple-light);
@@ -915,6 +918,193 @@ select[size]:not([size='1']) {
    ========================================================================== */
 
 @layer shared {
+
+  /* --- Dropdown (shared component) ---------------------------------------
+     One trigger + popup used by every tool. Markup contract:
+
+       <div class="dd" data-dd>                        (add data-dd-select="#id"
+         <button class="dd__trigger">                   to mirror a native select)
+           <span class="dd__value">Label</span>
+         </button>
+         <div class="dd__menu" role="listbox">
+           <button class="dd__option" data-value="x">X</button>
+         </div>
+       </div>
+
+     Behaviour (open/close, outside click, Escape, arrow keys, ARIA) comes from
+     DevToolsMain.initDropdowns() in main.js — tools should not reimplement it.
+     Use data-dd="menu" for a command menu with no selected state.
+     ------------------------------------------------------------------------ */
+
+  .dd {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .dd__trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    cursor: pointer;
+    transition: var(--transition-control);
+  }
+
+  /* Select-style chrome. A trigger marked --plain keeps whatever the tool
+     already styles it as (e.g. a toolbar icon button) and opts out of this. */
+  .dd__trigger:not(.dd__trigger--plain) {
+    min-height: var(--control-h-sm);
+    padding: 0 var(--space-3);
+    border: 1px solid var(--control-border);
+    border-radius: var(--radius-control);
+    background: var(--control-bg);
+    color: var(--control-text);
+    font-family: var(--font-body);
+    font-size: var(--chrome-base);
+    font-weight: 500;
+  }
+
+  .dd__trigger:not(.dd__trigger--plain):hover {
+    border-color: var(--control-border-strong);
+    background: var(--control-bg-strong);
+    color: var(--control-text-hover);
+  }
+
+  .dd__trigger:focus-visible {
+    outline: none;
+    border-color: var(--focus-border);
+    box-shadow: var(--focus-ring);
+  }
+
+  .dd__value {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* Chevron is drawn here so tools don't each ship their own SVG. */
+  .dd__trigger:not(.dd__trigger--plain)::after {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    background: var(--select-chevron) center / 12px 12px no-repeat;
+    content: '';
+    transition: transform var(--dur) var(--ease-out);
+  }
+
+  .dd.is-open .dd__trigger::after {
+    transform: rotate(180deg);
+  }
+
+  .dd.is-open .dd__trigger:not(.dd__trigger--plain) {
+    border-color: var(--control-border-strong);
+    color: var(--text-primary);
+  }
+
+  .dd__menu {
+    position: absolute;
+    z-index: var(--z-dropdown);
+    top: calc(100% + var(--space-2));
+    left: 0;
+    display: flex;
+    min-width: 100%;
+    max-height: min(320px, 60vh);
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-1);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-menu);
+    background: var(--panel-bg-elevated);
+    box-shadow: var(--shadow-lg);
+    overflow-y: auto;
+    /* Hidden by default; .is-open reveals. visibility keeps it out of the
+       tab order while closed without display:none killing the transition. */
+    opacity: 0;
+    transform: translateY(-4px);
+    visibility: hidden;
+    transition:
+      opacity var(--dur-fast) var(--ease-out),
+      transform var(--dur-fast) var(--ease-out),
+      visibility 0s linear var(--dur-fast);
+  }
+
+  .dd.is-open .dd__menu {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  /* Right-aligned when the trigger sits at the end of a toolbar. */
+  .dd--end .dd__menu {
+    right: 0;
+    left: auto;
+  }
+
+  .dd__option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: var(--control-h-sm);
+    padding: 0 var(--space-3);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--chrome-base);
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: var(--transition-control);
+  }
+
+  .dd__option:hover,
+  .dd__option.is-active {
+    background: var(--surface-strong);
+    color: var(--text-primary);
+  }
+
+  .dd__option:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  /* Selected state reads as a quiet accent tick rather than a filled row —
+     the row stays legible and the menu stays calm. */
+  .dd__option[aria-selected='true'] {
+    background: var(--surface-strong);
+    color: var(--text-primary);
+  }
+
+  .dd__option[aria-selected='true']::after {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    background: currentColor;
+    color: var(--accent-purple-light);
+    content: '';
+    -webkit-mask: var(--dd-check) center / contain no-repeat;
+    mask: var(--dd-check) center / contain no-repeat;
+  }
+
+  .dd__option:disabled {
+    color: var(--text-disabled);
+    cursor: not-allowed;
+  }
+
+  .dd__option:disabled:hover {
+    background: transparent;
+    color: var(--text-disabled);
+  }
+
+  /* Command menus have nothing selected, so they never reserve tick space. */
+  .dd--menu .dd__option {
+    justify-content: flex-start;
+  }
 
   /* --- Menus & popovers -------------------------------------------------- */
 

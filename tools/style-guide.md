@@ -117,3 +117,52 @@
 - Clear focus states with purple borders
 - Adequate spacing for touch targets (36-44px minimum)
 - Readable font sizes (minimum 0.75rem)
+
+## Shared Components
+
+Components live in `tools/main.css` (`@layer shared`) and `tools/main.js`. A tool
+inherits them by loading both — it should not restyle or reimplement them.
+
+Because `shared` wins by cascade layer rather than specificity, it declares only
+*appearance* (colour, radius, border, shadow, padding, type). Anything a tool
+legitimately varies — width, flex behaviour, position in a toolbar — stays in
+the tool's own stylesheet.
+
+### Dropdown (`.dd`) — done
+
+One trigger + popup for both value selection and command menus.
+
+```html
+<div class="dd" data-dd data-dd-select="#native-select">
+  <button class="dd__trigger" type="button">
+    <span class="dd__value">UUID v4</span>
+  </button>
+  <div class="dd__menu" role="listbox">
+    <button class="dd__option" type="button" role="option" data-value="uuid-v4">UUID v4</button>
+  </div>
+</div>
+```
+
+| Hook | Purpose |
+| --- | --- |
+| `data-dd` | Marks the root for auto-init. `data-dd="menu"` = command menu, no selection. |
+| `data-dd-select` | Selector for a native `<select>` to mirror; a `change` event fires on it. |
+| `.dd--end` | Right-align the menu under the trigger. |
+| `.dd__trigger--plain` | Keep the tool's own button styling; skips the generated chevron. |
+| `dd:change` event | `detail: { value, label }`, fired on the `.dd` root. |
+
+Behaviour — open/close, outside click, Escape, arrow keys, Home/End, ARIA —
+comes from `DevToolsMain.initDropdowns()`, which runs on load and on any node
+added later. Tools must not add their own open/close handlers.
+
+The selected option reads as a quiet purple tick on a subtle surface rather than
+a filled gradient row, so long menus stay calm.
+
+Helpers: `DevToolsMain.selectDropdownValue(root, value, { emit })`,
+`.openDropdown(root)`, `.closeDropdown(root)`, `.closeAllDropdowns()`.
+
+### Still to extract
+
+Modal · toast · split resizer · icon set · scrollbar · heading scale.
+These currently exist as per-tool variants skinned by shared selector lists in
+`main.css`; each should become a real component like `.dd`.

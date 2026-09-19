@@ -19,22 +19,19 @@
           <strong>Generate new IDs</strong>
         </div>
         <div class="generate-controls-all">
-          <div id="id-type-dropdown" class="precision-dropdown id-type-dropdown" aria-label="ID type">
-            <button id="id-type-trigger" class="precision-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="ID type">
-              <span id="id-type-value">UUID v4</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
+          <div id="id-type-dropdown" class="dd dd--end id-type-dropdown" data-dd data-dd-select="#id-type" aria-label="ID type">
+            <button id="id-type-trigger" class="dd__trigger" type="button" aria-label="ID type">
+              <span id="id-type-value" class="dd__value">UUID v4</span>
             </button>
-            <div id="id-type-menu" class="precision-menu" role="listbox" aria-label="ID type options">
-              <button class="precision-option" type="button" role="option" data-value="uuid-v1">UUID v1</button>
-              <button class="precision-option" type="button" role="option" data-value="uuid-v3">UUID v3</button>
-              <button class="precision-option active" type="button" role="option" data-value="uuid-v4" aria-selected="true">UUID v4</button>
-              <button class="precision-option" type="button" role="option" data-value="uuid-v5">UUID v5</button>
-              <button class="precision-option" type="button" role="option" data-value="uuid-v7">UUID v7</button>
-              <button class="precision-option" type="button" role="option" data-value="ulid">ULID</button>
-              <button class="precision-option" type="button" role="option" data-value="objectid">Object ID</button>
-              <button class="precision-option" type="button" role="option" data-value="nanoid">Nano ID</button>
+            <div id="id-type-menu" class="dd__menu" role="listbox" aria-label="ID type options">
+              <button class="dd__option" type="button" role="option" data-value="uuid-v1">UUID v1</button>
+              <button class="dd__option" type="button" role="option" data-value="uuid-v3">UUID v3</button>
+              <button class="dd__option is-active" type="button" role="option" data-value="uuid-v4" aria-selected="true">UUID v4</button>
+              <button class="dd__option" type="button" role="option" data-value="uuid-v5">UUID v5</button>
+              <button class="dd__option" type="button" role="option" data-value="uuid-v7">UUID v7</button>
+              <button class="dd__option" type="button" role="option" data-value="ulid">ULID</button>
+              <button class="dd__option" type="button" role="option" data-value="objectid">Object ID</button>
+              <button class="dd__option" type="button" role="option" data-value="nanoid">Nano ID</button>
             </div>
             <select id="id-type" class="id-type-hidden" aria-hidden="true" tabindex="-1">
               <option value="uuid-v1">UUID v1</option>

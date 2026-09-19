@@ -59,27 +59,11 @@ function setupEventListeners() {
         });
     });
     
-    // Dropdown items
-    document.querySelectorAll('.dropdown-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            const caseType = e.currentTarget.dataset.case;
-            if (caseType) changeCasing(caseType);
-        });
-    });
-    
-    // Dropdown toggle
-    document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
-        toggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const menu = toggle.nextElementSibling;
-            menu.classList.toggle('show');
-        });
-    });
-    
-    // Close dropdowns
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            menu.classList.remove('show');
+    // Case menu. Opening, closing and keyboard nav come from the shared .dd
+    // component in main.js; we only react to the chosen command.
+    document.querySelectorAll('[data-dd="menu"]').forEach(menu => {
+        menu.addEventListener('dd:change', (e) => {
+            if (e.detail.value) changeCasing(e.detail.value);
         });
     });
     
