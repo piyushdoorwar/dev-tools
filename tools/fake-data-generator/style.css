@@ -7,6 +7,14 @@
     padding: 0;
     box-sizing: border-box;
 }
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+input,
+textarea,
+select {
+  padding: revert-layer;
+}
 
 body {
     font-family: var(--font-body);
@@ -946,7 +954,6 @@ body {
 
 .tip-list {
     margin: 0.5rem 0 0;
-    padding-left: 1.25rem;
     color: var(--text-secondary);
     font-size: 0.875rem;
     line-height: 1.6;

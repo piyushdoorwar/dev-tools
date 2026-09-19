@@ -148,7 +148,7 @@
   --control-h-sm: 32px;
   --control-h: 38px;
   --control-h-lg: 44px;
-  --control-pad-x: 12px;
+  --control-pad-x: 14px;
 
   /* --- Control colour ---------------------------------------------------- */
   --control-bg: rgba(0, 0, 0, 0.22);
@@ -491,6 +491,10 @@ input[type='number']:hover:not(:disabled),
 input[type='password']:hover:not(:disabled),
 input[type='email']:hover:not(:disabled),
 input[type='url']:hover:not(:disabled),
+input[type='tel']:hover:not(:disabled),
+input[type='date']:hover:not(:disabled),
+input[type='time']:hover:not(:disabled),
+input[type='datetime-local']:hover:not(:disabled),
 input:not([type]):hover:not(:disabled),
 textarea:hover:not(:disabled),
 select:hover:not(:disabled),
@@ -1299,6 +1303,14 @@ select[size]:not([size='1']) {
   .modal-footer {
     padding: var(--space-4) var(--space-5);
     border-top: 1px solid var(--border);
+  }
+
+  /* Tips are cards, so a list marker would sit outside the card looking
+     detached — and they are not ordered steps. */
+  .modal-body .tip-list {
+    margin-left: 0;
+    padding-left: 0;
+    list-style: none;
   }
 
   /* Inner content blocks inside a modal body. Each tool had invented its own

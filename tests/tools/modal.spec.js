@@ -95,3 +95,29 @@ test('jwt-debugger modal no longer relies on inline display', async ({ page }) =
   await page.keyboard.press('Escape');
   await expect(modal).not.toHaveClass(/is-open/);
 });
+
+test('tip lists in modals render without list markers', async ({ page }) => {
+  // Each tip is already a card, so an <ol> marker sat outside the card and
+  // read as stray numbering.
+  await openTool(page, 'fake-data-generator');
+  await page.click('#schemaHelpBtn');
+
+  const list = page.locator('.tip-list');
+  await expect(list).toHaveCount(1);
+
+  const info = await page.evaluate(() => {
+    const ul = document.querySelector('.tip-list');
+    const li = ul.querySelector('li');
+    return {
+      tag: ul.tagName,
+      listStyle: getComputedStyle(ul).listStyleType,
+      markerWidth: getComputedStyle(li, '::marker').width,
+      // A left indent only exists to make room for markers.
+      padLeft: parseFloat(getComputedStyle(ul).paddingLeft),
+    };
+  });
+
+  expect(info.tag, 'tips are not ordered steps').toBe('UL');
+  expect(info.listStyle).toBe('none');
+  expect(info.padLeft).toBe(0);
+});
