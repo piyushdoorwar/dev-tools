@@ -647,3 +647,129 @@ test('every tool loads without local errors, duplicate IDs, or nameless visible 
   expect(localFailures).toEqual([]);
   expect(pageErrors).toEqual([]);
 });
+
+// --- Fixes from the 2026-09-19 review ---------------------------------------
+
+test('the JWT copy buttons keep their own targets when the algorithm changes', async ({ page }) => {
+  // updateSecretSections() used to grab the first [data-copy-target] in the
+  // document — the Copy Header button — and repoint it at the signing key, so
+  // "Copy Header" put the secret (or the RSA private key) on the clipboard.
+  await page.goto('/tools/jwt-debugger/');
+  const targets = () => page.evaluate(() => Object.fromEntries(
+    [...document.querySelectorAll('[data-copy-target]')].map((button) => [button.dataset.copyTarget, true])
+  ));
+  const headerTarget = () => page.evaluate(() =>
+    document.querySelector('[title^="Copy Header"]').dataset.copyTarget);
+
+  expect(await headerTarget()).toBe('headerJson');
+  for (const algorithm of ['RS256', 'ES256', 'PS256', 'HS256']) {
+    await page.selectOption('#algoSelect', algorithm);
+    expect(await headerTarget(), `Copy Header leaked the key for ${algorithm}`).toBe('headerJson');
+  }
+  expect(await targets()).toHaveProperty('secretTextarea');
+});
+
+test('the JWT status never claims an unverified signature is intact', async ({ page }) => {
+  await page.goto('/tools/jwt-debugger/');
+  const status = () => page.locator('.status-label').textContent();
+
+  // Decoding alone proves nothing about the signature.
+  expect(await status()).not.toMatch(/intact/i);
+  expect(await status()).toMatch(/not verified/i);
+
+  // Editing the payload leaves the old signature covering content it no longer
+  // signs; that used to still report a checkmark.
+  await page.evaluate(() => {
+    const payload = document.getElementById('payloadJson');
+    payload.textContent = JSON.stringify({ sub: '1', name: 'Edited', exp: 2000000000 }, null, 2);
+    payload.dispatchEvent(new Event('input'));
+  });
+  expect(await status()).toMatch(/no longer matches/i);
+
+  // A missing key now reports instead of failing silently.
+  await page.fill('#secretTextarea', '');
+  await page.click('#verifyBtn');
+  await expect(page.locator('#toast-container .toast')).toHaveText(/Secret is required/i);
+});
+
+test('generated Nano IDs keep their mixed-case alphabet', async ({ page }) => {
+  // The case toggle was applied to every ID type, so nanoid output was
+  // lowercased — dropping it from a 64-character alphabet to 38.
+  await page.goto('/tools/id-generator/');
+  await page.selectOption('#id-type', 'nanoid');
+  await page.fill('#count-input', '12');
+  await page.click('#generate-btn');
+
+  const ids = (await page.locator('#output-area').textContent()).trim().split('\n');
+  expect(ids).toHaveLength(12);
+  expect(ids.every((id) => id.length === 21)).toBe(true);
+  expect(ids.some((id) => /[A-Z]/.test(id)), 'nanoid output was case-folded').toBe(true);
+
+  // Neither case option may be forced onto a mixed-case format.
+  const disabled = await page.evaluate(() =>
+    [...document.querySelectorAll('.case-option')].every((button) => button.disabled));
+  expect(disabled).toBe(true);
+});
+
+test('selecting ULID does not leave later ID types uppercased', async ({ page }) => {
+  await page.goto('/tools/id-generator/');
+  await page.selectOption('#id-type', 'ulid');
+  await page.click('#generate-btn');
+  await page.selectOption('#id-type', 'uuid-v4');
+  await page.fill('#count-input', '3');
+  await page.click('#generate-btn');
+
+  const ids = (await page.locator('#output-area').textContent()).trim().split('\n');
+  expect(ids.every((id) => id === id.toLowerCase()), 'UUIDs inherited ULID casing').toBe(true);
+});
+
+test('the regex sample text contains real newlines', async ({ page }) => {
+  // The sample was built with '\\n' inside single quotes, so it loaded as one
+  // line of literal backslash-n and the m/s flags had nothing to act on.
+  await page.goto('/tools/regex-tester/');
+  await page.click('#sampleBtn');
+
+  const text = await page.locator('#textInput').inputValue();
+  expect(text).not.toContain('\\n');
+  expect(text.split('\n').length).toBeGreaterThan(5);
+});
+
+test('the Toon sample parses back to the JSON it came from', async ({ page }) => {
+  // The hand-written Toon sample had no indentation, so Load Sample produced an
+  // empty output pane and the status bar still read "Ready".
+  await page.goto('/tools/json-toon-converter/#toon-json');
+  await page.click('[data-action="load-sample"]');
+
+  await expect(page.locator('#left-status .status-text')).toHaveText(/Valid Toon/);
+  const parsed = JSON.parse(await page.locator('#right-editor').inputValue());
+  expect(parsed.person.hobbies).toEqual(['reading', 'coding', 'traveling']);
+  expect(parsed.person.address.city).toBe('New York');
+});
+
+test('invalid Toon input reports the parse error instead of resetting to Ready', async ({ page }) => {
+  await page.goto('/tools/json-toon-converter/#toon-json');
+  await page.locator('#left-editor').fill('person:\n  name: "unterminated\n  junk');
+  await page.locator('#left-editor').dispatchEvent('input');
+
+  await expect(page.locator('#left-status .status-text')).toHaveClass(/error/);
+  await expect(page.locator('#left-status .status-text')).toHaveText(/^✗/);
+  await expect(page.locator('#right-editor')).toHaveValue('');
+});
+
+test('unit conversions too small for the precision show exponent form, not zero', async ({ page }) => {
+  // toFixed(4) flattened 1 J in kWh (2.78e-7) to a flat "0".
+  await page.goto('/tools/unit-converter/#energy');
+  await page.locator('#value-input').fill('1');
+  await page.locator('#value-input').dispatchEvent('input');
+
+  const readings = await page.evaluate(() => Object.fromEntries(
+    [...document.querySelectorAll('.result-row')].map((row) => [
+      row.querySelector('.result-row-key').textContent,
+      row.querySelector('.result-row-value').textContent,
+    ])
+  ));
+  expect(readings.kWh).toMatch(/^2\.7+8e-7$/);
+  expect(readings.eV).toMatch(/e\+18$/);
+  // Ordinary magnitudes keep their grouped decimal formatting.
+  expect(readings.kJ).toBe('0.001');
+});

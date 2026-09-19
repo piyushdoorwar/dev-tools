@@ -20,12 +20,28 @@ function parseNumericInput(rawValue) {
   return { valid: true, value, error: "" };
 }
 
+// Past this magnitude, grouped digits stop being readable (and Number's own
+// formatting switches to exponential at 1e21 anyway).
+const LARGE_VALUE_CEILING = 1e15;
+
 function roundToPrecision(value, precision) {
   if (!isFiniteNumber(value)) {
     return "-";
   }
 
   const safePrecision = Number.isInteger(precision) ? Math.max(0, Math.min(12, precision)) : 4;
+
+  if (value === 0) {
+    return "0";
+  }
+
+  // A non-zero value smaller than the chosen precision can express would render
+  // as a flat "0" — e.g. 1 J in kWh. Show it in exponential form instead of
+  // silently reporting zero.
+  const magnitude = Math.abs(value);
+  if (magnitude < Math.pow(10, -safePrecision) || magnitude >= LARGE_VALUE_CEILING) {
+    return value.toExponential(Math.min(Math.max(safePrecision, 2), 12));
+  }
 
   const rounded = Number(value.toFixed(safePrecision));
   return rounded.toLocaleString(undefined, {

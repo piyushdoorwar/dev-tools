@@ -41,6 +41,14 @@ function resetFields() {
 let caseMode = "lower";
 let caseLocked = false;
 
+// These ID formats use a mixed-case alphabet, so re-casing them destroys
+// entropy and yields values the source library would never produce.
+const CASE_SENSITIVE_TYPES = new Set(["nanoid"]);
+
+function isCaseSensitiveType() {
+  return CASE_SENSITIVE_TYPES.has(idTypeSelect?.value);
+}
+
 function setCaseMode(mode) {
   caseMode = mode;
   caseOptionButtons.forEach(button => {
@@ -51,16 +59,18 @@ function setCaseMode(mode) {
   applyCaseToOutput();
 }
 
-function setCaseLock(locked) {
+// `allowedMode` stays clickable while locked; pass null to disable every option.
+function setCaseLock(locked, allowedMode = "lower") {
   caseLocked = locked;
   if (!caseToggle) return;
   caseToggle.classList.toggle("is-locked", locked);
   caseOptionButtons.forEach(button => {
-    button.disabled = locked && button.dataset.case !== "lower";
+    button.disabled = locked && button.dataset.case !== allowedMode;
   });
 }
 
 function applyCaseToOutput() {
+  if (isCaseSensitiveType()) return;
   const text = outputArea.textContent;
   if (!text || !text.trim()) return;
   outputArea.textContent = applyCase(text, caseMode);
@@ -313,12 +323,16 @@ function updateHashInputs() {
     hashInputs.style.display = "flex";
     setCaseMode("lower");
     setCaseLock(true);
+  } else if (CASE_SENSITIVE_TYPES.has(type)) {
+    // Neither case is valid to force here — the generated alphabet is mixed.
+    hashInputs.style.display = "none";
+    setCaseLock(true, null);
   } else {
     hashInputs.style.display = "none";
     setCaseLock(false);
-    if (type === "ulid") {
-      setCaseMode("upper");
-    }
+    // Always reset to the canonical case for this type. Without this, the
+    // uppercase ULID forces above leaked into every type selected afterwards.
+    setCaseMode(type === "ulid" ? "upper" : "lower");
   }
 }
 
@@ -405,7 +419,7 @@ async function generateIds() {
         value = "";
     }
     if (value) {
-      results.push(applyCase(value, caseMode));
+      results.push(CASE_SENSITIVE_TYPES.has(type) ? value : applyCase(value, caseMode));
     }
   }
   outputArea.textContent = results.join("\n");

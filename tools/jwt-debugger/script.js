@@ -48,18 +48,24 @@ const secretSection = document.getElementById('secretSection');
 
 function updateSecretSections() {
   const algo = algoSelect.value;
-  const copyBtn = document.querySelector('[data-copy-target]');
+  const copyKeyBtn = document.getElementById('copyKeyBtn');
   if (algo === 'HS256') {
     secretSection.style.display = 'block';
     asymSection.style.display = 'none';
     secretDescription.textContent = '';
     secretLabel.textContent = 'Secret';
-    copyBtn.dataset.copyTarget = 'secretTextarea';
+    if (copyKeyBtn) {
+      copyKeyBtn.dataset.copyTarget = 'secretTextarea';
+      copyKeyBtn.title = 'Copy Secret';
+    }
   } else {
     secretSection.style.display = 'none';
     asymSection.style.display = 'block';
     secretDescription.textContent = '';
-    copyBtn.dataset.copyTarget = 'privateKeyTextarea';
+    if (copyKeyBtn) {
+      copyKeyBtn.dataset.copyTarget = 'privateKeyTextarea';
+      copyKeyBtn.title = 'Copy Private Key';
+    }
   }
 }
 
@@ -331,6 +337,10 @@ function parseJwt(token) {
   }
 }
 
+// True once the header or payload has been edited without re-signing, which
+// leaves the original signature attached to content it no longer covers.
+let signatureIsStale = false;
+
 function updateStatus(tokenMeta) {
   if (!tokenMeta) {
     statusMessage.classList.add('invalid');
@@ -350,12 +360,22 @@ function updateStatus(tokenMeta) {
   if (tokenMeta.payload.exp && tokenMeta.payload.exp < now) {
     statusMessage.classList.add('invalid');
     statusIcon.textContent = '⨯';
-    statusLabel.textContent = 'Token expired — signature stale';
-  } else {
-    statusMessage.classList.remove('invalid');
-    statusIcon.textContent = '✔';
-    statusLabel.textContent = 'Signature segments intact';
+    statusLabel.textContent = 'Token expired';
+    return;
   }
+
+  if (signatureIsStale) {
+    statusMessage.classList.add('invalid');
+    statusIcon.textContent = '!';
+    statusLabel.textContent = 'Edited — signature no longer matches, re-sign with Apply';
+    return;
+  }
+
+  // Structure decoded, but nothing here proves the signature is good — only the
+  // Verify button can say that, and it sets its own message.
+  statusMessage.classList.remove('invalid');
+  statusIcon.textContent = '•';
+  statusLabel.textContent = 'Decoded — signature not verified';
 }
 
 async function updateJwt() {
@@ -368,6 +388,7 @@ async function updateJwt() {
     const newSignature = await computeSignature(data, secret, tokenMeta.header.alg);
     const newToken = `${data}.${newSignature}`;
     jwtInput.value = newToken;
+    signatureIsStale = !newSignature;
     updateStatus(parseJwt(newToken));
   }
 }
@@ -510,8 +531,16 @@ function copyToClipboard(value) {
   });
 }
 
-function showToast(message) {
-  return;
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container || !message) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  window.setTimeout(() => toast.remove(), 2500);
 }
 
 function flashActionIcon(button) {
@@ -561,20 +590,23 @@ document.querySelectorAll('[data-copy-target]').forEach((btn) => {
 // });
 
 sampleBtn.addEventListener('click', () => {
+  signatureIsStale = false;
   jwtInput.value = sampleToken;
   updateDisplay(sampleToken);
   flashActionIcon(sampleBtn);
-  showToast('Sample JWT loaded');
+  showToast('Sample JWT loaded', 'success');
 });
 
 clearBtn.addEventListener('click', () => {
+  signatureIsStale = false;
   jwtInput.value = '';
   updateDisplay('');
   flashActionIcon(clearBtn);
-  showToast('JWT cleared');
+  showToast('JWT cleared', 'info');
 });
 
 jwtInput.addEventListener('input', () => {
+  signatureIsStale = false;
   updateDisplay(jwtInput.value.trim());
 });
 
@@ -591,6 +623,7 @@ headerJson.addEventListener('input', () => {
       jwtInput.value = newToken;
       // Update algorithm
       algoSelect.value = newHeader.alg || 'HS256';
+      signatureIsStale = true;
       updateStatus(parseJwt(newToken));
     }
   } catch (e) {
@@ -609,6 +642,7 @@ payloadJson.addEventListener('input', () => {
       const newPayloadEncoded = base64UrlEncode(JSON.stringify(newPayload));
       const newToken = `${parts[0]}.${newPayloadEncoded}.${parts[2]}`;
       jwtInput.value = newToken;
+      signatureIsStale = true;
       updateStatus(parseJwt(newToken));
     }
   } catch (e) {
@@ -652,12 +686,12 @@ if (verifyBtn) {
     const algo = tokenMeta.header.alg;
     if (algo === 'HS256') {
       if (!secretTextarea.value.trim()) {
-        showToast('Secret is required for verification');
+        showToast('Secret is required for verification', 'error');
         return;
       }
     } else {
       if (!publicKeyTextarea.value.trim()) {
-        showToast('Public key is required for verification');
+        showToast('Public key is required for verification', 'error');
         return;
       }
     }
@@ -710,7 +744,7 @@ if (verifyBtn) {
       if (algo === 'RS256') message = 'Invalid RSA public key';
       else if (algo === 'ES256') message = 'Invalid EC public key';
       else if (algo === 'PS256') message = 'Invalid RSA-PSS public key';
-      showToast(message);
+      showToast(message, 'error');
     }
   });
 }
@@ -723,13 +757,13 @@ if (applyBtn) {
     if (algo === 'HS256') {
       keyValue = secretTextarea.value;
       if (!keyValue.trim()) {
-        showToast('Secret is required for signing');
+        showToast('Secret is required for signing', 'error');
         return;
       }
     } else {
       keyValue = privateKeyTextarea.value;
       if (!keyValue.trim()) {
-        showToast('Private key is required for signing');
+        showToast('Private key is required for signing', 'error');
         return;
       }
     }
@@ -743,7 +777,7 @@ if (applyBtn) {
       if (algo === 'RS256') message = 'Invalid RSA private key';
       else if (algo === 'ES256') message = 'Invalid EC private key';
       else if (algo === 'PS256') message = 'Invalid RSA-PSS private key';
-      showToast(message);
+      showToast(message, 'error');
     }
   });
 }
@@ -842,6 +876,7 @@ algoSelect.addEventListener('change', async () => {
       : '';
     const newToken = `${data}.${newSignature}`;
     jwtInput.value = newToken;
+    signatureIsStale = !newSignature;
     updateStatus(parseJwt(newToken));
   }
 });
@@ -851,9 +886,9 @@ copyBtn.addEventListener('click', () => {
   if (jwtInput.value.trim()) {
     copyToClipboard(jwtInput.value.trim());
     flashActionIcon(copyBtn);
-    showToast('JWT copied to clipboard');
+    showToast('JWT copied to clipboard', 'success');
   } else {
-    showToast('Nothing to copy');
+    showToast('Nothing to copy', 'error');
   }
 });
 
@@ -864,9 +899,9 @@ pasteBtn.addEventListener('click', async () => {
     jwtInput.value = text;
     updateDisplay(text.trim());
     flashActionIcon(pasteBtn);
-    showToast('JWT pasted from clipboard');
+    showToast('JWT pasted from clipboard', 'success');
   } catch (err) {
-    showToast('Failed to paste from clipboard');
+    showToast('Failed to paste from clipboard', 'error');
   }
 });
 

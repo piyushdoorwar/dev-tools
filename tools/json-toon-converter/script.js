@@ -198,11 +198,7 @@ function updateMode() {
     updateLineNumbers('right');
 }
 
-// Load Sample Data
-function loadSample() {
-    if (currentMode === 'json-toon') {
-        // Sample JSON
-        leftEditor.value = `{
+const SAMPLE_JSON = `{
   "person": {
     "name": "John Doe",
     "age": 30,
@@ -216,23 +212,23 @@ function loadSample() {
     "isActive": true
   }
 }`;
+
+// Load Sample Data
+function loadSample() {
+    if (currentMode === 'json-toon') {
+        leftEditor.value = SAMPLE_JSON;
     } else {
-        // Sample Toon
-        leftEditor.value = `person:
-name: John Doe
-age: 30
-email: john.doe@example.com
-address:
-street: 123 Main St
-city: New York
-zipCode: "10001"
-hobbies[3]:
-- reading
-- coding
-- traveling
-isActive: true`;
+        // Derive the Toon sample from the JSON one so it always parses back and
+        // always reflects the current indent/delimiter settings.
+        // Indent 0 would emit a flat JSON dump, which shows nothing about Toon,
+        // so the sample always uses a real nesting width.
+        leftEditor.value = jsonToToon(
+            JSON.parse(SAMPLE_JSON),
+            Math.max(currentIndent, 2),
+            currentDelimiter.replace('\\t', '\t')
+        );
     }
-    
+
     updateStatus('left', '✓ Sample loaded', true);
     updateCharCount('left');
     updateLineNumbers('left');
@@ -517,10 +513,11 @@ function handleConvert() {
         updateCharCount('right');
         updateLineNumbers('right');
     } catch (error) {
-        // Silently fail for live conversion - don't show errors while typing
+        // Report the parse failure on the input side rather than resetting to
+        // "Ready", which made broken input indistinguishable from valid input.
         rightEditor.value = '';
-        updateStatus('left', 'Ready', false);
-        updateStatus('right', 'Ready', false);
+        updateStatus('left', '✗ ' + error.message, false, true);
+        updateStatus('right', 'Waiting for valid input', false);
         updateCharCount('right');
         updateLineNumbers('right');
         if (infoBtn) infoBtn.style.display = 'none';

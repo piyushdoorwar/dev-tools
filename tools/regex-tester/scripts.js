@@ -37,20 +37,22 @@ const sampleData = {
   pattern: '[A-Z][a-z]+',
   flags: 'g',
   template: '$0\\n',
-  text:
-    'TITLE: Regex Playground\\n' +
-    'AUTHOR: DEVUTILS\\n' +
-    'notes: lower-case key (toggle i)\\n' +
-    '\\n' +
-    'BLOCK: first line\\n' +
-    'second line continues\\n' +
-    'third line ends\\n' +
-    '\\n' +
-    'PATH: /api/v1/users\\n' +
-    'ID: 12345\\n' +
-    'TAG: Alpha_Beta\\n' +
-    '\\n' +
+  // Real newlines — the m and s flags are pointless without them.
+  text: [
+    'TITLE: Regex Playground',
+    'AUTHOR: DEVUTILS',
+    'notes: lower-case key (toggle i)',
+    '',
+    'BLOCK: first line',
+    'second line continues',
+    'third line ends',
+    '',
+    'PATH: /api/v1/users',
+    'ID: 12345',
+    'TAG: Alpha_Beta',
+    '',
     'Tip: Toggle g i m s y to see how matches change.'
+  ].join('\n')
 };
 
 let matches = [];
