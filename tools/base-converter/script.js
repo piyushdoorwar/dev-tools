@@ -387,12 +387,12 @@ function downloadField(key) {
   showToast(`${SOURCE_LABELS[key]} downloaded`, "success");
 }
 
-function loadSample(triggerButton = null) {
+function loadSample(triggerButton = null, { announce = true } = {}) {
   if (!inputs.text) return;
   inputs.text.value = "Hello";
   handleInput("text");
   flashActionButton(triggerButton);
-  showToast("Loaded sample input", "success");
+  if (announce) showToast("Loaded sample input", "success");
 }
 
 // Event Handlers
@@ -466,7 +466,9 @@ function closeSchemaHelpModal() {
 }
 
 function init() {
-  loadSample();
+  // Seed the fields without announcing it — the user did not ask for a sample,
+  // so a toast on every page load is just noise.
+  loadSample(null, { announce: false });
 }
 
 init();

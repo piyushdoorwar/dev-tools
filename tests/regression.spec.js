@@ -773,3 +773,179 @@ test('unit conversions too small for the precision show exponent form, not zero'
   // Ordinary magnitudes keep their grouped decimal formatting.
   expect(readings.kJ).toBe('0.001');
 });
+
+test('hashes cover the input verbatim, including surrounding whitespace', async ({ page }) => {
+  // The input was trimmed before hashing, so digests silently disagreed with
+  // sha256sum for anything with leading or trailing whitespace.
+  await page.goto('/tools/crypto-generator/');
+  await page.click('.mode-tab[data-mode="hashes"]');
+  await page.selectOption('#algoSelect', 'sha256');
+
+  // Hashing is debounced, so wait for the digest to settle on each input.
+  const digestOf = async (value, expected) => {
+    await page.fill('#hashInput', value);
+    await expect.poll(() => page.locator('.hash-value').first().textContent()).toBe(expected);
+    return page.locator('.hash-value').first().textContent();
+  };
+
+  // Vectors from node:crypto — the trailing space must change the digest.
+  await digestOf('abc', 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
+  await digestOf('abc ', '5488613c42b0d34d60f7aa9e94be317a3ee102a2bbd91ccc73cc79fbc2269955');
+  await digestOf(' abc', 'd92b1cb3a32147b86a4db0647e4bf6eda6cf160fd3b2da264c5b088c9f9ccbfa');
+});
+
+test('the bulk password count accepts multi-digit typing', async ({ page }) => {
+  // Clamping on every input event rewrote the field mid-keystroke, so typing
+  // "15" from empty produced "1000".
+  await page.goto('/tools/crypto-generator/');
+  await page.evaluate(() => {
+    const toggle = document.getElementById('bulkToggle');
+    toggle.checked = true;
+    toggle.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  const field = page.locator('#bulkCount');
+  await field.fill('');
+  await field.pressSequentially('15');
+  await expect(field).toHaveValue('15');
+  await expect(page.locator('#bulkDownloadBtn')).toHaveText(/Download 15 passwords/);
+
+  // Out-of-range entries still snap once the field is committed.
+  await field.fill('9999');
+  await field.blur();
+  await expect(field).toHaveValue('1000');
+});
+
+test('password strength reflects the alphabet, not just the toggles', async ({ page }) => {
+  await page.goto('/tools/crypto-generator/');
+  const label = page.locator('#strengthText');
+  const setLength = (n) => page.locator('#lengthSlider').fill(String(n));
+
+  await page.locator('#optNumbers').check({ force: true });
+  await page.locator('#optSymbols').check({ force: true });
+
+  // 32 chars over the full alphabet is ~200 bits; it must not read "Balanced".
+  await setLength(32);
+  await expect(label).toHaveText('Elite');
+
+  // A short lowercase-only password is genuinely weak.
+  await page.locator('#optNumbers').uncheck({ force: true });
+  await page.locator('#optSymbols').uncheck({ force: true });
+  await page.locator('input[name="alphaCase"][value="lower"]').check({ force: true });
+  await setLength(8);
+  await expect(label).toHaveText('Weak');
+
+  // Case selection changes the alphabet, so it must change the score.
+  // 16 chars: 26 symbols -> ~75 bits (Balanced), 52 symbols -> ~91 bits (Strong).
+  await setLength(16);
+  const lowerOnly = await label.textContent();
+  await page.locator('input[name="alphaCase"][value="mixed"]').check({ force: true });
+  await setLength(16);
+  const mixedCase = await label.textContent();
+  expect([lowerOnly, mixedCase]).toEqual(['Balanced', 'Strong']);
+});
+
+test('an oversized v3/v5 namespace reports instead of failing silently', async ({ page }) => {
+  // normalizedNamespace fed an odd-length string to hexToBytes, which returned
+  // null and threw, leaving an empty output pane and an unhandled rejection.
+  const rejections = [];
+  page.on('pageerror', (error) => rejections.push(error.message));
+  await page.goto('/tools/id-generator/');
+  await page.selectOption('#id-type', 'uuid-v5');
+  await page.fill('#namespace-input', 'a'.repeat(33));
+  await page.fill('#name-input', 'test');
+  await page.click('#generate-btn');
+
+  await expect(page.locator('#toast')).toHaveText(/128-bit UUID/);
+  expect(rejections).toEqual([]);
+
+  // A well-formed namespace still produces the standard RFC 4122 v5 value.
+  await page.fill('#namespace-input', '6ba7b810-9dad-11d1-80b4-00c04fd430c8');
+  await page.fill('#name-input', 'www.example.com');
+  await page.fill('#count-input', '1');
+  await page.click('#generate-btn');
+  await expect(page.locator('#output-area')).toHaveText('2ed6657d-e927-568b-95e1-2665a8aea6a2');
+});
+
+test('SQL minify never fuses operators into a comment', async ({ page }) => {
+  // "1 - -1" collapsed to "1--1", commenting out the rest of the statement.
+  await page.goto('/tools/sql-formatter/');
+  await page.click('.toolbar-btn[data-tooltip="Settings"]');
+  await page.check('#minify');
+  await page.locator('#editor').fill('SELECT 1 - -1 AS v FROM t;');
+  await page.locator('#editor').dispatchEvent('input');
+
+  const output = page.locator('#output-editor');
+  await expect(output).not.toHaveValue(/--/);
+  await expect(output).toHaveValue(/1 - -1/);
+  // Punctuation is still tightened, so minify keeps doing its job.
+  await page.locator('#editor').fill('SELECT a ,  b FROM t WHERE x = 1;');
+  await page.locator('#editor').dispatchEvent('input');
+  await expect(output).toHaveValue('SELECT a,b FROM t WHERE x=1;');
+});
+
+test('SQL comment removal survives apostrophes and respects string literals', async ({ page }) => {
+  // The quote scanner had no comment state, so "-- don't" opened a phantom
+  // string literal and corrupted the rest of the statement.
+  await page.goto('/tools/sql-formatter/');
+  await page.click('.toolbar-btn[data-tooltip="Settings"]');
+  await page.check('#removeComments');
+  const editor = page.locator('#editor');
+  const output = page.locator('#output-editor');
+
+  await editor.fill("SELECT a -- don't do this\nFROM t WHERE b = 'x';");
+  await editor.dispatchEvent('input');
+  await expect(output).not.toHaveValue(/Formatting error/);
+  await expect(output).toHaveValue(/'x'/);
+  await expect(output).not.toHaveValue(/don't/);
+
+  // A comment marker inside a string literal is data, not a comment.
+  await editor.fill("SELECT '-- not a comment' AS s FROM t;");
+  await editor.dispatchEvent('input');
+  await expect(output).toHaveValue(/'-- not a comment'/);
+
+  // A block comment stands in for whitespace rather than vanishing.
+  await editor.fill('SELECT a/*x*/b FROM t;');
+  await editor.dispatchEvent('input');
+  await expect(output).not.toHaveValue(/\bab\b/);
+});
+
+test('the base converter does not toast on page load', async ({ page }) => {
+  await page.goto('/tools/base-converter/', { waitUntil: 'commit' });
+  const seen = await page.evaluate(async () => {
+    const found = [];
+    for (let i = 0; i < 40; i++) {
+      const container = document.getElementById('toast-container');
+      if (container) [...container.children].forEach((node) => found.push(node.textContent));
+      if (found.length) break;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    return found;
+  });
+  expect(seen).toEqual([]);
+  // The sample is still seeded, just without the announcement.
+  await expect(page.locator('#text-input')).toHaveValue('Hello');
+
+  // An explicit sample click still confirms itself.
+  await page.click('.action-btn[data-action="paste-sample"]');
+  await expect(page.locator('#toast-container .toast')).toHaveText(/Loaded sample input/);
+});
+
+test('HTML preview CSS cannot close its own style block', async ({ page }) => {
+  await page.goto('/tools/html-preview/');
+  await page.evaluate(() => {
+    cssEditor.setValue('body::after { content: "</style>"; color: red; }');
+    htmlEditor.setValue('<p id="probe">hello</p>');
+  });
+  await expect.poll(async () => page.evaluate(() => {
+    const doc = document.getElementById('preview-iframe').srcdoc;
+    const first = doc.indexOf('</style>');
+    return first === doc.lastIndexOf('</style>');
+  })).toBe(true);
+
+  const leaked = await page.evaluate(() => {
+    const doc = document.getElementById('preview-iframe').srcdoc;
+    return doc.slice(doc.indexOf('</style>'), doc.indexOf('</style>') + 40);
+  });
+  expect(leaked).not.toMatch(/color: red/);
+});

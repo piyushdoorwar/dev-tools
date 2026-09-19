@@ -142,7 +142,7 @@
   const generatePassword = () => {
     const { length, requirements, pool, error } = buildRequirements();
     if (error) {
-      return { password: '', error };
+      return { password: '', error, poolSize: 0 };
     }
 
     const requiredChars = [];
@@ -157,45 +157,61 @@
     );
 
     const result = shuffle(requiredChars.concat(remaining)).slice(0, length);
-    return { password: result.join(''), error: '' };
+    return { password: result.join(''), error: '', poolSize: pool.length };
   };
 
-  const scoreStrength = (length, variety) => {
-    const lengthScore = Math.min(60, (length / 64) * 60);
-    const varietyScore = (variety / 4) * 40;
-    return Math.round(lengthScore + varietyScore);
+  // Score the password's actual entropy instead of counting enabled checkboxes.
+  // The old count maxed out at 3 but was divided by 4, so "Elite" needed the
+  // full 64-character length, and upper/lower selection — which really does
+  // change the alphabet — did not register at all.
+  const ELITE_BITS = 120;
+
+  const entropyBits = (length, poolSize) => {
+    if (length === 0 || poolSize < 2) return 0;
+    return length * Math.log2(poolSize);
   };
 
-  const strengthLabel = (score) => {
-    if (score >= 80) return 'Elite';
-    if (score >= 65) return 'Strong';
-    if (score >= 45) return 'Balanced';
+  const strengthLabel = (bits) => {
+    if (bits >= ELITE_BITS) return 'Elite';
+    if (bits >= 80) return 'Strong';
+    if (bits >= 50) return 'Balanced';
     return 'Weak';
   };
 
-  const updateStrength = (password) => {
-    const length = password.length;
-    const variety = 1 + (optNumbers.checked ? 1 : 0) + (optSymbols.checked ? 1 : 0);
-    const score = length === 0 ? 0 : scoreStrength(length, variety);
-    const label = strengthLabel(score);
+  const updateStrength = (password, poolSize) => {
+    const bits = entropyBits(password.length, poolSize);
+    const label = strengthLabel(bits);
 
-    strengthFill.style.width = `${score}%`;
+    strengthFill.style.width = `${Math.min(100, Math.round((bits / ELITE_BITS) * 100))}%`;
     strengthFill.dataset.level = label.toLowerCase();
     strengthText.textContent = label;
   };
 
   const updatePasswordPreview = () => {
-    const { password, error } = generatePassword();
+    const { password, error, poolSize } = generatePassword();
     passwordOutput.value = password;
     passwordOutput.placeholder = password ? '' : error || 'Select at least one option.';
-    updateStrength(password);
+    updateStrength(password, poolSize);
   };
 
-  const updateBulkButton = () => {
+  const BULK_MIN = 2;
+  const BULK_MAX = 1000;
+
+  const currentBulkCount = () => {
     const raw = Number(bulkCount.value) || 10;
-    const count = Math.max(2, Math.min(1000, raw));
-    bulkCount.value = count;
-    bulkDownloadBtn.textContent = `Download ${count} passwords`;
+    return Math.max(BULK_MIN, Math.min(BULK_MAX, raw));
+  };
+
+  // Label only — rewriting the field mid-keystroke made partial entries like
+  // "1" (on the way to "15") snap to the minimum, so the value ran away.
+  const updateBulkButton = () => {
+    bulkDownloadBtn.textContent = `Download ${currentBulkCount()} passwords`;
+  };
+
+  // Snap the field to the valid range once the user is done typing.
+  const commitBulkCount = () => {
+    bulkCount.value = String(currentBulkCount());
+    updateBulkButton();
   };
 
   const setBulkActive = (isActive) => {
@@ -251,7 +267,7 @@
   };
 
   const generateBulkItems = () => {
-    const count = Math.max(2, Math.min(1000, Number(bulkCount.value) || 10));
+    const count = currentBulkCount();
     const items = [];
     for (let i = 0; i < count; i += 1) {
       const { password, error } = generatePassword();
@@ -306,7 +322,8 @@
 
   bulkToggle.addEventListener('change', (event) => setBulkActive(event.target.checked));
   bulkCount.addEventListener('input', updateBulkButton);
-  bulkCount.addEventListener('blur', updateBulkButton);
+  bulkCount.addEventListener('blur', commitBulkCount);
+  bulkCount.addEventListener('change', commitBulkCount);
 
   bulkDownloadBtn.addEventListener('click', () => {
     const list = generateBulkItems();
@@ -518,7 +535,10 @@
   let hashTimer = null;
 
   const runHashGeneration = async () => {
-    const raw = hashInput.value.trim();
+    // Hash the input verbatim. Trimming here produced digests that silently
+    // disagreed with sha256sum and every other hasher for input with leading
+    // or trailing whitespace.
+    const raw = hashInput.value;
     if (!raw) {
       renderHashList([]);
       return;

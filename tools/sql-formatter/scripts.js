@@ -161,128 +161,112 @@ const applyCase = (text, mode) => {
   }
 };
 
-const forEachNonQuotedSegment = (sql, fn) => {
-  let out = '';
+/**
+ * Split SQL into typed segments so callers can transform only real code.
+ *
+ * Comments are tokenised here rather than stripped with a regex afterwards:
+ * a `--` comment may legally contain an apostrophe ("-- don't"), and a quote
+ * scanner with no comment state treats that apostrophe as the start of a
+ * string literal, corrupting everything after it.
+ */
+const scanSql = (sql) => {
+  const segments = [];
   let i = 0;
-  let mode = 'none';
-  let segmentStart = 0;
+  let start = 0;
+  let mode = 'code';
 
-  const flush = (end) => {
-    if (end > segmentStart) {
-      out += fn(sql.slice(segmentStart, end));
-    }
+  const close = (end, type) => {
+    if (end > start) segments.push({ type, text: sql.slice(start, end) });
+    start = end;
   };
 
   while (i < sql.length) {
     const ch = sql[i];
     const next = sql[i + 1];
 
-    if (mode === 'none') {
-      if (ch === "'") {
-        flush(i);
-        mode = 'single';
-        segmentStart = i;
-        i++;
-        continue;
-      }
-      if (ch === '"') {
-        flush(i);
-        mode = 'double';
-        segmentStart = i;
-        i++;
-        continue;
-      }
-      if (ch === '`') {
-        flush(i);
-        mode = 'backtick';
-        segmentStart = i;
-        i++;
-        continue;
-      }
-      if (ch === '[') {
-        flush(i);
-        mode = 'bracket';
-        segmentStart = i;
-        i++;
-        continue;
-      }
-      i++;
-      continue;
-    }
-
-    if (mode === 'single') {
-      if (ch === "'" && next === "'") {
+    if (mode === 'code') {
+      if (ch === '-' && next === '-') {
+        close(i, 'code');
+        mode = 'lineComment';
         i += 2;
         continue;
       }
-      if (ch === "'") {
-        out += sql.slice(segmentStart, i + 1);
-        mode = 'none';
-        segmentStart = i + 1;
-      }
-      i++;
-      continue;
-    }
-
-    if (mode === 'double') {
-      if (ch === '"' && next === '"') {
+      if (ch === '/' && next === '*') {
+        close(i, 'code');
+        mode = 'blockComment';
         i += 2;
         continue;
       }
-      if (ch === '"') {
-        out += sql.slice(segmentStart, i + 1);
-        mode = 'none';
-        segmentStart = i + 1;
+      if (ch === "'" || ch === '"' || ch === '`' || ch === '[') {
+        close(i, 'code');
+        mode = ch === "'" ? 'single' : ch === '"' ? 'double' : ch === '`' ? 'backtick' : 'bracket';
+        i++;
+        continue;
       }
       i++;
       continue;
     }
 
-    if (mode === 'backtick') {
-      if (ch === '`') {
-        out += sql.slice(segmentStart, i + 1);
-        mode = 'none';
-        segmentStart = i + 1;
+    if (mode === 'lineComment') {
+      if (ch === '\n') {
+        close(i, 'comment');
+        mode = 'code';
       }
       i++;
       continue;
     }
 
-    if (mode === 'bracket') {
-      if (ch === ']') {
-        out += sql.slice(segmentStart, i + 1);
-        mode = 'none';
-        segmentStart = i + 1;
+    if (mode === 'blockComment') {
+      if (ch === '*' && next === '/') {
+        i += 2;
+        close(i, 'comment');
+        mode = 'code';
+        continue;
       }
       i++;
       continue;
     }
+
+    // Quoted string or delimited identifier. Doubling the delimiter escapes it.
+    const closer = mode === 'single' ? "'" : mode === 'double' ? '"' : mode === 'backtick' ? '`' : ']';
+    if (ch === closer) {
+      if (next === closer && mode !== 'bracket') {
+        i += 2;
+        continue;
+      }
+      i++;
+      close(i, 'quoted');
+      mode = 'code';
+      continue;
+    }
+    i++;
   }
 
-  if (mode === 'none') {
-    flush(sql.length);
-  } else {
-    out += sql.slice(segmentStart);
-  }
-  return out;
+  close(sql.length, mode === 'code' ? 'code' : mode === 'lineComment' || mode === 'blockComment' ? 'comment' : 'quoted');
+  return segments;
 };
 
-const removeSqlComments = (sql) => {
-  // Best-effort: avoids touching quoted strings/identifiers
-  return forEachNonQuotedSegment(sql, (seg) => {
-    return seg
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/--.*$/gm, '');
-  });
-};
+/** Apply `fn` to executable code only, leaving strings, identifiers and comments intact. */
+const forEachNonQuotedSegment = (sql, fn) => scanSql(sql)
+  .map((segment) => (segment.type === 'code' ? fn(segment.text) : segment.text))
+  .join('');
+
+// A comment stands in for whitespace, so it becomes a space rather than
+// vanishing — otherwise "SELECT a/*x*/b" would collapse into "SELECT ab".
+const removeSqlComments = (sql) => scanSql(sql)
+  .map((segment) => (segment.type === 'comment' ? ' ' : segment.text))
+  .join('');
+
+// Collapsing whitespace around these is always safe. `-`, `+`, `*` and `/` are
+// deliberately excluded: "1 - -1" would become "1--1", which is a line comment,
+// and "a / *b" would open a block comment.
+const MINIFY_TIGHT_OPERATORS = /\s*([(),;=<>])\s*/g;
 
 const minifySql = (sql) => {
-  // Best-effort minify outside quoted segments.
   const squashed = forEachNonQuotedSegment(sql, (seg) => {
     return seg
       .replace(/[\r\n\t]+/g, ' ')
-      .replace(/\s{2,}/g, ' ')
-      .replace(/\s*([(),;=<>+\-*/])\s*/g, '$1')
+      .replace(MINIFY_TIGHT_OPERATORS, '$1')
       .replace(/\s+/g, ' ');
   });
   return squashed.trim();

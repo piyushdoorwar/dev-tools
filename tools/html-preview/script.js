@@ -62,7 +62,10 @@ function composePreview() {
   `;
   // Escape closing script tag to prevent parsing issues
   const escapedScript = script.replace(/<\/script>/gi, '<\\/script>');
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${scrollbarStyles}${css}</style></head><body${bodyClass}>${html}<script>${escapedScript}<\/script></body></html>`;
+  // Same hazard in the CSS pane: a literal </style> inside a string or content
+  // value would close the block early and dump the rest into the document.
+  const escapedCss = css.replace(/<\/style>/gi, '<\\/style>');
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${scrollbarStyles}${escapedCss}</style></head><body${bodyClass}>${html}<script>${escapedScript}<\/script></body></html>`;
 }
 
 function refreshPreview() {

@@ -388,39 +388,45 @@ async function generateIds() {
   countInput.value = count;
   const results = [];
 
-  for (let i = 0; i < count; i += 1) {
-    let value = "";
-    switch (type) {
-      case "uuid-v1":
-        value = generateUUIDv1();
-        break;
-      case "uuid-v3":
-        value = generateUUIDv3(namespaceInput.value, nameInput.value);
-        break;
-      case "uuid-v4":
-        value = crypto.randomUUID();
-        break;
-      case "uuid-v5":
-        value = await generateUUIDv5(namespaceInput.value, nameInput.value);
-        break;
-      case "uuid-v7":
-        value = generateUUIDv7();
-        break;
-      case "ulid":
-        value = generateUlid();
-        break;
-      case "objectid":
-        value = generateObjectId();
-        break;
-      case "nanoid":
-        value = generateNanoId();
-        break;
-      default:
-        value = "";
+  try {
+    for (let i = 0; i < count; i += 1) {
+      let value = "";
+      switch (type) {
+        case "uuid-v1":
+          value = generateUUIDv1();
+          break;
+        case "uuid-v3":
+          value = generateUUIDv3(namespaceInput.value, nameInput.value);
+          break;
+        case "uuid-v4":
+          value = crypto.randomUUID();
+          break;
+        case "uuid-v5":
+          value = await generateUUIDv5(namespaceInput.value, nameInput.value);
+          break;
+        case "uuid-v7":
+          value = generateUUIDv7();
+          break;
+        case "ulid":
+          value = generateUlid();
+          break;
+        case "objectid":
+          value = generateObjectId();
+          break;
+        case "nanoid":
+          value = generateNanoId();
+          break;
+        default:
+          value = "";
+      }
+      if (value) {
+        results.push(CASE_SENSITIVE_TYPES.has(type) ? value : applyCase(value, caseMode));
+      }
     }
-    if (value) {
-      results.push(CASE_SENSITIVE_TYPES.has(type) ? value : applyCase(value, caseMode));
-    }
+  } catch (error) {
+    outputArea.textContent = "";
+    showToast(error.message);
+    return;
   }
   outputArea.textContent = results.join("\n");
 }
@@ -495,10 +501,15 @@ function generateUUIDv7() {
   return bytesToUuid(buffer);
 }
 
+// A v3/v5 namespace is exactly 128 bits. Anything longer used to flow straight
+// into hexToBytes, which returned null on an odd length and then threw, leaving
+// the output pane silently empty.
 function normalizedNamespace(value) {
-  const cleaned = namespaceSafe(value || "");
-  const trimmed = cleaned.replace(/-/g, "").padStart(32, "0");
-  return hexToBytes(trimmed);
+  const hex = namespaceSafe(value || "").replace(/-/g, "");
+  if (hex.length > 32) {
+    throw new Error("Namespace must be a 128-bit UUID (32 hex digits).");
+  }
+  return hexToBytes(hex.padStart(32, "0"));
 }
 
 function bytesToUuid(bytes) {
