@@ -1504,9 +1504,10 @@ select[size]:not([size='1']) {
 
   /* --- Badges, pills & status ------------------------------------------- */
 
+  /* Deliberately NOT `.pill`: qr-generator uses that name for tab controls,
+     and this layer would override them into tiny uppercase badges. */
   .badge,
-  .status-pill,
-  .pill {
+  .status-pill {
     padding: 3px var(--space-2);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-pill);
@@ -1518,27 +1519,27 @@ select[size]:not([size='1']) {
     text-transform: uppercase;
   }
 
-  .badge.success, .status-pill.success, .pill.success,
+  .badge.success, .status-pill.success,
   .status-pill[data-state='ready'], .status-pill[data-state='loaded'] {
     background: rgba(0, 208, 156, 0.14);
     border-color: rgba(0, 208, 156, 0.45);
     color: var(--accent-green);
   }
 
-  .badge.error, .status-pill.error, .pill.error {
+  .badge.error, .status-pill.error {
     background: rgba(255, 107, 157, 0.14);
     border-color: rgba(255, 107, 157, 0.45);
     color: var(--accent-pink);
   }
 
-  .badge.warning, .status-pill.warning, .pill.warning,
+  .badge.warning, .status-pill.warning,
   .status-pill[data-state='working'] {
     background: rgba(245, 158, 11, 0.14);
     border-color: rgba(245, 158, 11, 0.45);
     color: var(--accent-orange);
   }
 
-  .badge.info, .status-pill.info, .pill.info {
+  .badge.info, .status-pill.info {
     background: rgba(139, 92, 246, 0.14);
     border-color: rgba(139, 92, 246, 0.45);
     color: var(--accent-purple-light);

@@ -970,3 +970,51 @@ test('switching converter mode does not wipe text typed straight afterwards', as
     await expect(page.locator('#right-editor')).toHaveValue(expected);
   }
 });
+
+test('QR content-type tabs are tabs, not badges', async ({ page }) => {
+  // The shared badge component claimed `.pill`, which qr-generator uses for
+  // its content-type tabs. Because the shared layer beats the tool layer, the
+  // active tab lost its yellow fill and dark text but kept its yellow glow —
+  // rendering as a grey chip with a halo — and every tab was shrunk to an
+  // 11px uppercase badge.
+  await page.goto('/tools/qr-generator/');
+
+  const style = await page.evaluate(() => {
+    const active = document.querySelector('.pill.active');
+    const idle = document.querySelector('.pill:not(.active)');
+    const read = (el) => {
+      const c = getComputedStyle(el);
+      return {
+        fontSize: parseFloat(c.fontSize),
+        padding: c.padding,
+        transform: c.textTransform,
+        hasGradient: c.backgroundImage !== 'none',
+        color: c.color,
+      };
+    };
+    return { active: read(active), idle: read(idle), label: active.textContent.trim() };
+  });
+
+  // Tab metrics, not badge metrics.
+  expect(style.active.fontSize).toBeGreaterThan(12);
+  expect(style.active.padding).toBe('10px 18px');
+  expect(style.active.transform, 'labels are sentence case in the markup').toBe('none');
+  expect(style.label).toBe('Text');
+
+  // The selected tab is a filled yellow chip with dark text.
+  expect(style.active.hasGradient, 'active tab lost its fill').toBe(true);
+  expect(style.active.color).toBe('rgb(13, 13, 13)');
+
+  // Unselected tabs stay quiet.
+  expect(style.idle.hasGradient).toBe(false);
+});
+
+test('the shared badge component does not claim generic component names', async ({ page }) => {
+  await page.goto('/tools/qr-generator/');
+  // `.pill` is a tab here. If a future change re-adds it to the badge
+  // selectors, the uppercase transform is the first thing to reappear.
+  const claimed = await page.evaluate(() =>
+    [...document.querySelectorAll('.pill')]
+      .filter((el) => getComputedStyle(el).textTransform === 'uppercase').length);
+  expect(claimed).toBe(0);
+});
