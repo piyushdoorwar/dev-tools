@@ -446,7 +446,7 @@ test('Image Converter rejects animated GIFs instead of flattening them', async (
     input.files = transfer.files;
     input.dispatchEvent(new Event('change', { bubbles: true }));
   });
-  await expect(page.locator('#toast')).toContainText('Animated GIFs are not supported');
+  await expect(page.locator('#toast-container .toast-message')).toContainText('Animated GIFs are not supported');
   await expect(page.locator('#sourceStatus')).toHaveText('Waiting');
 });
 
@@ -856,7 +856,7 @@ test('an oversized v3/v5 namespace reports instead of failing silently', async (
   await page.fill('#name-input', 'test');
   await page.click('#generate-btn');
 
-  await expect(page.locator('#toast')).toHaveText(/128-bit UUID/);
+  await expect(page.locator('#toast-container .toast-message')).toHaveText(/128-bit UUID/);
   expect(rejections).toEqual([]);
 
   // A well-formed namespace still produces the standard RFC 4122 v5 value.
@@ -948,4 +948,25 @@ test('HTML preview CSS cannot close its own style block', async ({ page }) => {
     return doc.slice(doc.indexOf('</style>'), doc.indexOf('</style>') + 40);
   });
   expect(leaked).not.toMatch(/color: red/);
+});
+
+test('switching converter mode does not wipe text typed straight afterwards', async ({ page }) => {
+  // The mode button called updateMode() (which clears both editors) AND set
+  // location.hash, whose hashchange handler cleared them a second time,
+  // asynchronously. Anything typed in between vanished.
+  for (const [tool, mode, input, expected] of [
+    ['json-xml-converter', 'xml-json', '<root><greeting>hi</greeting></root>', /hi/],
+    ['json-toon-converter', 'toon-json', 'greeting: "hi"', /hi/],
+  ]) {
+    await page.goto(`/tools/${tool}/`);
+    await page.locator(`.mode-btn[data-mode="${mode}"]`).click();
+    // Type immediately, before the hashchange event has had a chance to land.
+    await page.locator('#left-editor').fill(input);
+    await page.locator('#left-editor').dispatchEvent('input');
+
+    // Give the second (previously destructive) updateMode() time to fire.
+    await page.waitForTimeout(250);
+    await expect(page.locator('#left-editor'), `${tool} lost typed input`).toHaveValue(input);
+    await expect(page.locator('#right-editor')).toHaveValue(expected);
+  }
 });

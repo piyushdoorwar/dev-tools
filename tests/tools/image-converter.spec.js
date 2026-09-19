@@ -128,7 +128,7 @@ test('animated GIFs are rejected rather than silently flattened', async ({ page 
     buffer: Buffer.from(gif, 'base64'),
   });
 
-  await expect(page.locator('#toast')).toContainText(/animated|not supported|unsupported/i);
+  await expect(page.locator('#toast-container .toast-message')).toContainText(/animated|not supported|unsupported/i);
 });
 
 test('metadata stripping is offered and can be toggled', async ({ page }) => {

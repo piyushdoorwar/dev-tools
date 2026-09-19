@@ -58,7 +58,6 @@
     infoBtn: $('#infoBtn'),
     infoModal: $('#infoModal'),
     closeInfoBtn: $('#closeInfoBtn'),
-    toast: $('#toast'),
   };
 
   const state = {
@@ -73,7 +72,6 @@
     resultUrl: null,
     resultFilename: '',
   };
-  let toastTimer = null;
 
   function formatBytes(bytes) {
     if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
@@ -82,12 +80,8 @@
     const value = bytes / (1024 ** index);
     return `${value.toFixed(index === 0 || value >= 10 ? 0 : 1)} ${units[index]}`;
   }
-
-  function showToast(message, type = 'info') {
-    clearTimeout(toastTimer);
-    el.toast.textContent = message;
-    el.toast.className = `toast ${type} is-visible`;
-    toastTimer = setTimeout(() => { el.toast.className = 'toast'; }, 4200);
+  function showToast(message, type = "info") {
+    window.DevToolsMain.showToast(message, type);
   }
 
   function setStatus(element, label, status) {

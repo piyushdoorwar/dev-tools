@@ -387,6 +387,82 @@
     });
   };
 
+  /* --- Toast ---------------------------------------------------------------
+     One notifier for every tool. Replaces ten implementations that disagreed
+     on duration (1500-4200ms), icon vocabulary, container model and markup —
+     two of which were dead stubs that silently discarded every message.
+
+     The message is always set as text, never markup.
+     ---------------------------------------------------------------------- */
+
+  // Errors linger: you have to read them. Everything else is an ack.
+  const TOAST_DURATION = { error: 4000, warning: 3400 };
+  const TOAST_DURATION_DEFAULT = 2600;
+  const TOAST_ICON = { success: "check", error: "close", warning: "info", info: "info" };
+  const TOAST_MAX_VISIBLE = 4;
+  const TOAST_EXIT_MS = 220;
+
+  function ensureToastContainer() {
+    let container = document.getElementById("toast-container");
+    if (container) return container;
+    // A tool does not need to ship the markup.
+    container = document.createElement("div");
+    container.id = "toast-container";
+    document.body.appendChild(container);
+    return container;
+  }
+
+  root.showToast = root.showToast || function showToast(message, type = "info", options = {}) {
+    const text = String(message ?? "").trim();
+    if (!text) return null;
+
+    const container = ensureToastContainer();
+    container.setAttribute("aria-live", type === "error" ? "assertive" : "polite");
+    container.setAttribute("aria-atomic", "false");
+
+    // Keep a burst of messages from burying the screen.
+    while (container.children.length >= TOAST_MAX_VISIBLE) {
+      container.firstElementChild.remove();
+    }
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.setAttribute("role", type === "error" ? "alert" : "status");
+
+    const iconName = TOAST_ICON[type] || TOAST_ICON.info;
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("class", "toast-icon");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("aria-hidden", "true");
+    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttribute("href", `#i-${iconName}`);
+    icon.appendChild(use);
+
+    const label = document.createElement("span");
+    label.className = "toast-message";
+    label.textContent = text;
+
+    toast.append(icon, label);
+    container.appendChild(toast);
+
+    const dismiss = () => {
+      if (toast.dataset.leaving) return;
+      toast.dataset.leaving = "1";
+      toast.classList.remove("show");
+      toast.classList.add("hide");
+      window.setTimeout(() => toast.remove(), TOAST_EXIT_MS);
+    };
+
+    // Clicking a toast gets rid of it.
+    toast.addEventListener("click", dismiss);
+
+    requestAnimationFrame(() => toast.classList.add("show"));
+    const ms = options.duration ?? TOAST_DURATION[type] ?? TOAST_DURATION_DEFAULT;
+    window.setTimeout(dismiss, ms);
+
+    return toast;
+  };
+
   root.enhanceAccessibility = root.enhanceAccessibility || function enhanceAccessibility(scope = document) {
     const matches = (selector) => [
       ...(scope.matches?.(selector) ? [scope] : []),

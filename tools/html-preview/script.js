@@ -156,16 +156,8 @@ function getCurrentEditor() {
 }
 
 // Toast notification function
-function showToast(message) {
-  const toastContainer = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
-  toastContainer.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
+function showToast(message, type = "info") {
+  window.DevToolsMain.showToast(message, type);
 }
 
 // Copy button functionality

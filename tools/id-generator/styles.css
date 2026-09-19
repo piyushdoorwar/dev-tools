@@ -724,64 +724,6 @@ textarea:hover {
   transform: none;
 }
 
-/* Unified Tooltip System */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  left: auto;
-  background: var(--panel-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  padding: 12px 16px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  pointer-events: none;
-  box-shadow: var(--shadow-md);
-  z-index: 1000;
-  overflow: hidden;
-  max-width: min(360px, calc(100vw - 48px));
-}
-
-.toast::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--accent-yellow),
-    var(--accent-purple-light),
-    transparent
-  );
-  opacity: 0.55;
-}
-
-.toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.toast.success {
-  background: var(--accent-yellow);
-  color: var(--bg);
-  border-color: var(--accent-yellow-dark);
-  box-shadow: var(--shadow-yellow);
-}
-
 .gear-button {
   width: 36px;
   height: 36px;
@@ -955,13 +897,6 @@ textarea:hover {
   .generate-button-row > * {
     flex: 1 1 140px;
     min-width: 0;
-  }
-
-  .toast {
-    right: 16px;
-    left: auto;
-    bottom: 16px;
-    max-width: calc(100vw - 32px);
   }
 }
 }

@@ -104,35 +104,8 @@ const sampleModified = {
 };
 
 // ==================== Toast Notifications ====================
-
 function showToast(message, type = "info") {
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  
-  let icon = "ℹ";
-  if (type === "success") icon = "✓";
-  else if (type === "error") icon = "✕";
-  
-  const iconElement = document.createElement("span");
-  iconElement.className = "toast-icon";
-  iconElement.textContent = icon;
-  const messageElement = document.createElement("span");
-  messageElement.className = "toast-message";
-  messageElement.textContent = String(message);
-  toast.append(iconElement, messageElement);
-  
-  toastContainer.appendChild(toast);
-  
-  // Trigger animation
-  requestAnimationFrame(() => {
-    toast.classList.add("show");
-  });
-  
-  setTimeout(() => {
-    toast.classList.remove("show");
-    toast.classList.add("hide");
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  window.DevToolsMain.showToast(message, type);
 }
 
 // ==================== Line Numbers ====================

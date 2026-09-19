@@ -1,6 +1,5 @@
 const decodeInput = document.getElementById("decode-input");
 const decodedFieldBlocks = document.querySelectorAll(".decoded-field");
-const toast = document.getElementById("toast");
 const clipboardBtn = document.getElementById("clipboard-btn");
 const sampleBtn = document.getElementById("sample-btn") || document.querySelector('[data-action="loadSample"]');
 const clearDecodeBtn = document.getElementById("clear-decode-btn");
@@ -75,12 +74,8 @@ function applyCaseToOutput() {
   if (!text || !text.trim()) return;
   outputArea.textContent = applyCase(text, caseMode);
 }
-
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add("show");
-  clearTimeout(toast._timeout);
-  toast._timeout = setTimeout(() => toast.classList.remove("show"), 1500);
+function showToast(message, type = "info") {
+  window.DevToolsMain.showToast(message, type);
 }
 
 document.querySelectorAll(".copy-field").forEach(btn => {

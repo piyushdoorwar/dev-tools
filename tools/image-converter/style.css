@@ -359,10 +359,6 @@ body {
 .modal-card h3 { margin: 0 0 0.3rem; font-size: 0.82rem; }
 .modal-card p { margin: 0; color: var(--text-muted); font-size: 0.73rem; line-height: 1.55; }
 
-.toast { position: fixed; z-index: 80; right: 1rem; bottom: 1rem; max-width: min(25rem, calc(100vw - 2rem)); padding: 0.8rem 1rem; border: 1px solid var(--toast-border); border-radius: 0.8rem; background: var(--toast-bg); color: var(--text-primary); opacity: 0; transform: translateY(1rem); pointer-events: none; transition: 180ms ease; font-size: 0.78rem; box-shadow: var(--shadow-md); }
-.toast.is-visible { opacity: 1; transform: translateY(0); }
-.toast.error { border-color: var(--toast-error-border); background: var(--toast-error-bg); }
-
 .hidden { display: none !important; }
 
 @media (max-width: 860px) {

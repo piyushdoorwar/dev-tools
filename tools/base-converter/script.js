@@ -46,25 +46,8 @@ const DOWNLOAD_NAMES = {
 };
 
 let isUpdating = false;
-
 function showToast(message, type = "info") {
-  if (!toastContainer) return;
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  const icon = document.createElement("span");
-  icon.className = "toast-icon";
-  icon.textContent = type === "success" ? "✓" : type === "error" ? "✕" : "ℹ";
-  const text = document.createElement("span");
-  text.className = "toast-message";
-  text.textContent = String(message);
-  toast.append(icon, text);
-  toastContainer.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add("show"));
-  setTimeout(() => {
-    toast.classList.remove("show");
-    toast.classList.add("hide");
-    setTimeout(() => toast.remove(), 300);
-  }, 2500);
+  window.DevToolsMain.showToast(message, type);
 }
 
 function splitTokens(value) {

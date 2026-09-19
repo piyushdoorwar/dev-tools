@@ -36,8 +36,14 @@ function setupEventListeners() {
     // Mode switcher
     modeBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            currentMode = btn.dataset.mode;
-            window.location.hash = currentMode;
+            const mode = btn.dataset.mode;
+            if (mode === currentMode) return;
+            currentMode = mode;
+            window.location.hash = mode;
+            // Apply synchronously so the editors are cleared before the user
+            // can type. The hashchange handler then sees hash === currentMode
+            // and does nothing; without that guard it cleared them a second
+            // time, asynchronously, wiping anything typed in between.
             updateMode();
         });
     });
@@ -45,7 +51,7 @@ function setupEventListeners() {
     // Hash change
     window.addEventListener('hashchange', () => {
         const hash = window.location.hash.substring(1);
-        if (hash === 'xml-json' || hash === 'json-xml') {
+        if ((hash === 'xml-json' || hash === 'json-xml') && hash !== currentMode) {
             currentMode = hash;
             updateMode();
         }

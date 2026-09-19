@@ -75,31 +75,8 @@ Bug Fixes
 `;
 
 // ==================== Toast Notifications ====================
-
 function showToast(message, type = "info") {
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-
-  let icon = "i";
-  if (type === "success") icon = "ok";
-  else if (type === "error") icon = "x";
-
-  toast.innerHTML = `
-    <span class="toast-icon">${icon}</span>
-    <span class="toast-message">${message}</span>
-  `;
-
-  toastContainer.appendChild(toast);
-
-  requestAnimationFrame(() => {
-    toast.classList.add("show");
-  });
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-    toast.classList.add("hide");
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  window.DevToolsMain.showToast(message, type);
 }
 
 // ==================== Line Numbers ====================

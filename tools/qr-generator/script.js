@@ -115,17 +115,8 @@ const shapeMap = {
 };
 
 let qrCode;
-
-function showToast(message, type = "success") {
-  if (!elements.toastContainer) return;
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  elements.toastContainer.appendChild(toast);
-
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
+function showToast(message, type = "info") {
+  window.DevToolsMain.showToast(message, type);
 }
 
 function setStatus(message, tone) {

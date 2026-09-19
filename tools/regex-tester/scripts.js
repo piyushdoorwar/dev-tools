@@ -19,7 +19,6 @@ const pasteTextBtn = document.getElementById('pasteTextBtn');
 const sampleBtn = document.getElementById('sampleBtn');
 const clearBtn = document.getElementById('clearBtn');
 const copyOutputBtn = document.getElementById('copyOutputBtn');
-const toastStack = document.getElementById('toastStack');
 
 const openCheatSheetBtn = document.getElementById('openCheatSheetBtn');
 const closeCheatSheetBtn = document.getElementById('closeCheatSheetBtn');
@@ -481,24 +480,8 @@ function pasteFromClipboard(target) {
     showToast('Pasted from clipboard');
   });
 }
-
-function showToast(message) {
-  if (!toastStack) {
-    return;
-  }
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
-  toastStack.appendChild(toast);
-
-  requestAnimationFrame(() => {
-    toast.classList.add('show');
-  });
-
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 200);
-  }, 2200);
+function showToast(message, type = "info") {
+  window.DevToolsMain.showToast(message, type);
 }
 
 function loadSample() {

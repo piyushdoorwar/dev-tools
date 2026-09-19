@@ -218,9 +218,39 @@ to the limits, double-click restores an even split.
 `initResizers()` toggles `.is-disabled` at the tool's own threshold instead, and
 also clears the inline flex values so they don't fight the stacked layout.
 
+### Toast (`DevToolsMain.showToast`) — done
+
+```js
+DevToolsMain.showToast('Copied to clipboard', 'success');
+DevToolsMain.showToast('Nothing to download', 'error');
+DevToolsMain.showToast('Working…', 'info', { duration: 6000 });
+```
+
+Types: `success` `error` `warning` `info`. The icon comes from the shared
+sprite, so toasts and buttons use the same glyphs.
+
+The container is created on demand — a tool does not need to ship any markup.
+If it does, it must be `<div id="toast-container">`.
+
+Deliberate behaviour:
+
+- **Errors last 4000ms, warnings 3400ms, everything else 2600ms.** An error has
+  to be read; an acknowledgement just has to be noticed. The ten
+  implementations this replaced ranged from 1500ms to 4200ms with no rationale.
+- **Errors get `role="alert"` and an assertive live region**; other types are
+  polite `role="status"`.
+- **At most four toasts are visible**; a burst drops the oldest.
+- **Clicking a toast dismisses it.**
+- **The message is set as text, never markup.** One of the replaced versions
+  interpolated the message into `innerHTML`.
+
+Two of the ten were stubs that did nothing at all (`function showToast() {
+return; }`), so every message in those tools was silently discarded. If you are
+adding user feedback, call the shared function — do not write a local one.
+
 ### Still to extract
 
-Toast · modal · heading scale.
+Modal · heading scale.
 These currently exist as per-tool variants skinned by shared selector lists in
 `main.css`; each should become a real component like `.dd`.
 Scrollbars are already fully tokenised and shared.

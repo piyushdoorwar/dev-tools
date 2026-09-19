@@ -135,9 +135,8 @@ const TYPE_DEFAULTS = {
   paragraph: { minSentences: 2, maxSentences: 5 },
   image_url: { width: 640, height: 480 }
 };
-
 function showToast(message, type = "info") {
-  return;
+  window.DevToolsMain.showToast(message, type);
 }
 
 function flashActionIcon(button) {

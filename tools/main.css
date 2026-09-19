@@ -1373,6 +1373,53 @@ select[size]:not([size='1']) {
     pointer-events: auto;
   }
 
+  /* Enter/exit. The container is pinned top-right, so toasts slide in from
+     the edge they are anchored to. */
+  .toast {
+    opacity: 0;
+    transform: translateX(120%);
+    transition:
+      opacity var(--dur) var(--ease-out),
+      transform var(--dur) var(--ease-out);
+    cursor: pointer;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .toast.hide {
+    opacity: 0;
+    transform: translateX(120%);
+  }
+
+  .toast-icon {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
+
+  .toast.success .toast-icon {
+    color: var(--accent-green);
+  }
+
+  .toast.error .toast-icon {
+    color: var(--accent-pink);
+  }
+
+  .toast.warning .toast-icon {
+    color: var(--accent-orange);
+  }
+
+  .toast.info .toast-icon {
+    color: var(--accent-purple-light);
+  }
+
+  .toast-message {
+    min-width: 0;
+  }
+
   .toast.success {
     background: var(--toast-success-bg);
     border-color: var(--toast-success-border);
