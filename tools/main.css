@@ -149,6 +149,7 @@
   --control-h: 38px;
   --control-h-lg: 44px;
   --control-pad-x: 14px;
+  --icon-btn-glyph: 18px; /* glyph size inside an icon-only button */
 
   /* --- Control colour ---------------------------------------------------- */
   --control-bg: rgba(0, 0, 0, 0.22);
@@ -971,6 +972,34 @@ select[size]:not([size='1']) {
     font-weight: 700;
     line-height: var(--leading-tight);
     letter-spacing: var(--tracking-tight);
+  }
+
+  /* --- Icon-only buttons --------------------------------------------------
+     Geometry only. The same #i-info glyph was rendering at five different
+     sizes across tools, in buttons that were square in some and pill-shaped
+     in others. Colour, hover and background stay with the tool.
+     ------------------------------------------------------------------------ */
+
+  /* .modal-close has its own rule further down with the same geometry. */
+  .icon-btn,
+  .toolbar-btn,
+  .info-btn,
+  .action-btn {
+    width: var(--control-h);
+    height: var(--control-h);
+    flex: none;
+    padding: 0;
+    border-radius: var(--radius-control);
+  }
+
+  .icon-btn > svg,
+  .toolbar-btn > svg,
+  .info-btn > svg,
+  .action-btn > svg,
+  .modal-close > svg {
+    width: var(--icon-btn-glyph);
+    height: var(--icon-btn-glyph);
+    flex: none;
   }
 
   /* --- Icon sprite --------------------------------------------------------
