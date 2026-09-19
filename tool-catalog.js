@@ -14,6 +14,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["Cryptographically secure randomness", "Developer-friendly output formats", "Local browser generation"],
   },
   {
+    id: "encoder-decoder",
+    name: "Encoder / Decoder",
+    route: "encoder-decoder",
+    description: "Encode and decode text with Base64, Base64url, URL percent-encoding, and HTML entities locally in your browser.",
+    capabilities: ["Base64 and Base64url encoding", "URL component and full-URL escaping", "HTML entity escaping and unescaping"],
+  },
+  {
     id: "fake-data-generator",
     name: "Fake Data Generator",
     route: "fake-data-generator",

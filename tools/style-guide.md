@@ -179,8 +179,8 @@ page declares. Before this, `copy` alone existed in six spellings and `trash` in
 three, at stroke widths from 1.5 to 3.
 
 Available: `copy` `paste` `download` `upload` `trash` `check` `close` `info`
-`undo` `redo` `file-text` `file-code` `align` `sort` `menu` `chevron-down`
-`search` `settings`.
+`undo` `redo` `file-text` `file-code` `align` `sort` `swap` `menu`
+`chevron-down` `search` `settings`.
 
 Add new icons to `ICON_SPRITE` in `main.js`. Never inline an icon that the
 sprite already has. Genuinely tool-specific glyphs stay inline.

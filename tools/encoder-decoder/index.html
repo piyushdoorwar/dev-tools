@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encoder / Decoder</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Encoder / Decoder</h1>
+            </div>
+            <div class="header-right">
+                <div class="mode-switcher" role="tablist" aria-label="Encoding">
+                    <button class="mode-btn active" type="button" role="tab" aria-selected="true" data-mode="base64">Base64</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="base64url">Base64url</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="url">URL</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="html">HTML Entities</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <span class="toolbar-label">Direction</span>
+                <div class="segment" id="direction-switch" role="group" aria-label="Direction">
+                    <button class="segment-btn active" type="button" data-direction="encode">Encode</button>
+                    <button class="segment-btn" type="button" data-direction="decode">Decode</button>
+                </div>
+                <button class="action-btn swap-btn" type="button" data-action="swap" data-tooltip="Swap input and output">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-swap"></use></svg>
+                </button>
+            </div>
+
+            <div class="toolbar-right">
+                <div class="option-group" data-for="base64">
+                    <span class="toolbar-label">Lines</span>
+                    <div class="segment" data-option="wrap" role="group" aria-label="Line wrapping">
+                        <button class="segment-btn active" type="button" data-value="off">Single line</button>
+                        <button class="segment-btn" type="button" data-value="on">Wrap at 76</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="base64url" hidden>
+                    <span class="toolbar-label">Padding</span>
+                    <div class="segment" data-option="padding" role="group" aria-label="Padding">
+                        <button class="segment-btn active" type="button" data-value="off">Stripped</button>
+                        <button class="segment-btn" type="button" data-value="on">Keep =</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="url" hidden>
+                    <span class="toolbar-label">Scope</span>
+                    <div class="segment" data-option="urlScope" role="group" aria-label="URL scope">
+                        <button class="segment-btn active" type="button" data-value="component">Component</button>
+                        <button class="segment-btn" type="button" data-value="full">Full URL</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="html" hidden>
+                    <span class="toolbar-label">Escape</span>
+                    <div class="segment" data-option="htmlScope" role="group" aria-label="Escape scope">
+                        <button class="segment-btn active" type="button" data-value="minimal">Markup only</button>
+                        <button class="segment-btn" type="button" data-value="all">All non-ASCII</button>
+                    </div>
+                </div>
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="Encoding reference">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-panel left-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="input-title">Plain Text</h2>
+                    <div class="action-bar">
+                        <button class="action-btn" type="button" data-action="load-sample" data-tooltip="Load sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste-input" data-tooltip="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="copy-input" data-tooltip="Copy">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear-input" data-tooltip="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea class="editor-textarea" id="input-editor" spellcheck="false" placeholder="Type or paste text to encode..."></textarea>
+                    <div class="status-bar" id="input-status">
+                        <span class="status-text">Ready</span>
+                        <span class="char-count" id="input-count">0 chars</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="editor-panel right-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="output-title">Base64</h2>
+                    <div class="action-bar">
+                        <button class="action-btn" type="button" data-action="copy-output" data-tooltip="Copy">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="download-output" data-tooltip="Download">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea class="editor-textarea" id="output-editor" spellcheck="false" readonly placeholder="Output appears here..."></textarea>
+                    <div class="status-bar" id="output-status">
+                        <span class="status-text">Ready</span>
+                        <span class="char-count" id="output-count">0 chars</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Encoding Reference</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Everything runs locally.</strong></p>
+                        <p>Text is treated as UTF-8 in every mode, so accented and emoji input round-trips.</p>
+                    </div>
+                    <div class="legend-grid">
+                        <div class="legend-row">
+                            <div class="legend-title">Base64</div>
+                            <div class="legend-desc">The standard <span class="hint-code">A–Z a–z 0–9 + /</span> alphabet with <span class="hint-code">=</span> padding. Wrapping at 76 characters matches MIME.</div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-title">Base64url</div>
+                            <div class="legend-desc">RFC 4648 §5: <span class="hint-code">+</span> becomes <span class="hint-code">-</span>, <span class="hint-code">/</span> becomes <span class="hint-code">_</span>, and padding is usually dropped. This is what JWTs use.</div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-title">URL — Component</div>
+                            <div class="legend-desc"><span class="hint-code">encodeURIComponent</span>. Escapes reserved characters such as <span class="hint-code">/ ? &amp; = #</span>, so it is the right choice for a single query value or path segment.</div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-title">URL — Full URL</div>
+                            <div class="legend-desc"><span class="hint-code">encodeURI</span>. Leaves the characters that give a URL its structure intact, so use it when escaping a whole address.</div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-title">HTML Entities</div>
+                            <div class="legend-desc">Markup only escapes <span class="hint-code">&amp; &lt; &gt; " '</span>. All non-ASCII additionally escapes every character above U+007F as a numeric reference. Decoding resolves named and numeric references alike.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

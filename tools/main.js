@@ -383,6 +383,7 @@
     ['file-code', '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/><path d="M10 12h4"/><path d="M10 16h4"/>'],
     ['align', '<line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/>'],
     ['sort', '<line x1="4" y1="6" x2="11" y2="6"/><line x1="4" y1="12" x2="16" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/>'],
+    ['swap', '<polyline points="16 3 20 7 16 11"/><line x1="20" y1="7" x2="4" y2="7"/><polyline points="8 13 4 17 8 21"/><line x1="4" y1="17" x2="20" y2="17"/>'],
     ['chevron-down', '<polyline points="6 9 12 15 18 9"/>'],
     ['menu', '<line x1="5" y1="8" x2="19" y2="8"/><line x1="5" y1="12" x2="19" y2="12"/><line x1="5" y1="16" x2="19" y2="16"/>'],
     ['search', '<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'],

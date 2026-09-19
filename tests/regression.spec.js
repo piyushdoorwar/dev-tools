@@ -93,11 +93,11 @@ test('clean tool routes are indexable pages with crawlable navigation and route 
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /HTML, CSS, and JavaScript/);
   await expect(page.locator('#toolAbout')).toBeAttached();
   await expect(page.locator('#toolAboutTitle')).toHaveText('HTML Preview');
-  await expect(page.locator('#toolList a.menu__item[href]')).toHaveCount(19);
+  await expect(page.locator('#toolList a.menu__item[href]')).toHaveCount(20);
 
   await page.locator('#brandHome').click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator('#allToolLinks a[href]')).toHaveCount(19);
+  await expect(page.locator('#allToolLinks a[href]')).toHaveCount(20);
 });
 
 test('info modal keeps the basic content and appends details for the active tool', async ({ page }) => {
