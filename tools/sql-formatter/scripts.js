@@ -600,14 +600,14 @@ window.loadSampleSql = function() {
 window.openModal = (modalId) => {
   const modal = document.getElementById(modalId);
   if (modal) {
-    modal.classList.add('active');
+    window.DevToolsMain.openModal(modal);
   }
 };
 
 window.closeModal = (modalId) => {
   const modal = document.getElementById(modalId);
   if (modal) {
-    modal.classList.remove('active');
+    window.DevToolsMain.closeModal(modal);
   }
 };
 

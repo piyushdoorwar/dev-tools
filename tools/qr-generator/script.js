@@ -181,26 +181,22 @@ function applyContentTypeFromHash() {
 
 function openDesignModal() {
   if (!elements.designModal) return;
-  elements.designModal.classList.add("is-open");
-  elements.designModal.setAttribute("aria-hidden", "false");
+  window.DevToolsMain.openModal(elements.designModal);
 }
 
 function closeDesignModal() {
   if (!elements.designModal) return;
-  elements.designModal.classList.remove("is-open");
-  elements.designModal.setAttribute("aria-hidden", "true");
+  window.DevToolsMain.closeModal(elements.designModal);
 }
 
 function openTipsModal() {
   if (!elements.tipsModal) return;
-  elements.tipsModal.classList.add("is-open");
-  elements.tipsModal.setAttribute("aria-hidden", "false");
+  window.DevToolsMain.openModal(elements.tipsModal);
 }
 
 function closeTipsModal() {
   if (!elements.tipsModal) return;
-  elements.tipsModal.classList.remove("is-open");
-  elements.tipsModal.setAttribute("aria-hidden", "true");
+  window.DevToolsMain.closeModal(elements.tipsModal);
 }
 
 function normalizeHex(value) {

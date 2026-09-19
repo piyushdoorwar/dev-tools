@@ -519,6 +519,11 @@ input:disabled {
   padding: 1.25rem;
 }
 
+/* State comes from the shared modal component, which toggles .is-open. */
+.modal.is-open {
+  display: flex;
+}
+
 .modal-content {
   width: var(--modal-w-lg);
   background: var(--panel-bg);

@@ -460,13 +460,11 @@ function flashCopied(button) {
 }
 
 function openModal(modal) {
-  modal.classList.add('active');
-  modal.setAttribute('aria-hidden', 'false');
+  window.DevToolsMain.openModal(modal);
 }
 
 function closeModal(modal) {
-  modal.classList.remove('active');
-  modal.setAttribute('aria-hidden', 'true');
+  window.DevToolsMain.closeModal(modal);
 }
 
 function pasteFromClipboard(target) {

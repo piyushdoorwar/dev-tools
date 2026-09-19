@@ -220,16 +220,12 @@
 
   const openSecurityInfo = () => {
     if (!securityInfoModal) return;
-    securityInfoModal.classList.add('active');
-    securityInfoModal.setAttribute('aria-hidden', 'false');
-    securityInfoCloseBtn?.focus();
+    window.DevToolsMain.openModal(securityInfoModal);
   };
 
   const closeSecurityInfo = () => {
     if (!securityInfoModal) return;
-    securityInfoModal.classList.remove('active');
-    securityInfoModal.setAttribute('aria-hidden', 'true');
-    securityInfoBtn?.focus();
+    window.DevToolsMain.closeModal(securityInfoModal);
   };
 
   const flashActionIcon = (button) => {

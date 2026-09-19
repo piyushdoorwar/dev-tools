@@ -787,28 +787,22 @@ document.addEventListener("keydown", (event) => {
 
 function openSettingsModal() {
   if (!settingsModal) return;
-  settingsModal.classList.add("is-open");
-  settingsModal.setAttribute("aria-hidden", "false");
-  if (settingsCloseBtn) settingsCloseBtn.focus();
+  window.DevToolsMain.openModal(settingsModal);
 }
 
 function closeSettingsModal() {
   if (!settingsModal) return;
-  settingsModal.classList.remove("is-open");
-  settingsModal.setAttribute("aria-hidden", "true");
+  window.DevToolsMain.closeModal(settingsModal);
 }
 
 function openDiffLegendModal() {
   if (!diffLegendModal) return;
-  diffLegendModal.classList.add("is-open");
-  diffLegendModal.setAttribute("aria-hidden", "false");
-  if (diffLegendCloseBtn) diffLegendCloseBtn.focus();
+  window.DevToolsMain.openModal(diffLegendModal);
 }
 
 function closeDiffLegendModal() {
   if (!diffLegendModal) return;
-  diffLegendModal.classList.remove("is-open");
-  diffLegendModal.setAttribute("aria-hidden", "true");
+  window.DevToolsMain.closeModal(diffLegendModal);
 }
 
 if (diffLegendBtn) {

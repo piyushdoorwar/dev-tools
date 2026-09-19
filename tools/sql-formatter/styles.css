@@ -327,7 +327,7 @@ body {
   animation: fadeIn 0.2s ease;
 }
 
-.modal.active {
+.modal.is-open {
   display: flex;
 }
 
@@ -990,7 +990,7 @@ textarea::selection {
   justify-content: center;
 }
 
-.modal.active {
+.modal.is-open {
   display: flex;
 }
 

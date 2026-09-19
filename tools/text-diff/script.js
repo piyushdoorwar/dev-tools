@@ -589,15 +589,12 @@ document.addEventListener("keydown", (event) => {
 
 function openDiffLegendModal() {
   if (!diffLegendModal) return;
-  diffLegendModal.classList.add("is-open");
-  diffLegendModal.setAttribute("aria-hidden", "false");
-  if (diffLegendCloseBtn) diffLegendCloseBtn.focus();
+  window.DevToolsMain.openModal(diffLegendModal);
 }
 
 function closeDiffLegendModal() {
   if (!diffLegendModal) return;
-  diffLegendModal.classList.remove("is-open");
-  diffLegendModal.setAttribute("aria-hidden", "true");
+  window.DevToolsMain.closeModal(diffLegendModal);
 }
 
 if (diffLegendBtn) {

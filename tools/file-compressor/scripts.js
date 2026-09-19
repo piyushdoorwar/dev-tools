@@ -139,12 +139,12 @@
   }
 
   function openInfoModal() {
-    el.infoModal.classList.add('active');
+    window.DevToolsMain.openModal(el.infoModal);
     el.infoModal.setAttribute('aria-hidden', 'false');
   }
 
   function closeInfoModal() {
-    el.infoModal.classList.remove('active');
+    window.DevToolsMain.closeModal(el.infoModal);
     el.infoModal.setAttribute('aria-hidden', 'true');
   }
 

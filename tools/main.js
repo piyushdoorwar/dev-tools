@@ -44,17 +44,159 @@
     URL.revokeObjectURL(url);
   };
 
-  root.openModal = root.openModal || function openModal(modal, activeClass = "is-open") {
-    if (!modal) return;
-    modal.classList.add(activeClass);
+  /* --- Modal ---------------------------------------------------------------
+     Shared open/close for every dialog. Thirteen tools each had their own,
+     using four different state classes (`is-open`, `active`, `show`, `open`)
+     or raw style.display, and not one of them trapped focus — Tab walked
+     straight out of the dialog into the page behind the scrim.
+
+     `is-open` is now the single state class. A tool's stylesheet still owns
+     `display`, because centring differs (flex vs grid).
+
+       <div class="modal" id="helpModal" data-modal> … </div>
+       <button data-modal-open="#helpModal">Help</button>
+       <button data-modal-close>Close</button>
+     ---------------------------------------------------------------------- */
+
+  const MODAL_OPEN_CLASS = "is-open";
+  const FOCUSABLE = [
+    "a[href]", "button:not([disabled])", "input:not([disabled]):not([type='hidden'])",
+    "select:not([disabled])", "textarea:not([disabled])", "[tabindex]:not([tabindex='-1'])",
+  ].join(",");
+  const openModals = [];
+
+  function focusableIn(modal) {
+    return Array.from(modal.querySelectorAll(FOCUSABLE))
+      .filter((el) => el.getClientRects().length > 0);
+  }
+
+  root.openModal = function openModal(modal) {
+    if (typeof modal === "string") modal = document.querySelector(modal);
+    if (!modal || modal.classList.contains(MODAL_OPEN_CLASS)) return;
+
+    modal._returnFocusTo = document.activeElement;
+    modal.classList.add(MODAL_OPEN_CLASS);
     modal.setAttribute("aria-hidden", "false");
+    if (!modal.getAttribute("role")) modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+
+    openModals.push(modal);
+    // Only the outermost modal owns the scroll lock.
+    document.body.style.overflow = "hidden";
+
+    // A dialog with nothing focusable still has to receive focus itself.
+    if (!modal.hasAttribute("tabindex")) modal.setAttribute("tabindex", "-1");
+
+    // Focus cannot move until the panel is actually visible. Several tools
+    // transition `all`, which includes `visibility`, so for a frame or more
+    // after opening the element is still visibility:hidden and focus() is
+    // silently refused. Retry across frames rather than guessing a delay that
+    // happens to match one tool's transition.
+    const focusTarget = () =>
+      modal.querySelector("[data-modal-autofocus]") || focusableIn(modal)[0] || modal;
+    const deadline = 400;
+    let waited = 0;
+    const tryFocus = () => {
+      if (!modal.classList.contains(MODAL_OPEN_CLASS)) return;
+      focusTarget().focus?.();
+      if (modal.contains(document.activeElement)) return;
+      if (waited >= deadline) return;
+      waited += 16;
+      requestAnimationFrame(tryFocus);
+    };
+    requestAnimationFrame(tryFocus);
   };
 
-  root.closeModal = root.closeModal || function closeModal(modal, activeClass = "is-open") {
-    if (!modal) return;
-    modal.classList.remove(activeClass);
+  root.closeModal = function closeModal(modal) {
+    if (typeof modal === "string") modal = document.querySelector(modal);
+    if (!modal || !modal.classList.contains(MODAL_OPEN_CLASS)) return;
+
+    modal.classList.remove(MODAL_OPEN_CLASS);
     modal.setAttribute("aria-hidden", "true");
+    modal.removeAttribute("aria-modal");
+
+    const index = openModals.indexOf(modal);
+    if (index !== -1) openModals.splice(index, 1);
+    if (!openModals.length) document.body.style.overflow = "";
+
+    // Put focus back where the user left it, not at the top of the document.
+    modal._returnFocusTo?.focus?.();
+    modal._returnFocusTo = null;
   };
+
+  root.closeTopModal = function closeTopModal() {
+    if (openModals.length) root.closeModal(openModals[openModals.length - 1]);
+  };
+
+  root.initModals = root.initModals || function initModals(scope = document) {
+    const modals = [
+      ...(scope.matches?.("[data-modal]") ? [scope] : []),
+      ...scope.querySelectorAll("[data-modal]"),
+    ];
+
+    modals.forEach((modal) => {
+      if (modal.dataset.modalReady) return;
+      modal.dataset.modalReady = "1";
+      if (!modal.classList.contains(MODAL_OPEN_CLASS)) {
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      // Clicking the scrim (but not the panel) dismisses.
+      modal.addEventListener("click", (event) => {
+        if (event.target === modal || event.target.closest("[data-modal-close]")) {
+          root.closeModal(modal);
+        }
+      });
+    });
+
+    scope.querySelectorAll?.("[data-modal-open]").forEach((trigger) => {
+      if (trigger.dataset.modalTriggerReady) return;
+      trigger.dataset.modalTriggerReady = "1";
+      trigger.addEventListener("click", (event) => {
+        event.preventDefault();
+        root.openModal(trigger.dataset.modalOpen);
+      });
+    });
+  };
+
+  if (!root._modalGlobalBound) {
+    root._modalGlobalBound = true;
+
+    document.addEventListener("keydown", (event) => {
+      if (!openModals.length) return;
+      const modal = openModals[openModals.length - 1];
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        root.closeModal(modal);
+        return;
+      }
+
+      // Focus trap: cycle within the dialog instead of escaping to the page.
+      if (event.key !== "Tab") return;
+      const items = focusableIn(modal);
+      if (!items.length) {
+        event.preventDefault();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+
+      if (!modal.contains(active)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+        return;
+      }
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+  }
 
   /* --- Dropdown ------------------------------------------------------------
      Shared behaviour for the .dd component (see tools/main.css for the markup
@@ -508,6 +650,7 @@
   root.enhanceAccessibility();
   root.initDropdowns();
   root.initResizers();
+  root.initModals();
   new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
@@ -515,6 +658,7 @@
           root.enhanceAccessibility(node);
           root.initDropdowns(node);
           root.initResizers(node);
+          root.initModals(node);
         }
       });
     });

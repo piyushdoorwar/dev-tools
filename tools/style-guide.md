@@ -248,9 +248,54 @@ Two of the ten were stubs that did nothing at all (`function showToast() {
 return; }`), so every message in those tools was silently discarded. If you are
 adding user feedback, call the shared function — do not write a local one.
 
+### Modal (`data-modal`) — done
+
+```html
+<div class="modal-overlay" id="helpModal" data-modal>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Title</h3>
+      <button class="modal-close" data-modal-close>…</button>
+    </div>
+    <div class="modal-body">…</div>
+  </div>
+</div>
+```
+
+```js
+DevToolsMain.openModal('#helpModal');   // element or selector
+DevToolsMain.closeModal('#helpModal');
+```
+
+`is-open` is the single state class. Thirteen tools previously used four
+different ones (`is-open`, `active`, `show`, `open`) or raw `style.display`.
+A tool's stylesheet still owns `display`, because centring differs between
+tools; the shared layer owns everything else.
+
+The component provides, for every dialog:
+
+- **A focus trap.** Tab and Shift+Tab cycle within the dialog. Not one of the
+  thirteen implementations had this — Tab walked straight out into the page
+  behind the scrim.
+- **Focus restore** to whatever opened it. The dialog itself takes
+  `tabindex="-1"` so it can hold focus when it contains nothing focusable.
+- **Scroll lock** while any dialog is open; released when the last one closes.
+- **Escape** closes the topmost dialog, **scrim click** dismisses, clicks on
+  the panel do not.
+- **`role="dialog"` and `aria-modal="true"`**, set on open and cleared on close.
+
+Opt-in hooks: `data-modal-open="#id"` on a trigger wires it with no JS;
+`data-modal-close` on any control inside dismisses; `data-modal-autofocus`
+overrides which element receives focus.
+
+**Focus must be moved asynchronously.** Several tools transition `all`, which
+includes `visibility`, so for a frame or more after opening the panel is still
+`visibility: hidden` and `focus()` is silently refused. The component retries
+across frames until focus lands rather than assuming a fixed delay.
+
 ### Still to extract
 
-Modal · heading scale.
+Heading scale.
 These currently exist as per-tool variants skinned by shared selector lists in
 `main.css`; each should become a real component like `.dd`.
 Scrollbars are already fully tokenised and shared.

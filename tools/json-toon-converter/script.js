@@ -1009,43 +1009,25 @@ function updateCharCounts() {
     updateCharCount('right');
 }
 
-// Settings Modal Functions
+// Modals. The shared component owns the state class, scroll lock, focus trap
+// and Escape handling.
 function openSettingsModal() {
-    const modal = document.getElementById('settings-modal');
-    if (modal) {
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
+    window.DevToolsMain.openModal('#settings-modal');
 }
 
 function closeSettingsModal() {
-    const modal = document.getElementById('settings-modal');
-    if (modal) {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-    }
+    window.DevToolsMain.closeModal('#settings-modal');
 }
 
-// Info Modal Functions
 function openInfoModal() {
-    const modal = document.getElementById('info-modal');
-    if (modal) {
-        // Update modal with current stats
-        document.getElementById('modal-json-tokens').textContent = currentTokenStats.jsonTokens;
-        document.getElementById('modal-toon-tokens').textContent = currentTokenStats.toonTokens;
-        document.getElementById('modal-token-reduction').textContent = currentTokenStats.reduction + '%';
-        
-        modal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
+    document.getElementById('modal-json-tokens').textContent = currentTokenStats.jsonTokens;
+    document.getElementById('modal-toon-tokens').textContent = currentTokenStats.toonTokens;
+    document.getElementById('modal-token-reduction').textContent = currentTokenStats.reduction + '%';
+    window.DevToolsMain.openModal('#info-modal');
 }
 
 function closeInfoModal() {
-    const modal = document.getElementById('info-modal');
-    if (modal) {
-        modal.classList.remove('show');
-        document.body.style.overflow = '';
-    }
+    window.DevToolsMain.closeModal('#info-modal');
 }
 
 // Initialize on load

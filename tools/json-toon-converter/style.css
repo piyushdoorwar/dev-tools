@@ -272,7 +272,7 @@ body {
     transition: all 0.2s ease;
 }
 
-.settings-modal.show {
+.settings-modal.is-open {
     opacity: 1;
     visibility: visible;
 }
@@ -299,7 +299,7 @@ body {
     transition: transform 0.3s ease;
 }
 
-.settings-modal.show .settings-content {
+.settings-modal.is-open .settings-content {
     transform: scale(1);
 }
 
@@ -380,7 +380,7 @@ body {
     transition: all 0.2s ease;
 }
 
-.info-modal.show {
+.info-modal.is-open {
     opacity: 1;
     visibility: visible;
 }
@@ -407,7 +407,7 @@ body {
     transition: transform 0.3s ease;
 }
 
-.info-modal.show .modal-content {
+.info-modal.is-open .modal-content {
     transform: scale(1);
 }
 

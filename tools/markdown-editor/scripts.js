@@ -507,7 +507,7 @@ render();
 // Modal Functions
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
-  modal.classList.add('active');
+  window.DevToolsMain.openModal(modal);
   
   // Focus first input
   setTimeout(() => {
@@ -518,7 +518,7 @@ function openModal(modalId) {
 
 function closeModal(modalId) {
   const modal = document.getElementById(modalId);
-  modal.classList.remove('active');
+  window.DevToolsMain.closeModal(modal);
 }
 
 // Close modal on outside click

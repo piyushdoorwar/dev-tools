@@ -1024,7 +1024,7 @@ button {
   z-index: 30;
 }
 
-.modal-backdrop.active {
+.modal-backdrop.is-open {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;

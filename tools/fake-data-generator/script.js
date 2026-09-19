@@ -968,15 +968,12 @@ document.addEventListener("click", () => {
 
 function openSchemaHelpModal() {
   if (!schemaHelpModal) return;
-  schemaHelpModal.classList.add("is-open");
-  schemaHelpModal.setAttribute("aria-hidden", "false");
-  if (schemaHelpCloseBtn) schemaHelpCloseBtn.focus();
+  window.DevToolsMain.openModal(schemaHelpModal);
 }
 
 function closeSchemaHelpModal() {
   if (!schemaHelpModal) return;
-  schemaHelpModal.classList.remove("is-open");
-  schemaHelpModal.setAttribute("aria-hidden", "true");
+  window.DevToolsMain.closeModal(schemaHelpModal);
 }
 
 if (outputEditor) {

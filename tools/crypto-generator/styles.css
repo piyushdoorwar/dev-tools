@@ -686,7 +686,7 @@ textarea::selection {
   justify-content: center;
 }
 
-.modal.active {
+.modal.is-open {
   display: flex;
 }
 

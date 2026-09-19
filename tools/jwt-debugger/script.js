@@ -792,7 +792,7 @@ document.querySelectorAll('.eye-btn').forEach(btn => {
       iatUnixInput.value = iat;
       expUnixInput.value = exp;
       updateModalFields();
-      datetimeModal.style.display = 'flex';
+      window.DevToolsMain.openModal(datetimeModal);
       flashActionIcon(btn);
     }
   });
@@ -800,14 +800,10 @@ document.querySelectorAll('.eye-btn').forEach(btn => {
 
 // Close modal
 closeModal.addEventListener('click', () => {
-  datetimeModal.style.display = 'none';
+  window.DevToolsMain.closeModal(datetimeModal);
 });
 
-window.addEventListener('click', (event) => {
-  if (event.target === datetimeModal) {
-    datetimeModal.style.display = 'none';
-  }
-});
+// Scrim clicks and Escape are handled by the shared modal component.
 
 // Update modal fields
 function updateModalFields() {
@@ -855,7 +851,7 @@ updateDatetimeBtn.addEventListener('click', async () => {
     payloadJson.textContent = JSON.stringify(newPayload, null, 2);
     payloadJson.dispatchEvent(new Event('input'));
     if (secret) await updateJwt();
-    datetimeModal.style.display = 'none';
+    window.DevToolsMain.closeModal(datetimeModal);
   }
 });
 

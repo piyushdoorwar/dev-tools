@@ -6,7 +6,7 @@ const output = (page) => page.locator('#output-editor');
 /** Every formatting option lives inside the settings modal. */
 async function openSettings(page) {
   await page.locator('[data-tooltip="Settings"]').click();
-  await expect(page.locator('#settingsModal')).toHaveClass(/active/);
+  await expect(page.locator('#settingsModal')).toHaveClass(/is-open/);
 }
 
 /** Pick a value on one of the segmented case controls. */
@@ -162,8 +162,8 @@ test('the settings modal opens and closes', async ({ page }) => {
   await openTool(page, 'sql-formatter');
 
   await page.locator('[data-tooltip="Settings"]').click();
-  await expect(page.locator('#settingsModal')).toHaveClass(/active/);
+  await expect(page.locator('#settingsModal')).toHaveClass(/is-open/);
 
   await page.locator('#settingsModal .modal-close').click();
-  await expect(page.locator('#settingsModal')).not.toHaveClass(/active/);
+  await expect(page.locator('#settingsModal')).not.toHaveClass(/is-open/);
 });
