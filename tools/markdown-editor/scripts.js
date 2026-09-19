@@ -1,12 +1,10 @@
 const editor = document.getElementById('editor');
 const preview = document.getElementById('preview');
 const lineNumbers = document.getElementById('line-numbers');
-const resizer = document.getElementById('resizer');
 const markdownFileInput = document.getElementById('markdownFileInput');
 
 let history = [];
 let historyIndex = -1;
-let isResizing = false;
 let isUndoRedoAction = false;
 let currentFileName = 'markdown.md';
 
@@ -501,41 +499,7 @@ editor.addEventListener('click', updateButtonStates);
 editor.addEventListener('keyup', updateButtonStates);
 
 // Resizer functionality
-resizer.addEventListener('mousedown', (e) => {
-  isResizing = true;
-  resizer.classList.add('resizing');
-  document.body.style.cursor = 'col-resize';
-  document.body.style.userSelect = 'none';
-});
-
-document.addEventListener('mousemove', (e) => {
-  if (!isResizing) return;
-  
-  const container = document.querySelector('.workspace');
-  const containerRect = container.getBoundingClientRect();
-  const leftPanel = container.querySelector('.panel:first-child');
-  const rightPanel = container.querySelector('.right-panel');
-  const resizerWidth = resizer.getBoundingClientRect().width;
-  const halfResizer = resizerWidth / 2;
-  
-  const offsetX = e.clientX - containerRect.left;
-  const totalWidth = containerRect.width;
-  const leftWidth = (offsetX / totalWidth) * 100;
-  
-  if (leftWidth > 20 && leftWidth < 80) {
-    leftPanel.style.flex = `0 0 calc(${leftWidth}% - ${halfResizer}px)`;
-    rightPanel.style.flex = `0 0 calc(${100 - leftWidth}% - ${halfResizer}px)`;
-  }
-});
-
-document.addEventListener('mouseup', () => {
-  if (isResizing) {
-    isResizing = false;
-    resizer.classList.remove('resizing');
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-  }
-});
+// Panel resizing is handled by the shared .resizer component in main.js.
 
 updateButtonStates();
 updateLineNumbers();

@@ -1480,15 +1480,67 @@ select[size]:not([size='1']) {
     user-select: none;
   }
 
-  /* --- Split resizer ----------------------------------------------------- */
+  /* --- Split resizer ------------------------------------------------------
+     The drag handle between two panels. Behaviour lives in
+     DevToolsMain.initResizers(); tools declare it with data attributes:
 
-  .resizer::before {
-    background: var(--border-light);
-    border-radius: var(--radius-pill);
+       <div class="resizer" data-resize
+            data-resize-container=".workspace"
+            data-resize-before=".panel:first-child"
+            data-resize-after=".right-panel"></div>
+
+     Pointer events cover mouse, touch and pen, so `touch-action: none` is
+     required — without it the browser claims the gesture as a scroll.
+     ------------------------------------------------------------------------ */
+
+  .resizer {
+    position: relative;
+    display: flex;
+    flex: 0 0 12px;
+    width: 12px;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    cursor: col-resize;
+    touch-action: none;
   }
 
-  .resizer:hover::before {
+  .resizer::before {
+    width: 3px;
+    height: 40px;
+    background: var(--border-light);
+    border-radius: var(--radius-pill);
+    content: '';
+    transition:
+      background-color var(--dur) var(--ease-out),
+      height var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out);
+  }
+
+  .resizer:hover::before,
+  .resizer.is-resizing::before {
+    height: 60px;
     background: var(--accent-purple-light);
+    box-shadow: var(--shadow-purple);
+  }
+
+  /* The handle is focusable and arrow-key operable, so it needs a visible
+     focus state — none of the per-tool versions had one. */
+  .resizer:focus-visible {
+    outline: none;
+  }
+
+  .resizer:focus-visible::before {
+    height: 60px;
+    background: var(--accent-purple-light);
+    box-shadow: var(--focus-ring);
+  }
+
+  /* Below the split breakpoint the panels stack and the handle has nothing to
+     divide. initResizers() toggles this at each tool's own threshold; a
+     tool-level media query could not win against this layer. */
+  .resizer.is-disabled {
+    display: none;
   }
 
 

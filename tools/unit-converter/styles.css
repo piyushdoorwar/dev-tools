@@ -420,33 +420,6 @@ body {
   font-size: 0.85rem;
 }
 
-.resizer {
-  width: 12px;
-  flex: 0 0 12px;
-  cursor: col-resize;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.resizer::before {
-  content: "";
-  width: 3px;
-  height: 40px;
-  background: var(--border-light);
-  border-radius: 3px;
-  transition: all 0.2s ease;
-}
-
-.resizer:hover::before {
-  background: var(--accent-purple-light);
-  height: 60px;
-}
-
-.resizer.resizing::before {
-  background: var(--accent-yellow);
-}
-
 .all-results {
   overflow: auto;
   padding-right: 0.25rem;
@@ -505,10 +478,6 @@ body {
     flex-direction: column;
     gap: 0.75rem;
     overflow: visible;
-  }
-
-  .resizer {
-    display: none;
   }
 
   .panel {

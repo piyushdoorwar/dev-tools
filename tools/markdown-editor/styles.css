@@ -80,38 +80,6 @@ body {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
-.resizer {
-  width: 12px;
-  flex: 0 0 12px;
-  cursor: col-resize;
-  background: transparent;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s ease;
-}
-
-.resizer::before {
-  content: '';
-  width: 3px;
-  height: 40px;
-  background: var(--border-light);
-  border-radius: 3px;
-  transition: all 0.2s ease;
-}
-
-.resizer:hover::before {
-  background: var(--accent-purple);
-  height: 60px;
-  box-shadow: var(--shadow-purple);
-}
-
-.resizer.resizing::before {
-  background: var(--accent-yellow);
-  box-shadow: var(--shadow-yellow);
-}
-
 .panel-header {
   display: flex;
   justify-content: space-between;
@@ -657,10 +625,6 @@ textarea::selection {
   .workspace {
     flex-direction: column;
     min-height: 70vh;
-  }
-
-  .resizer {
-    display: none;
   }
 
   .toolbar-group {

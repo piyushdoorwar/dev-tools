@@ -1,6 +1,5 @@
 const editor = document.getElementById('editor');
 const lineNumbers = document.getElementById('line-numbers');
-const resizer = document.getElementById('resizer');
 const outputEl = document.getElementById('output-editor');
 const outputLineNumbers = document.getElementById('output-line-numbers');
 
@@ -584,44 +583,7 @@ Object.values(controls).forEach((el) => {
   el.addEventListener('input', scheduleRender);
 });
 
-// Resizer functionality (kept from template)
-let isResizing = false;
-resizer.addEventListener('mousedown', () => {
-  isResizing = true;
-  resizer.classList.add('resizing');
-  document.body.style.cursor = 'col-resize';
-  document.body.style.userSelect = 'none';
-});
-
-document.addEventListener('mousemove', (e) => {
-  if (!isResizing) return;
-
-  const container = document.querySelector('.workspace');
-  const containerRect = container.getBoundingClientRect();
-  const leftPanel = container.querySelector('.panel:first-child');
-  const rightPanel = container.querySelector('.right-panel');
-
-  const offsetX = e.clientX - containerRect.left;
-  const totalWidth = containerRect.width;
-  const resizerWidth = resizer.offsetWidth;
-  const availableWidth = totalWidth - resizerWidth;
-  const minLeft = availableWidth * 0.2;
-  const maxLeft = availableWidth * 0.8;
-  const leftPx = Math.min(Math.max(offsetX - resizerWidth / 2, minLeft), maxLeft);
-  const rightPx = availableWidth - leftPx;
-
-  leftPanel.style.flex = `0 0 ${leftPx}px`;
-  rightPanel.style.flex = `0 0 ${rightPx}px`;
-});
-
-document.addEventListener('mouseup', () => {
-  if (isResizing) {
-    isResizing = false;
-    resizer.classList.remove('resizing');
-    document.body.style.cursor = '';
-    document.body.style.userSelect = '';
-  }
-});
+// Panel resizing is handled by the shared .resizer component in main.js.
 
 updateLineNumbers();
 formatAndRender();

@@ -259,6 +259,134 @@
     document.body.prepend(svg);
   };
 
+  /* --- Split resizer -------------------------------------------------------
+     One drag implementation for every split pane (see tools/main.css for the
+     markup contract). Replaces four near-identical per-tool copies, none of
+     which supported touch, called preventDefault, or was keyboard operable.
+
+     Pointer events cover mouse/touch/pen in one path, and setPointerCapture
+     keeps the drag alive past the handle without document-level listeners
+     running while idle.
+
+     Fires `resize:change` on the handle, detail { percent }, so a tool can
+     react (CodeMirror, for instance, needs a refresh after its pane resizes).
+     ---------------------------------------------------------------------- */
+
+  const RESIZE_KEY_STEP = 2; // percent per arrow press
+
+  root.initResizers = root.initResizers || function initResizers(scope = document) {
+    const handles = [
+      ...(scope.matches?.("[data-resize]") ? [scope] : []),
+      ...scope.querySelectorAll("[data-resize]"),
+    ];
+
+    handles.forEach((handle) => {
+      if (handle.dataset.resizeReady) return;
+      handle.dataset.resizeReady = "1";
+
+      const container = document.querySelector(handle.dataset.resizeContainer || ".workspace");
+      const before = container?.querySelector(handle.dataset.resizeBefore || ".panel:first-child");
+      const after = container?.querySelector(handle.dataset.resizeAfter || ".right-panel");
+      if (!container || !before || !after) return;
+
+      const min = Number(handle.dataset.resizeMin || 20);
+      const max = Number(handle.dataset.resizeMax || 80);
+      // Below this width the panels stack, so dragging would fight the layout.
+      const minViewport = Number(handle.dataset.resizeMinViewport || 1024);
+
+      handle.setAttribute("role", "separator");
+      handle.setAttribute("aria-orientation", "vertical");
+      handle.setAttribute("tabindex", "0");
+      if (!handle.getAttribute("aria-label")) {
+        handle.setAttribute("aria-label", "Resize panels");
+      }
+
+      const isEnabled = () => window.innerWidth >= minViewport;
+
+      const apply = (percent) => {
+        const clamped = Math.max(min, Math.min(max, percent));
+        const half = handle.getBoundingClientRect().width / 2;
+        before.style.flex = `0 0 calc(${clamped}% - ${half}px)`;
+        after.style.flex = `0 0 calc(${100 - clamped}% - ${half}px)`;
+        handle.setAttribute("aria-valuenow", String(Math.round(clamped)));
+        handle.setAttribute("aria-valuemin", String(min));
+        handle.setAttribute("aria-valuemax", String(max));
+        handle.dispatchEvent(new CustomEvent("resize:change", {
+          bubbles: true,
+          detail: { percent: clamped },
+        }));
+        return clamped;
+      };
+
+      const percentFromPointer = (clientX) => {
+        const rect = container.getBoundingClientRect();
+        return ((clientX - rect.left) / rect.width) * 100;
+      };
+
+      const currentPercent = () => {
+        const rect = container.getBoundingClientRect();
+        if (!rect.width) return 50;
+        return (before.getBoundingClientRect().width / rect.width) * 100;
+      };
+
+      handle.addEventListener("pointerdown", (event) => {
+        if (!isEnabled() || event.button !== 0) return;
+        // Without this the browser starts a text selection drag.
+        event.preventDefault();
+        handle.setPointerCapture(event.pointerId);
+        handle.classList.add("is-resizing");
+        document.body.style.cursor = "col-resize";
+        document.body.style.userSelect = "none";
+      });
+
+      handle.addEventListener("pointermove", (event) => {
+        if (!handle.hasPointerCapture?.(event.pointerId)) return;
+        apply(percentFromPointer(event.clientX));
+      });
+
+      const endDrag = (event) => {
+        if (!handle.hasPointerCapture?.(event.pointerId)) return;
+        handle.releasePointerCapture(event.pointerId);
+        handle.classList.remove("is-resizing");
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+      };
+      handle.addEventListener("pointerup", endDrag);
+      handle.addEventListener("pointercancel", endDrag);
+
+      handle.addEventListener("keydown", (event) => {
+        if (!isEnabled()) return;
+        const keys = {
+          ArrowLeft: -RESIZE_KEY_STEP,
+          ArrowRight: RESIZE_KEY_STEP,
+          Home: min - currentPercent(),
+          End: max - currentPercent(),
+        };
+        if (!(event.key in keys)) return;
+        event.preventDefault();
+        apply(currentPercent() + keys[event.key]);
+      });
+
+      // Double-click snaps back to an even split.
+      handle.addEventListener("dblclick", () => {
+        if (isEnabled()) apply(50);
+      });
+
+      const syncEnabled = () => {
+        const enabled = isEnabled();
+        handle.classList.toggle("is-disabled", !enabled);
+        handle.setAttribute("aria-disabled", String(!enabled));
+        if (!enabled) {
+          // Hand layout back to the stylesheet's stacked layout.
+          before.style.flex = "";
+          after.style.flex = "";
+        }
+      };
+      syncEnabled();
+      window.addEventListener("resize", syncEnabled);
+    });
+  };
+
   root.enhanceAccessibility = root.enhanceAccessibility || function enhanceAccessibility(scope = document) {
     const matches = (selector) => [
       ...(scope.matches?.(selector) ? [scope] : []),
@@ -303,12 +431,14 @@
   root.injectIconSprite();
   root.enhanceAccessibility();
   root.initDropdowns();
+  root.initResizers();
   new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) {
           root.enhanceAccessibility(node);
           root.initDropdowns(node);
+          root.initResizers(node);
         }
       });
     });

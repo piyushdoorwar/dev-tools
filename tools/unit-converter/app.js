@@ -1,8 +1,5 @@
 const categoryList = document.getElementById("category-list");
 const precisionDropdown = document.getElementById("precision-dropdown");
-const precisionTrigger = document.getElementById("precision-trigger");
-const precisionMenu = document.getElementById("precision-menu");
-const precisionValue = document.getElementById("precision-value");
 const valueInput = document.getElementById("value-input");
 const fromUnitList = document.getElementById("from-unit-list");
 const toUnitList = document.getElementById("to-unit-list");
@@ -12,11 +9,7 @@ const resultNode = document.getElementById("result");
 const resultMetaNode = document.getElementById("result-meta");
 const allResultsNode = document.getElementById("all-results");
 const errorNode = document.getElementById("error");
-const resizer = document.getElementById("resizer");
-const workspace = document.querySelector(".workspace");
-const leftPanel = document.querySelector(".panel");
 
-let isResizing = false;
 let selectedCategoryKey = (function () {
   const hash = window.location.hash.slice(1);
   return UNIT_CATEGORIES[hash] ? hash : DEFAULT_CATEGORY;
@@ -207,32 +200,7 @@ async function copyResult() {
   }
 }
 
-function initializeResize() {
-  resizer.addEventListener("mousedown", () => {
-    isResizing = true;
-    resizer.classList.add("resizing");
-  });
-
-  document.addEventListener("mousemove", (event) => {
-    if (!isResizing || window.innerWidth < 1024) {
-      return;
-    }
-
-    const workspaceRect = workspace.getBoundingClientRect();
-    const minWidth = 280;
-    const maxWidth = workspaceRect.width - minWidth;
-    const proposedLeft = event.clientX - workspaceRect.left;
-    const boundedLeft = Math.max(minWidth, Math.min(proposedLeft, maxWidth));
-
-    leftPanel.style.flex = "0 0 auto";
-    leftPanel.style.width = `${boundedLeft}px`;
-  });
-
-  document.addEventListener("mouseup", () => {
-    isResizing = false;
-    resizer.classList.remove("resizing");
-  });
-}
+// Panel resizing is handled by the shared .resizer component in main.js.
 
 function bindEvents() {
   valueInput.addEventListener("input", convertAndRender);
@@ -247,7 +215,6 @@ function init() {
   setPrecision(selectedPrecision);
 
   bindEvents();
-  initializeResize();
 
   valueInput.value = "100";
   convertAndRender();

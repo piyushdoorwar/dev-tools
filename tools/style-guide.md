@@ -185,9 +185,42 @@ Available: `copy` `paste` `download` `upload` `trash` `check` `close` `info`
 Add new icons to `ICON_SPRITE` in `main.js`. Never inline an icon that the
 sprite already has. Genuinely tool-specific glyphs stay inline.
 
+### Split resizer (`.resizer`) — done
+
+The drag handle between two panels.
+
+```html
+<div class="resizer" data-resize
+     data-resize-container=".workspace"
+     data-resize-before=".panel:first-child"
+     data-resize-after=".right-panel"></div>
+```
+
+| Hook | Default | Purpose |
+| --- | --- | --- |
+| `data-resize-container` | `.workspace` | The flex row being split. |
+| `data-resize-before` / `-after` | `.panel:first-child` / `.right-panel` | The two panes. |
+| `data-resize-min` / `-max` | `20` / `80` | Travel limits, in percent. |
+| `data-resize-min-viewport` | `1024` | Below this the panes stack and the handle hides. |
+| `resize:change` event | — | `detail: { percent }`, bubbles. |
+
+`DevToolsMain.initResizers()` owns the drag. It uses pointer events, so mouse,
+touch and pen share one path, and `setPointerCapture`, so no document-level
+listener runs while idle. The four implementations it replaced were mouse-only,
+none called `preventDefault` (dragging swept a text selection across the page),
+and none were keyboard operable.
+
+The handle is a focusable `role="separator"`: arrow keys nudge it, Home/End jump
+to the limits, double-click restores an even split.
+
+**Hiding it responsively must go through `data-resize-min-viewport`.** A
+`display: none` in a tool's media query cannot win against the shared layer;
+`initResizers()` toggles `.is-disabled` at the tool's own threshold instead, and
+also clears the inline flex values so they don't fight the stacked layout.
+
 ### Still to extract
 
-Split resizer · toast · modal · heading scale.
+Toast · modal · heading scale.
 These currently exist as per-tool variants skinned by shared selector lists in
 `main.css`; each should become a real component like `.dd`.
 Scrollbars are already fully tokenised and shared.
