@@ -23,29 +23,16 @@
         <div class="toolbar-group">
           <span class="toolbar-label">File</span>
           <button class="toolbar-btn" onclick="undoEditor()" data-tooltip="Undo (Ctrl+Z)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 7v6h6"/>
-              <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-undo"></use></svg>
           </button>
           <button class="toolbar-btn" onclick="redoEditor()" data-tooltip="Redo (Ctrl+Y)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 7v6h-6"/>
-              <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3l3 2.7"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-redo"></use></svg>
           </button>
           <button class="toolbar-btn" onclick="copyEditor()" data-tooltip="Copy formatted SQL">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
           </button>
           <button class="toolbar-btn" onclick="downloadFormattedSql()" data-tooltip="Download formatted SQL">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-download"></use></svg>
           </button>
           <button class="toolbar-btn" onclick="loadSampleSql()" data-tooltip="Load sample SQL">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -55,10 +42,7 @@
             </svg>
           </button>
           <button class="toolbar-btn" onclick="pasteEditor()" data-tooltip="Paste (Ctrl+V)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
-              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
           </button>
         </div>
 
@@ -137,9 +121,7 @@
                 </svg>
               </button>
               <button class="case-btn active" data-setting="keywordCase" data-value="unchanged" data-tooltip="Unchanged" title="Unchanged">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M5 8h14M5 16h14"/>
-                </svg>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-menu"></use></svg>
               </button>
             </div>
           </div>
@@ -157,9 +139,7 @@
                 </svg>
               </button>
               <button class="case-btn active" data-setting="dataTypeCase" data-value="unchanged" data-tooltip="Unchanged" title="Unchanged">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M5 8h14M5 16h14"/>
-                </svg>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-menu"></use></svg>
               </button>
             </div>
           </div>
@@ -182,9 +162,7 @@
                 </svg>
               </button>
               <button class="case-btn active" data-setting="functionCase" data-value="unchanged" data-tooltip="Unchanged" title="Unchanged">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M5 8h14M5 16h14"/>
-                </svg>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-menu"></use></svg>
               </button>
             </div>
           </div>
@@ -210,9 +188,7 @@
                 </svg>
               </button>
               <button class="case-btn active" data-setting="identifiersCase" data-value="unchanged" data-tooltip="Unchanged" title="Unchanged">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M5 8h14M5 16h14"/>
-                </svg>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-menu"></use></svg>
               </button>
             </div>
           </div>
@@ -235,9 +211,7 @@
                 </svg>
               </button>
               <button class="case-btn active" data-setting="variableCase" data-value="unchanged" data-tooltip="Unchanged" title="Unchanged">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M5 8h14M5 16h14"/>
-                </svg>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-menu"></use></svg>
               </button>
             </div>
           </div>
@@ -260,9 +234,7 @@
                 </svg>
               </button>
               <button class="case-btn active" data-setting="quotedIdentifierCase" data-value="unchanged" data-tooltip="Unchanged" title="Unchanged">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M5 8h14M5 16h14"/>
-                </svg>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-menu"></use></svg>
               </button>
             </div>
           </div>

@@ -22,11 +22,7 @@
                     <span class="stat-item modified"><span class="stat-count" id="stat-modified">0</span> Modified</span>
                 </div>
                 <button class="info-btn" id="diffLegendBtn" aria-label="Diff color legend" data-tooltip="Diff colors">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="9"></circle>
-                        <line x1="12" y1="10" x2="12" y2="16"></line>
-                        <circle cx="12" cy="7.5" r="1"></circle>
-                    </svg>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
                 </button>
             </div>
         </header>
@@ -35,14 +31,14 @@
                 <div class="panel-header">
                     <h2 class="panel-title">Original JSON</h2>
                     <div class="action-bar">
-                        <button class="action-btn" data-action="undo" data-editor="left" data-tooltip="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg></button>
-                        <button class="action-btn" data-action="copy" data-editor="left" data-tooltip="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
-                        <button class="action-btn" data-action="paste" data-editor="left" data-tooltip="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></button>
-                        <button class="action-btn" data-action="sample" data-editor="left" data-tooltip="Load Sample JSON"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/><path d="M10 12h4"/><path d="M10 16h4"/><path d="M10 8h1"/></svg></button>
-                        <button class="action-btn" data-action="beautify" data-editor="left" data-tooltip="Beautify"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg></button>
-                        <button class="action-btn" data-action="validate" data-editor="left" data-tooltip="Validate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>
-                        <button class="action-btn" data-action="download" data-editor="left" data-tooltip="Download JSON File"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-                        <button class="action-btn" data-action="clear" data-editor="left" data-tooltip="Clear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                        <button class="action-btn" data-action="undo" data-editor="left" data-tooltip="Undo (Ctrl+Z)"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-undo"></use></svg></button>
+                        <button class="action-btn" data-action="copy" data-editor="left" data-tooltip="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg></button>
+                        <button class="action-btn" data-action="paste" data-editor="left" data-tooltip="Paste"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg></button>
+                        <button class="action-btn" data-action="sample" data-editor="left" data-tooltip="Load Sample JSON"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-file-code"></use></svg></button>
+                        <button class="action-btn" data-action="beautify" data-editor="left" data-tooltip="Beautify"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-align"></use></svg></button>
+                        <button class="action-btn" data-action="validate" data-editor="left" data-tooltip="Validate"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-check"></use></svg></button>
+                        <button class="action-btn" data-action="download" data-editor="left" data-tooltip="Download JSON File"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-download"></use></svg></button>
+                        <button class="action-btn" data-action="clear" data-editor="left" data-tooltip="Clear"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg></button>
                     </div>
                 </div>
                 <div class="panel-body">
@@ -60,14 +56,14 @@
                 <div class="panel-header">
                     <h2 class="panel-title">Modified JSON</h2>
                     <div class="action-bar">
-                        <button class="action-btn" data-action="undo" data-editor="right" data-tooltip="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg></button>
-                        <button class="action-btn" data-action="copy" data-editor="right" data-tooltip="Copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
-                        <button class="action-btn" data-action="paste" data-editor="right" data-tooltip="Paste"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></button>
-                        <button class="action-btn" data-action="sample" data-editor="right" data-tooltip="Load Sample JSON"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/><path d="M10 12h4"/><path d="M10 16h4"/><path d="M10 8h1"/></svg></button>
-                        <button class="action-btn" data-action="beautify" data-editor="right" data-tooltip="Beautify"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg></button>
-                        <button class="action-btn" data-action="validate" data-editor="right" data-tooltip="Validate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>
-                        <button class="action-btn" data-action="download" data-editor="right" data-tooltip="Download JSON File"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-                        <button class="action-btn" data-action="clear" data-editor="right" data-tooltip="Clear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+                        <button class="action-btn" data-action="undo" data-editor="right" data-tooltip="Undo (Ctrl+Z)"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-undo"></use></svg></button>
+                        <button class="action-btn" data-action="copy" data-editor="right" data-tooltip="Copy"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg></button>
+                        <button class="action-btn" data-action="paste" data-editor="right" data-tooltip="Paste"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg></button>
+                        <button class="action-btn" data-action="sample" data-editor="right" data-tooltip="Load Sample JSON"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-file-code"></use></svg></button>
+                        <button class="action-btn" data-action="beautify" data-editor="right" data-tooltip="Beautify"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-align"></use></svg></button>
+                        <button class="action-btn" data-action="validate" data-editor="right" data-tooltip="Validate"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-check"></use></svg></button>
+                        <button class="action-btn" data-action="download" data-editor="right" data-tooltip="Download JSON File"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-download"></use></svg></button>
+                        <button class="action-btn" data-action="clear" data-editor="right" data-tooltip="Clear"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg></button>
                     </div>
                 </div>
                 <div class="panel-body">
@@ -86,7 +82,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Settings</h3>
-                    <button class="modal-close" id="settingsCloseBtn" data-modal-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                    <button class="modal-close" id="settingsCloseBtn" data-modal-close><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg></button>
                 </div>
                 <div class="modal-body">
                     <div class="setting-group" id="settings-indent"><label class="setting-label">Indent Size</label><input type="number" class="setting-input" id="indentSize" value="2" min="1" max="8"></div>
@@ -98,7 +94,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Diff Colors</h3>
-                    <button class="modal-close" id="diffLegendCloseBtn" data-modal-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                    <button class="modal-close" id="diffLegendCloseBtn" data-modal-close><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg></button>
                 </div>
                 <div class="modal-body">
                     <div class="legend-grid">

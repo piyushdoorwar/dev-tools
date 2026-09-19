@@ -445,7 +445,7 @@
       row.innerHTML = `
         <td><div class="file-path-cell"><div class="file-ext-icon ${extClass(entry.file.name)}">${escapeHTML(extLabel(entry.file.name))}</div>${pathMarkup(name)}</div></td>
         <td class="file-size-cell">${formatSize(entry.file.size)}</td>
-        <td><button class="remove-btn" data-id="${entry.id}" type="button" aria-label="Remove file" title="Remove file"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16"></path><path d="M10 11v5"></path><path d="M14 11v5"></path><path d="M6 7l1 11a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-11"></path><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"></path></svg><span class="sr-only">Remove</span></button></td>
+        <td><button class="remove-btn" data-id="${entry.id}" type="button" aria-label="Remove file" title="Remove file"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#i-trash"></use></svg><span class="sr-only">Remove</span></button></td>
       `;
       el.fileTableBody.appendChild(row);
     }

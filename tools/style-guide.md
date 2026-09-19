@@ -161,8 +161,33 @@ a filled gradient row, so long menus stay calm.
 Helpers: `DevToolsMain.selectDropdownValue(root, value, { emit })`,
 `.openDropdown(root)`, `.closeDropdown(root)`, `.closeAllDropdowns()`.
 
+### Icons (`#dt-icon-sprite`) — done
+
+`main.js` injects one `<symbol>` sheet per page. Tools keep their own `<svg>`
+wrapper — 93 CSS rules size icons via `svg` descendant selectors — and point it
+at a symbol:
+
+```html
+<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true">
+  <use href="#i-copy"></use>
+</svg>
+```
+
+Stroke geometry (`stroke-width: 2`, round caps and joins, `fill: none`) lives on
+the `<symbol>`, so an icon is identical everywhere regardless of what the host
+page declares. Before this, `copy` alone existed in six spellings and `trash` in
+three, at stroke widths from 1.5 to 3.
+
+Available: `copy` `paste` `download` `upload` `trash` `check` `close` `info`
+`undo` `redo` `file-text` `file-code` `align` `sort` `menu` `chevron-down`
+`search` `settings`.
+
+Add new icons to `ICON_SPRITE` in `main.js`. Never inline an icon that the
+sprite already has. Genuinely tool-specific glyphs stay inline.
+
 ### Still to extract
 
-Modal · toast · split resizer · icon set · scrollbar · heading scale.
+Split resizer · toast · modal · heading scale.
 These currently exist as per-tool variants skinned by shared selector lists in
 `main.css`; each should become a real component like `.dd`.
+Scrollbars are already fully tokenised and shared.

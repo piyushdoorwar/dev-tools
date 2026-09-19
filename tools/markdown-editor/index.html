@@ -33,44 +33,22 @@
           </button>
           <input id="markdownFileInput" type="file" accept=".md,.markdown,text/markdown,text/plain" hidden>
           <button class="toolbar-btn" data-action="undo" data-tooltip="Undo (Ctrl+Z)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 7v6h6"/>
-              <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-undo"></use></svg>
           </button>
           <button class="toolbar-btn" data-action="redo" data-tooltip="Redo (Ctrl+Y)">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 7v6h-6"/>
-              <path d="M3 17a9 9 0 019-9 9 9 0 016 2.3L21 13"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-redo"></use></svg>
           </button>
           <button class="toolbar-btn" data-action="copy" data-tooltip="Copy All">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
           </button>
           <button class="toolbar-btn" data-action="paste" data-tooltip="Paste">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
-              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
           </button>
           <button class="toolbar-btn" data-action="loadSample" data-tooltip="Load Sample">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
           </button>
           <button class="toolbar-btn" data-action="download" data-tooltip="Download as .md">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
           </button>
         </div>
         <div class="toolbar-divider"></div>
@@ -220,10 +198,7 @@
               <span class="hint">Rendered output</span>
             </div>
             <button class="preview-copy-btn" onclick="copyPreviewContent()" data-tooltip="Copy rendered HTML">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
-              </svg>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
             </button>
           </div>
           <div id="preview" class="preview" aria-live="polite"></div>
@@ -250,12 +225,7 @@
             <label>Alignment:</label>
             <div class="align-buttons">
               <button class="align-btn active" data-align="left" data-tooltip="Left" onclick="selectAlign('left')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="17" y1="10" x2="3" y2="10"/>
-                  <line x1="21" y1="6" x2="3" y2="6"/>
-                  <line x1="21" y1="14" x2="3" y2="14"/>
-                  <line x1="17" y1="18" x2="3" y2="18"/>
-                </svg>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-align"></use></svg>
               </button>
               <button class="align-btn" data-align="center" data-tooltip="Center" onclick="selectAlign('center')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -298,11 +268,7 @@
           <div class="form-group">
             <label>Image Source:</label>
             <div class="image-upload-area" id="imageUploadArea">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-upload"></use></svg>
               <p>Drag & drop an image here or click to select</p>
               <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
             </div>
@@ -353,17 +319,11 @@
           <div class="code-modal-toolbar">
             <div class="code-toolbar-left">
               <button class="code-toolbar-btn" onclick="pasteCodeBlock()" data-tooltip="Paste (Ctrl+V)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
-                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-                </svg>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
                 <span>Paste</span>
               </button>
               <button class="code-toolbar-btn" onclick="clearCodeBlock()" data-tooltip="Clear">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-                </svg>
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
                 <span>Clear</span>
               </button>
             </div>
