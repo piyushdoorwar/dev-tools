@@ -74,3 +74,39 @@ test('the tool name is the h1, with the tagline as a subtitle', async ({ page })
   await expect(page.locator('h1')).toHaveText('JWT Debugger');
   await expect(page.locator('.app-subtitle')).toHaveText('Inspect JSON Web Tokens instantly');
 });
+
+test('no tool decorates its header with a logo or eyebrow', async ({ page }) => {
+  // image-converter was the only tool with a brand mark and a
+  // "Private browser utility" eyebrow above its title.
+  for (const tool of TOOLS) {
+    await openTool(page, tool);
+    const extras = await page.evaluate(() => {
+      const header = document.querySelector('.app-header, .header, .panel-head');
+      if (!header) return { imgs: 0, eyebrows: 0 };
+      return {
+        imgs: header.querySelectorAll('img').length,
+        eyebrows: header.querySelectorAll('.eyebrow, .brand-mark, .brand-lockup').length,
+      };
+    });
+    expect(extras.imgs, `${tool} has an image in its header`).toBe(0);
+    expect(extras.eyebrows, `${tool} has an eyebrow/brand mark`).toBe(0);
+  }
+});
+
+test('the title is the first thing in every header', async ({ page }) => {
+  for (const tool of TOOLS) {
+    await openTool(page, tool);
+    const ok = await page.evaluate(() => {
+      const h1 = document.querySelector('h1');
+      const header = h1.closest('.app-header, .header, .panel-head');
+      if (!header) return true;
+      // Nothing with visible text may precede the title inside the header.
+      const before = [...header.querySelectorAll('*')]
+        .filter((el) => el.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING)
+        .filter((el) => !el.contains(h1))
+        .filter((el) => el.textContent.trim().length > 0);
+      return before.length === 0;
+    });
+    expect(ok, `${tool} has content above its title`).toBe(true);
+  }
+});
