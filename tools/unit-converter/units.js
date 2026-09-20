@@ -85,7 +85,6 @@ const UNIT_CATEGORIES = {
     units: {
       ms: { label: "Millisecond", factor: 0.001 },
       s: { label: "Second", factor: 1 },
-      epoch: { label: "Epoch (Unix, s)", factor: 1 },
       min: { label: "Minute", factor: 60 },
       h: { label: "Hour", factor: 3600 },
       d: { label: "Day", factor: 86400 },

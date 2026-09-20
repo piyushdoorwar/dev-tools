@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timestamp Converter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Timestamp Converter</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="Format reference" aria-label="Format reference">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <span class="toolbar-label">Time zone</span>
+                <div id="tz-dropdown" class="dd" data-dd aria-label="Time zone">
+                    <button id="tz-trigger" class="dd__trigger" type="button" aria-label="Time zone">
+                        <span id="tz-value" class="dd__value">UTC</span>
+                    </button>
+                    <div id="tz-menu" class="dd__menu" role="listbox" aria-label="Time zone options"></div>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <span class="toolbar-label">Now</span>
+                <code id="live-clock" class="live-clock" aria-live="off">—</code>
+                <button class="btn btn-primary" type="button" data-action="now">Use current time</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <section class="panel input-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Input</h2>
+                    <span class="detected" id="detected">Waiting for input</span>
+                </div>
+                <div class="panel-body">
+                    <label class="field-label" for="ts-input">Timestamp or date</label>
+                    <input id="ts-input" class="ts-input" type="text" spellcheck="false" autocomplete="off"
+                           placeholder="1789689600, 1789689600000, or 2026-09-18T00:00:00Z">
+                    <p class="field-hint">
+                        Accepts Unix seconds, milliseconds or microseconds, ISO&nbsp;8601, and most date strings.
+                    </p>
+
+                    <div class="picker-row">
+                        <div class="picker-cell">
+                            <label class="field-label" for="date-picker">Or pick a moment</label>
+                            <input id="date-picker" class="ts-input" type="datetime-local" step="1">
+                        </div>
+                        <p class="picker-note" id="picker-note">Interpreted in the selected time zone.</p>
+                    </div>
+
+                    <div class="error" id="error" role="alert" aria-live="polite" hidden></div>
+                </div>
+            </section>
+
+            <section class="panel output-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Conversions</h2>
+                    <button class="action-btn" type="button" data-action="copy-all" data-tooltip="Copy all" aria-label="Copy all">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                    </button>
+                </div>
+                <div class="panel-body">
+                    <div class="result-list" id="results"></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Format Reference</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Tips</strong></p>
+                        <ul class="tip-list">
+                            <li>Digit count decides the unit: 10 digits is seconds, 13 is milliseconds, 16 is microseconds.</li>
+                            <li>A bare date like <span class="hint-code">2026-09-18</span> is read as midnight UTC, matching ISO&nbsp;8601.</li>
+                            <li>The picker reads and writes in the selected time zone, so daylight-saving shifts are applied.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

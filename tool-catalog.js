@@ -118,6 +118,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["SQL formatting and beautification", "Readable indentation", "Local query processing"],
   },
   {
+    id: "timestamp-converter",
+    name: "Timestamp Converter",
+    route: "timestamp-converter",
+    description: "Convert Unix timestamps to ISO 8601, human-readable and relative time across time zones, and back again, entirely in your browser.",
+    capabilities: ["Unix seconds, milliseconds and microseconds", "ISO 8601, RFC 1123 and relative time", "Time zone and DST aware conversion"],
+  },
+  {
     id: "text-diff",
     name: "Text Diff",
     route: "text-diff",

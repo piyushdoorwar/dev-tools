@@ -33,7 +33,7 @@ test('Cloudflare Analytics uses the configured token on the dashboard', async ({
 
 const TOOL_ROUTES = [
   'base-converter',
-  'crypto-generator',
+  'crypto-generator','encoder-decoder',
   'fake-data-generator',
   'file-compressor',
   'html-preview',
@@ -47,7 +47,7 @@ const TOOL_ROUTES = [
   'qr-generator',
   'regex-tester',
   'sql-formatter',
-  'text-diff',
+  'text-diff','timestamp-converter',
   'unit-converter',
 ];
 
@@ -93,11 +93,15 @@ test('clean tool routes are indexable pages with crawlable navigation and route 
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /HTML, CSS, and JavaScript/);
   await expect(page.locator('#toolAbout')).toBeAttached();
   await expect(page.locator('#toolAboutTitle')).toHaveText('HTML Preview');
-  await expect(page.locator('#toolList a.menu__item[href]')).toHaveCount(20);
+  // Derived from the catalog: the invariant is that navigation renders every
+  // registered tool, not that there happen to be N of them.
+  const catalogSize = await page.evaluate(() => globalThis.DEV_TOOLS_CATALOG.length);
+  expect(catalogSize).toBeGreaterThan(15);
+  await expect(page.locator('#toolList a.menu__item[href]')).toHaveCount(catalogSize);
 
   await page.locator('#brandHome').click();
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator('#allToolLinks a[href]')).toHaveCount(20);
+  await expect(page.locator('#allToolLinks a[href]')).toHaveCount(catalogSize);
 });
 
 test('info modal keeps the basic content and appends details for the active tool', async ({ page }) => {

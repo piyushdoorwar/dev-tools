@@ -64,7 +64,7 @@ for (const [tool, [trigger, modal]] of Object.entries(MODALS)) {
 }
 
 test('every modal root is wired to the shared component', async ({ page }) => {
-  const TOOLS = ['base-converter', 'crypto-generator', 'fake-data-generator', 'file-compressor',
+  const TOOLS = ['base-converter', 'crypto-generator','encoder-decoder', 'fake-data-generator', 'file-compressor',
     'image-converter', 'json-diff', 'json-toon-converter', 'jwt-debugger', 'markdown-editor',
     'qr-generator', 'regex-tester', 'sql-formatter', 'text-diff'];
   for (const tool of TOOLS) {

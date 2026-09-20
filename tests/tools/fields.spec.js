@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { openTool } from '../helpers.js';
 
-const TOOLS = ['base-converter','crypto-generator','fake-data-generator','file-compressor',
+const TOOLS = ['base-converter','crypto-generator','encoder-decoder','fake-data-generator','file-compressor',
  'id-generator','image-converter','json-diff','json-toon-converter','json-xml-converter',
- 'jwt-debugger','markdown-editor','qr-generator','regex-tester','sql-formatter','text-diff',
+ 'jwt-debugger','markdown-editor','qr-generator','regex-tester','sql-formatter','text-diff','timestamp-converter',
  'unit-converter'];
 
 const TEXTY = "input[type='text'],input[type='tel'],input[type='url'],input[type='email']," +
