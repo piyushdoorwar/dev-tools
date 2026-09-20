@@ -114,9 +114,21 @@ test('the zone list can be filtered', async ({ page }) => {
   await openTool(page, 'timestamp-converter');
   await page.click('#tz-trigger');
   await page.fill('.tz-search', 'kolkata');
-  const visible = await page.evaluate(() =>
-    [...document.querySelectorAll('#tz-menu .dd__option')].filter((o) => !o.hidden).length);
-  expect(visible).toBe(1);
+
+  // Assert what the user sees, not the `hidden` property: author styles beat
+  // the UA's [hidden] rule, so the attribute can be set with no visual effect.
+  const shown = await page.evaluate(() =>
+    [...document.querySelectorAll('#tz-menu .dd__option')]
+      .filter((o) => o.getClientRects().length > 0)
+      .map((o) => o.dataset.value));
+  expect(shown).toEqual(['Asia/Kolkata']);
+
+  // Clearing the filter brings the full list back.
+  await page.fill('.tz-search', '');
+  const restored = await page.evaluate(() =>
+    [...document.querySelectorAll('#tz-menu .dd__option')]
+      .filter((o) => o.getClientRects().length > 0).length);
+  expect(restored).toBeGreaterThan(100);
 });
 
 test('"use current time" fills the input with now', async ({ page }) => {
@@ -158,4 +170,34 @@ test('no duplicate rows when the zone equals UTC or local', async ({ page }) => 
   const labels = await page.evaluate(() =>
     [...document.querySelectorAll('.result-label')].map((n) => n.textContent));
   expect(new Set(labels).size, 'a conversion is listed twice').toBe(labels.length);
+});
+
+test('the date picker button is legible on a dark field', async ({ page }) => {
+  // Chromium inverts ::-webkit-calendar-picker-indicator under
+  // color-scheme: dark, which flipped our light glyph back to near-black.
+  // getComputedStyle does not expose this UA pseudo-element's background, so
+  // assert the declarations that produce it instead — the rendered contrast
+  // itself was checked by pixel-sampling a screenshot.
+  await openTool(page, 'timestamp-converter');
+
+  const rule = await page.evaluate(() => {
+    for (const sheet of document.styleSheets) {
+      let rules; try { rules = sheet.cssRules; } catch { continue; }
+      const scan = (list) => {
+        for (const r of list) {
+          if (r.cssRules) { const hit = scan(r.cssRules); if (hit) return hit; }
+          if (r.selectorText?.includes('-webkit-calendar-picker-indicator')
+              && !r.selectorText.includes(':hover')) return r.style.cssText;
+        }
+        return null;
+      };
+      const hit = scan(rules);
+      if (hit) return hit;
+    }
+    return null;
+  });
+
+  expect(rule, 'no styling for the calendar indicator').toBeTruthy();
+  expect(rule, 'the UA invert must be neutralised').toContain('filter: none');
+  expect(rule, 'the indicator should use our own glyph').toContain('--date-picker-icon');
 });

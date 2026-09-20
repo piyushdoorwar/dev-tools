@@ -214,6 +214,10 @@
   /* --- Select chevron (shared, so every dropdown gets the same arrow) ----- */
   --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b8b8b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
 
+  /* Calendar glyph for date/time inputs, drawn in the secondary text colour
+     so it reads on a dark field. */
+  --date-picker-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b8b8b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E");
+
   /* Tick for the selected dropdown option. Masked, so it inherits its colour. */
   --dd-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
 
@@ -437,16 +441,6 @@ input[type='range'] {
   height: 4px;
 }
 
-/* Date/time pickers ship a black glyph that vanishes on dark surfaces */
-::-webkit-calendar-picker-indicator {
-  filter: invert(1) opacity(0.6);
-  cursor: pointer;
-}
-
-::-webkit-calendar-picker-indicator:hover {
-  filter: invert(1) opacity(1);
-}
-
 /* --- Text fields & selects: one shared shape ----------------------------- */
 
 input[type='text'],
@@ -484,6 +478,35 @@ textarea {
 input::placeholder,
 textarea::placeholder {
   color: var(--text-disabled);
+}
+
+/* The browser's own calendar button is low contrast on these surfaces, and
+   re-tinting it with a filter depends on whether the engine drew it light or
+   dark. Supplying our own glyph removes the guesswork. */
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='datetime-local']::-webkit-calendar-picker-indicator,
+input[type='time']::-webkit-calendar-picker-indicator,
+input[type='month']::-webkit-calendar-picker-indicator,
+input[type='week']::-webkit-calendar-picker-indicator {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  background: var(--date-picker-icon) center / 18px 18px no-repeat;
+  /* Chromium inverts this indicator itself under color-scheme: dark, which
+     would flip our already-light glyph back to near-black. */
+  filter: none;
+  opacity: 0.85;
+  cursor: pointer;
+  transition: opacity var(--dur) var(--ease-out);
+}
+
+input[type='date']::-webkit-calendar-picker-indicator:hover,
+input[type='datetime-local']::-webkit-calendar-picker-indicator:hover,
+input[type='time']::-webkit-calendar-picker-indicator:hover,
+input[type='month']::-webkit-calendar-picker-indicator:hover,
+input[type='week']::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 
 input[type='text']:hover:not(:disabled),
@@ -929,6 +952,14 @@ select[size]:not([size='1']) {
 
 @layer shared {
 
+  /* `hidden` must win over any component's own display. Without this a shared
+     rule like `.dd__option { display: flex }` silently defeats the attribute,
+     so filtering a list marks items hidden but changes nothing on screen. */
+  [hidden] {
+    display: none !important;
+  }
+
+
   /* --- Typography ---------------------------------------------------------
      One page title and one section-heading treatment for every tool.
 
@@ -1243,6 +1274,15 @@ select[size]:not([size='1']) {
     color: var(--text-primary);
   }
 
+  /* A tool owns how its modal is positioned and centred, but "closed means
+     invisible" is not tool-specific. Without this a tool that ships no
+     overlay layout renders its dialog inline, permanently on screen. */
+  .modal-overlay:not(.is-open),
+  .modal-backdrop:not(.is-open),
+  .modal:not(.is-open) {
+    visibility: hidden;
+  }
+
   /* --- Modal scrim ------------------------------------------------------- */
 
   .modal-overlay,
@@ -1337,7 +1377,12 @@ select[size]:not([size='1']) {
   /* Tips are cards, so a list marker would sit outside the card looking
      detached — and they are not ordered steps. */
   .modal-body .tip-list {
-    margin-left: 0;
+    display: flex;
+    flex-direction: column;
+    /* Without this the cards touch; it lived in one tool's stylesheet, so
+       every new tool had to rediscover it. */
+    gap: var(--space-2);
+    margin: var(--space-2) 0 0;
     padding-left: 0;
     list-style: none;
   }

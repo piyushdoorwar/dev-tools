@@ -959,14 +959,6 @@ body {
     line-height: 1.6;
 }
 
-.tip-list li {
-    margin-bottom: 0.35rem;
-}
-
-.tip-list li:last-child {
-    margin-bottom: 0;
-}
-
 .legend-grid {
     display: grid;
     gap: 0.75rem;

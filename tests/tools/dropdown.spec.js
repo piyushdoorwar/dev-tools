@@ -62,3 +62,32 @@ test('json-xml case menu still applies casing', async ({ page }) => {
   await expect(page.locator('.dd--menu')).not.toHaveClass(/is-open/);
   expect(errors).toEqual([]);
 });
+
+test('options built after page load are still clickable', async ({ page }) => {
+  // main.js initialises dropdowns on load. timestamp-converter fills its zone
+  // menu afterwards, so binding a handler per option at init time left every
+  // one of them dead — the trigger opened, but nothing could be picked.
+  await openTool(page, 'timestamp-converter');
+  await page.fill('#ts-input', '1789689600');
+  await page.locator('#ts-input').dispatchEvent('input');
+
+  await page.click('#tz-trigger');
+  await expect(page.locator('#tz-dropdown')).toHaveClass(/is-open/);
+
+  await page.click('.dd__option[data-value="Asia/Kolkata"]');
+  await expect(page.locator('#tz-value')).toHaveText('Asia/Kolkata (local)');
+  await expect(page.locator('#tz-dropdown')).not.toHaveClass(/is-open/);
+
+  // And the choice actually drives the conversions.
+  await expect(page.locator('.result-row', { hasText: 'UTC offset' })).toContainText('UTC+05:30');
+});
+
+test('a filtered-out option is skipped by keyboard navigation', async ({ page }) => {
+  await openTool(page, 'timestamp-converter');
+  await page.click('#tz-trigger');
+  await page.fill('.tz-search', 'kolkata');
+  await page.keyboard.press('ArrowDown');
+
+  const focused = await page.evaluate(() => document.activeElement?.dataset?.value ?? null);
+  expect(focused, 'focus landed on a hidden option').toBe('Asia/Kolkata');
+});

@@ -10,6 +10,7 @@
 /* The blanket reset above sits in the `tool` layer, so it flattens the shared
    field shape that main.css declares in `base`. Roll form controls back to it;
    anything this stylesheet sets later still wins. */
+button,
 input,
 textarea,
 select {
@@ -93,6 +94,48 @@ body {
     min-height: var(--control-h-sm);
     margin-bottom: var(--space-1);
     background: var(--panel-bg-elevated);
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool. Without these the overlay is a plain block and the
+   dialog renders inline, permanently visible.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+/* Same split: main.css gives the header its padding and rule, the row layout
+   is the tool's. Without this the close button wraps under the title. */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
 }
 
 /* --- Layout ------------------------------------------------------------- */

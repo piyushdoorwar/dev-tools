@@ -243,8 +243,9 @@
     const { trigger, options } = ddParts(dropdown);
     trigger?.setAttribute("aria-expanded", "true");
     // Focus the current selection so arrow keys start from the right place.
-    const current = options.find((option) => option.getAttribute("aria-selected") === "true");
-    (current || options[0])?.focus();
+    const visible = options.filter((option) => !option.hidden);
+    const current = visible.find((option) => option.getAttribute("aria-selected") === "true");
+    (current || visible[0])?.focus();
   };
 
   root.selectDropdownValue = root.selectDropdownValue || function selectDropdownValue(dropdown, value, { emit = true } = {}) {
@@ -289,7 +290,7 @@
       if (dropdown.dataset.ddReady) return;
       dropdown.dataset.ddReady = "1";
 
-      const { trigger, menu, options } = ddParts(dropdown);
+      const { trigger, menu } = ddParts(dropdown);
       if (!trigger || !menu) return;
 
       trigger.setAttribute("aria-haspopup", dropdown.dataset.dd === "menu" ? "menu" : "listbox");
@@ -308,19 +309,23 @@
         }
       });
 
-      options.forEach((option) => {
-        option.addEventListener("click", (event) => {
-          event.stopPropagation();
-          if (option.disabled) return;
-          root.selectDropdownValue(dropdown, option.dataset.value);
-          root.closeDropdown(dropdown);
-          trigger.focus();
-        });
+      // Delegated, not bound per option: a tool may build its options after
+      // this ran (page-load init sees an empty menu), and binding each option
+      // once would leave those dead.
+      menu.addEventListener("click", (event) => {
+        const option = event.target.closest(".dd__option");
+        if (!option || !menu.contains(option) || option.disabled) return;
+        event.stopPropagation();
+        root.selectDropdownValue(dropdown, option.dataset.value);
+        root.closeDropdown(dropdown);
+        trigger.focus();
       });
 
-      // Roving arrow-key navigation within the open menu.
+      // Roving arrow-key navigation within the open menu. Options are read
+      // live for the same reason, and filtered ones are skipped.
       menu.addEventListener("keydown", (event) => {
-        const enabled = options.filter((option) => !option.disabled);
+        const enabled = Array.from(dropdown.querySelectorAll(".dd__option"))
+          .filter((option) => !option.disabled && !option.hidden);
         const index = enabled.indexOf(document.activeElement);
 
         if (event.key === "ArrowDown" || event.key === "ArrowUp") {

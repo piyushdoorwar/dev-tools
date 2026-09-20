@@ -305,8 +305,11 @@ function buildZoneMenu() {
       option.hidden = q ? !option.dataset.value.toLowerCase().includes(q) : false;
     });
   });
-  // Typing must reach the field rather than the menu's arrow-key handler.
-  search.addEventListener("keydown", (event) => event.stopPropagation());
+  // Typing must reach the field, but navigation keys belong to the menu.
+  const MENU_KEYS = ["ArrowDown", "ArrowUp", "Home", "End", "Escape", "Tab"];
+  search.addEventListener("keydown", (event) => {
+    if (!MENU_KEYS.includes(event.key)) event.stopPropagation();
+  });
   tzMenu.appendChild(search);
 
   for (const zone of zones) {

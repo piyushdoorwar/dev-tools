@@ -7,6 +7,7 @@ const MODALS = {
   'crypto-generator':    ['#securityInfoBtn', '#securityInfoModal'],
   'fake-data-generator': ['#schemaHelpBtn', '#schemaHelpModal'],
   'regex-tester':        ['#openCheatSheetBtn', '#cheatSheetModal'],
+  'timestamp-converter': ['#helpBtn', '#helpModal'],
 };
 
 for (const [tool, [trigger, modal]] of Object.entries(MODALS)) {
@@ -120,4 +121,72 @@ test('tip lists in modals render without list markers', async ({ page }) => {
   expect(info.tag, 'tips are not ordered steps').toBe('UL');
   expect(info.listStyle).toBe('none');
   expect(info.padLeft).toBe(0);
+});
+
+test('a closed modal is never visible in any tool', async ({ page }) => {
+  // A tool that ships no overlay layout rendered its dialog inline, on the
+  // page, permanently — the shared layer now hides closed dialogs regardless.
+  const TOOLS = ['base-converter','crypto-generator','encoder-decoder','fake-data-generator',
+    'file-compressor','image-converter','json-diff','json-toon-converter','json-xml-converter',
+    'jwt-debugger','markdown-editor','qr-generator','regex-tester','sql-formatter','text-diff',
+    'timestamp-converter'];
+
+  for (const tool of TOOLS) {
+    await openTool(page, tool);
+    const showing = await page.evaluate(() =>
+      [...document.querySelectorAll('[data-modal]')]
+        .filter((m) => !m.classList.contains('is-open'))
+        .filter((m) => getComputedStyle(m).visibility !== 'hidden'
+                    && getComputedStyle(m).display !== 'none')
+        .map((m) => m.id || m.className));
+    expect(showing, `${tool} renders a closed dialog`).toEqual([]);
+  }
+});
+
+test('text buttons keep their horizontal padding', async ({ page }) => {
+  // The blanket `* { padding: 0 }` reset several tools use also flattens
+  // .btn, whose padding comes from the base layer.
+  const TOOLS = ['timestamp-converter','encoder-decoder','qr-generator','unit-converter',
+    'id-generator','fake-data-generator','json-toon-converter'];
+
+  for (const tool of TOOLS) {
+    await openTool(page, tool);
+    const flat = await page.evaluate(() =>
+      [...document.querySelectorAll('button')]
+        .filter((b) => b.getClientRects().length > 0)
+        .filter((b) => b.textContent.trim().length > 1)
+        .filter((b) => !b.closest('.dd__menu'))
+        .filter((b) => parseFloat(getComputedStyle(b).paddingLeft) < 6)
+        .map((b) => `${b.className}:"${b.textContent.trim().slice(0, 20)}"`));
+    expect(flat, `${tool} has text buttons with no padding`).toEqual([]);
+  }
+});
+
+test('the close button sits beside the title, not under it', async ({ page }) => {
+  // main.css gives .modal-header its padding and rule but not its row layout,
+  // so a tool that omits `display: flex` wraps the close button onto its own
+  // line. Cheap to miss by eye, cheap to assert.
+  const CASES = [
+    ['timestamp-converter', '#helpBtn', '#helpModal'],
+    ['base-converter', '#schemaHelpBtn', '#schemaHelpModal'],
+    ['crypto-generator', '#securityInfoBtn', '#securityInfoModal'],
+  ];
+
+  for (const [tool, trigger, modal] of CASES) {
+    await openTool(page, tool);
+    await page.click(trigger);
+    const geometry = await page.evaluate((sel) => {
+      const header = document.querySelector(`${sel} .modal-header`);
+      const title = header.querySelector('.modal-title, h2, h3');
+      const close = header.querySelector('.modal-close');
+      const t = title.getBoundingClientRect();
+      const c = close.getBoundingClientRect();
+      return { titleRight: t.right, closeLeft: c.left,
+               sameRow: Math.abs((t.top + t.height / 2) - (c.top + c.height / 2)) < 12 };
+    }, modal);
+
+    expect(geometry.sameRow, `${tool}: close button wrapped below the title`).toBe(true);
+    expect(geometry.closeLeft, `${tool}: close button is not to the right`).
+      toBeGreaterThan(geometry.titleRight);
+  }
 });
