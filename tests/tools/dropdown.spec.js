@@ -63,6 +63,12 @@ test('json-xml case menu still applies casing', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+// The "(local)" suffix is only appended to the browser's own zone, so the zone
+// this runs in has to be pinned: CI is UTC, developer machines are not, and the
+// assertion below silently depended on the machine already being in Kolkata.
+test.describe(() => {
+  test.use({ timezoneId: 'Asia/Kolkata' });
+
 test('options built after page load are still clickable', async ({ page }) => {
   // main.js initialises dropdowns on load. timestamp-converter fills its zone
   // menu afterwards, so binding a handler per option at init time left every
@@ -80,6 +86,8 @@ test('options built after page load are still clickable', async ({ page }) => {
 
   // And the choice actually drives the conversions.
   await expect(page.locator('.result-row', { hasText: 'UTC offset' })).toContainText('UTC+05:30');
+});
+
 });
 
 test('a filtered-out option is skipped by keyboard navigation', async ({ page }) => {

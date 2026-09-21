@@ -7,6 +7,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["UTF-8 text and byte conversion", "Binary, hexadecimal, decimal, and octal output", "Live bidirectional conversion"],
   },
   {
+    id: "color-converter",
+    name: "Color Converter",
+    route: "color-converter",
+    description: "Convert colours between HEX, RGB, HSL, and OKLCH and check any pair against the WCAG contrast thresholds, entirely in your browser.",
+    capabilities: ["HEX, RGB, HSL, and OKLCH conversion", "WCAG AA and AAA contrast ratios", "Alpha compositing and sRGB gamut warnings"],
+  },
+  {
     id: "crypto-generator",
     name: "Crypto Generator",
     route: "crypto-generator",

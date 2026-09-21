@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Converter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Color Converter</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="clear" data-tooltip="Reset" aria-label="Reset">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="Format reference" aria-label="Format reference">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel colors-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Colors</h2>
+                    <button class="action-btn" type="button" data-action="swap" data-tooltip="Swap" aria-label="Swap foreground and background">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-swap"></use></svg>
+                    </button>
+                </div>
+                <div class="panel-body">
+                    <div class="color-field" data-field="fg">
+                        <label class="field-label" for="fg-input">Foreground</label>
+                        <div class="color-row">
+                            <div class="picker" id="fg-picker">
+                                <button class="swatch" type="button" id="fg-swatch" aria-haspopup="dialog"
+                                        aria-expanded="false" aria-label="Choose a foreground colour">
+                                    <span class="swatch__fill"></span>
+                                </button>
+                                <div class="picker__panel" role="dialog" aria-label="Foreground colour picker">
+                                    <div class="sv" tabindex="0" role="group"
+                                         aria-label="Saturation and brightness — use the arrow keys"></div>
+                                    <input class="slider slider--hue" type="range" min="0" max="360" step="1" aria-label="Hue">
+                                    <input class="slider slider--alpha" type="range" min="0" max="100" step="1" aria-label="Opacity">
+                                    <div class="picker__presets" role="group" aria-label="Preset colours"></div>
+                                </div>
+                            </div>
+                            <input id="fg-input" class="color-input" type="text" spellcheck="false" autocomplete="off"
+                                   value="#FFFFFF" placeholder="#fff, rgb(255 255 255), oklch(1 0 0)">
+                        </div>
+                        <p class="field-error" id="fg-error" role="alert" hidden></p>
+                    </div>
+
+                    <div class="color-field" data-field="bg">
+                        <label class="field-label" for="bg-input">Background</label>
+                        <div class="color-row">
+                            <div class="picker" id="bg-picker">
+                                <button class="swatch" type="button" id="bg-swatch" aria-haspopup="dialog"
+                                        aria-expanded="false" aria-label="Choose a background colour">
+                                    <span class="swatch__fill"></span>
+                                </button>
+                                <div class="picker__panel" role="dialog" aria-label="Background colour picker">
+                                    <div class="sv" tabindex="0" role="group"
+                                         aria-label="Saturation and brightness — use the arrow keys"></div>
+                                    <input class="slider slider--hue" type="range" min="0" max="360" step="1" aria-label="Hue">
+                                    <input class="slider slider--alpha" type="range" min="0" max="100" step="1" aria-label="Opacity">
+                                    <div class="picker__presets" role="group" aria-label="Preset colours"></div>
+                                </div>
+                            </div>
+                            <input id="bg-input" class="color-input" type="text" spellcheck="false" autocomplete="off"
+                                   value="#6739B7" placeholder="rebeccapurple, hsl(262 53% 47%)">
+                        </div>
+                        <p class="field-error" id="bg-error" role="alert" hidden></p>
+                    </div>
+
+                    <p class="field-hint">
+                        Accepts HEX (3, 4, 6 or 8 digits), <span class="hint-code">rgb()</span>,
+                        <span class="hint-code">hsl()</span>, <span class="hint-code">oklch()</span>,
+                        <span class="hint-code">oklab()</span> and CSS colour keywords.
+                    </p>
+
+                    <div class="preview" id="preview">
+                        <span class="preview-large" id="preview-large">Large heading 24px</span>
+                        <span class="preview-normal" id="preview-normal">Normal body text at 16px stays readable.</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel formats-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Conversions</h2>
+                    <div class="panel-actions">
+                        <div class="pill-group" role="tablist" aria-label="Colour to convert">
+                            <button class="pill is-active" type="button" role="tab" data-target="fg" aria-selected="true">Foreground</button>
+                            <button class="pill" type="button" role="tab" data-target="bg" aria-selected="false">Background</button>
+                        </div>
+                        <button class="action-btn" type="button" data-action="copy-all" data-tooltip="Copy all" aria-label="Copy all">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="result-list" id="formats"></div>
+                    <p class="gamut-note" id="gamut-note" hidden></p>
+                </div>
+            </section>
+        </div>
+
+        <section class="panel contrast-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">WCAG contrast</h2>
+                <button class="btn btn-primary" type="button" data-action="fix-aa">Nudge to AA</button>
+            </div>
+            <div class="panel-body contrast-body">
+                <div class="ratio-block">
+                    <span class="ratio" id="ratio">—</span>
+                    <span class="ratio-caption">contrast ratio</span>
+                    <span class="ratio-note" id="ratio-note"></span>
+                </div>
+                <div class="checks" id="checks"></div>
+            </div>
+        </section>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Format &amp; Contrast Reference</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>What AA and AAA mean</strong></p>
+                        <p class="legend-note">
+                            The Web Content Accessibility Guidelines (WCAG) define three conformance
+                            levels. They are not scores out of three — each one is a different bar, and
+                            a colour pair either clears it or does not.
+                        </p>
+                        <ul class="tip-list">
+                            <li><strong>A</strong> — the minimum level. It places no contrast requirement
+                                on text at all, so it is not shown here.</li>
+                            <li><strong>AA</strong> — the level law and policy actually reference: EN&nbsp;301&nbsp;549,
+                                which the European Accessibility Act has enforced since June&nbsp;2025, and
+                                Section&nbsp;508 in the US. Treat this as the bar to clear.</li>
+                            <li><strong>AAA</strong> — the enhanced level, roughly "comfortable for low
+                                vision without assistive tech". WCAG itself advises against requiring it
+                                across a whole site, because some content cannot reach it. Aim for it on
+                                body text where the palette allows.</li>
+                        </ul>
+                    </div>
+                    <div class="legend-intro">
+                        <p><strong>Thresholds</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>4.5:1</strong> — AA for normal text (WCAG 2.2, 1.4.3).</li>
+                            <li><strong>3:1</strong> — AA for large text (24px, or 18.66px bold) and for UI
+                                components and graphics (1.4.11).</li>
+                            <li><strong>7:1</strong> — AAA for normal text, <strong>4.5:1</strong> for large text (1.4.6).</li>
+                        </ul>
+                    </div>
+                    <div class="legend-intro">
+                        <p><strong>Notes</strong></p>
+                        <ul class="tip-list">
+                            <li>A translucent foreground is composited over the background before the ratio
+                                is measured, because that is what the eye actually sees.</li>
+                            <li>OKLCH lightness is perceptual, so <em>Nudge to AA</em> moves only
+                                <span class="hint-code">L</span> and leaves hue and chroma alone.</li>
+                            <li>An <span class="hint-code">oklch()</span> value outside the sRGB gamut is clipped
+                                for the HEX, RGB and HSL rows; the OKLCH row keeps what you typed.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

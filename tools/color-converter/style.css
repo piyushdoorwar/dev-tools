@@ -1,0 +1,584 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+/* --- Layout ------------------------------------------------------------- */
+
+.main-content {
+    display: grid;
+    grid-template-columns: minmax(320px, 4fr) minmax(340px, 5fr);
+    gap: var(--space-4);
+    align-items: start;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    min-width: 0;
+}
+
+/* --- Colour fields ------------------------------------------------------ */
+
+.color-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.color-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.color-input {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-md);
+}
+
+/* --- Colour picker -------------------------------------------------------
+   Replaces `<input type="color">`, whose dialog is drawn by the operating
+   system and cannot be themed.
+   ------------------------------------------------------------------------ */
+
+.picker {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+/* The trigger is a plain swatch so it reads as part of the field rather than
+   a button beside it. Alpha shows against a checkerboard, as it must. */
+.swatch {
+    display: block;
+    width: var(--control-h);
+    height: var(--control-h);
+    padding: 3px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-control);
+    background: none;
+    cursor: pointer;
+    transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+}
+
+.swatch:hover,
+.picker.is-open .swatch {
+    border-color: var(--accent-purple-light);
+    box-shadow: var(--shadow-purple);
+}
+
+.swatch__fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--radius-control) - 4px);
+    background: currentColor;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+/* One checkerboard definition, used behind both the swatch and the opacity
+   rail, so a translucent colour reads the same in each. */
+.swatch,
+.slider--alpha {
+    --checker:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.16) 25%, transparent 25% 75%, rgba(255, 255, 255, 0.16) 75%),
+        linear-gradient(45deg, rgba(255, 255, 255, 0.16) 25%, transparent 25% 75%, rgba(255, 255, 255, 0.16) 75%);
+    --checker-size: 8px 8px;
+    --checker-position: 0 0, 4px 4px;
+    background-image: var(--checker);
+    background-size: var(--checker-size);
+    background-position: var(--checker-position);
+}
+
+.picker__panel {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 0;
+    z-index: var(--z-dropdown);
+    display: none;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 232px;
+    padding: var(--space-3);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg-elevated);
+    box-shadow: var(--shadow-lg);
+}
+
+.picker.is-open .picker__panel {
+    display: flex;
+}
+
+/* Saturation left-to-right over the hue, brightness top-to-bottom over black.
+   The thumb is positioned from the same --x/--y the script sets. */
+.sv {
+    position: relative;
+    height: 132px;
+    border-radius: var(--radius-control);
+    background:
+        linear-gradient(to top, #000, rgba(0, 0, 0, 0)),
+        linear-gradient(to right, #fff, rgba(255, 255, 255, 0)),
+        var(--hue, #f00);
+    cursor: crosshair;
+    touch-action: none;
+}
+
+.sv::after {
+    content: "";
+    position: absolute;
+    left: var(--x, 0%);
+    top: var(--y, 0%);
+    width: 14px;
+    height: 14px;
+    transform: translate(-50%, -50%);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--thumb, transparent);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.sv:focus-visible {
+    outline: 2px solid var(--focus-border);
+    outline-offset: 2px;
+}
+
+.slider {
+    width: 100%;
+    height: 14px;
+    padding: 0;
+    border: 1px solid var(--border-light);
+    border-radius: 999px;
+    cursor: pointer;
+    appearance: none;
+    touch-action: none;
+}
+
+.slider--hue {
+    background: linear-gradient(to right,
+        #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+}
+
+/* The checkerboard is the background-image; the colour ramp rides on top as a
+   gradient layer so both stay visible. */
+.slider--alpha {
+    background-image:
+        linear-gradient(to right, rgba(0, 0, 0, 0), var(--to, #fff)),
+        var(--checker);
+    background-size: 100% 100%, var(--checker-size);
+    background-position: 0 0, var(--checker-position);
+}
+
+.slider::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--panel-bg-elevated);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    appearance: none;
+}
+
+.slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--panel-bg-elevated);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+}
+
+.slider:focus-visible {
+    outline: 2px solid var(--focus-border);
+    outline-offset: 2px;
+}
+
+.picker__presets {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: var(--space-1);
+}
+
+.preset {
+    aspect-ratio: 1;
+    padding: 0;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    background: var(--preset);
+    cursor: pointer;
+    transition: transform var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+}
+
+.preset:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-purple-light);
+}
+
+.preset:focus-visible {
+    outline: 2px solid var(--focus-border);
+    outline-offset: 2px;
+}
+
+.field-hint {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+.field-error {
+    color: var(--accent-pink);
+    font-size: var(--chrome-sm);
+}
+
+/* --- Preview ------------------------------------------------------------ */
+
+.preview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+}
+
+.preview-large {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: var(--leading-tight);
+}
+
+.preview-normal {
+    font-size: 16px;
+    line-height: var(--leading-normal);
+}
+
+/* --- Conversions -------------------------------------------------------- */
+
+.pill-group {
+    display: flex;
+    gap: var(--space-1);
+    padding: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.pill {
+    padding: 0.35rem 0.75rem;
+    border: none;
+    border-radius: calc(var(--radius-control) - 4px);
+    background: none;
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+}
+
+.pill:hover {
+    color: var(--text-primary);
+}
+
+.pill.is-active {
+    background: var(--accent-purple);
+    color: var(--text-primary);
+}
+
+.result-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.result-row {
+    display: grid;
+    grid-template-columns: minmax(90px, 26%) 1fr auto;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.result-label {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+}
+
+.result-value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    color: var(--text-primary);
+    font-size: var(--chrome-base);
+}
+
+.result-value.mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Copy sits on every row, so keep it quiet until the row is hovered. */
+.result-copy {
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+}
+
+.result-row:hover .result-copy,
+.result-copy:focus-visible {
+    opacity: 1;
+}
+
+.gamut-note {
+    color: var(--accent-yellow);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+.empty-state {
+    padding: var(--space-4);
+    color: var(--text-disabled);
+    font-size: var(--chrome-base);
+    text-align: center;
+}
+
+/* --- Contrast ----------------------------------------------------------- */
+
+.contrast-body {
+    display: grid;
+    grid-template-columns: minmax(180px, 220px) 1fr;
+    gap: var(--space-4);
+    align-items: center;
+}
+
+.ratio-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.ratio {
+    font-family: var(--font-mono);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--text-primary);
+}
+
+.ratio.is-pass { color: var(--accent-green); }
+.ratio.is-warn { color: var(--accent-yellow); }
+.ratio.is-fail { color: var(--accent-pink); }
+
+.ratio-caption {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.ratio-note {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+.checks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-2);
+}
+
+.check {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.check-label {
+    font-size: var(--chrome-base);
+    font-weight: 600;
+}
+
+.check-level {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+}
+
+.check-verdict {
+    margin-top: var(--space-1);
+    font-size: var(--chrome-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.check.is-pass {
+    border-color: rgba(0, 208, 156, 0.4);
+}
+
+.check.is-pass .check-verdict {
+    color: var(--accent-green);
+}
+
+.check.is-fail {
+    border-color: rgba(255, 107, 157, 0.4);
+}
+
+.check.is-fail .check-verdict {
+    color: var(--accent-pink);
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool. Without these the overlay is a plain block and the
+   dialog renders inline, permanently visible.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+/* A lead-in paragraph above a tip list, inside the shared legend card. */
+.modal-body .legend-note {
+    margin-top: var(--space-2);
+    color: var(--text-muted);
+    font-size: var(--chrome-base);
+    line-height: var(--leading-normal);
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+/* Same split: main.css gives the header its padding and rule, the row layout
+   is the tool's. Without this the close button wraps under the title. */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+@media (max-width: 900px) {
+    .main-content,
+    .contrast-body {
+        grid-template-columns: 1fr;
+    }
+
+    .app-container {
+        padding: var(--space-4);
+    }
+
+    /* Touch has no hover, so the copy buttons must stay visible. */
+    .result-copy {
+        opacity: 1;
+    }
+}
+}

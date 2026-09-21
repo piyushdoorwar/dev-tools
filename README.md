@@ -5,6 +5,7 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 ## Available tools
 
 - Base Converter
+- Color Converter
 - Crypto Generator
 - Encoder / Decoder
 - Fake Data Generator
@@ -21,6 +22,7 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - Regex Tester
 - SQL Formatter
 - Text Diff
+- Timestamp Converter
 - Unit Converter
 
 ## Run locally
