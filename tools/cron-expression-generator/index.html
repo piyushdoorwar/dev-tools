@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cron Expression Generator</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Cron Expression Generator</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="Syntax reference" aria-label="Syntax reference">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <span class="toolbar-label">Preset</span>
+                <div id="preset-dropdown" class="dd" data-dd="menu" aria-label="Schedule preset">
+                    <button id="preset-trigger" class="dd__trigger" type="button" aria-label="Schedule preset">
+                        <span id="preset-value" class="dd__value">Common schedules</span>
+                    </button>
+                    <div id="preset-menu" class="dd__menu" role="listbox" aria-label="Preset schedules"></div>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <span class="toolbar-label">Time zone</span>
+                <div id="tz-dropdown" class="dd" data-dd aria-label="Time zone">
+                    <button id="tz-trigger" class="dd__trigger" type="button" aria-label="Time zone">
+                        <span id="tz-value" class="dd__value">UTC</span>
+                    </button>
+                    <div id="tz-menu" class="dd__menu" role="listbox" aria-label="Time zone options"></div>
+                </div>
+                <code id="live-clock" class="live-clock" aria-live="off">—</code>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <section class="panel input-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Expression</h2>
+                    <span class="detected" id="detected">Waiting for input</span>
+                </div>
+                <div class="panel-body">
+                    <label class="field-label" for="cron-input">Cron expression</label>
+                    <div class="expr-row">
+                        <input id="cron-input" class="cron-input" type="text" spellcheck="false" autocomplete="off"
+                               autocapitalize="off" placeholder="*/5 9-17 * * MON-FRI">
+                        <button class="action-btn" type="button" data-action="copy-expression" data-tooltip="Copy expression" aria-label="Copy expression">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                    <p class="field-hint">
+                        Five fields (minute hour day-of-month month day-of-week), six with leading seconds,
+                        or a macro such as <span class="hint-code">@daily</span>.
+                    </p>
+
+                    <div class="field-grid" id="field-grid"></div>
+
+                    <div class="error" id="error" role="alert" aria-live="polite" hidden></div>
+                </div>
+            </section>
+
+            <section class="panel output-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Schedule</h2>
+                    <button class="action-btn" type="button" data-action="copy-runs" data-tooltip="Copy next runs" aria-label="Copy next runs">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                    </button>
+                </div>
+                <div class="panel-body">
+                    <p class="summary" id="summary">Enter a cron expression to see what it means.</p>
+                    <div class="breakdown" id="breakdown"></div>
+                    <h3 class="subhead">Next runs</h3>
+                    <div class="result-list" id="runs"></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Syntax Reference</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Fields</strong></p>
+                        <pre class="syntax-map">┌───────────── minute        0-59
+│ ┌─────────── hour          0-23
+│ │ ┌───────── day of month  1-31
+│ │ │ ┌─────── month         1-12 or JAN-DEC
+│ │ │ │ ┌───── day of week   0-6  or SUN-SAT (7 = Sunday)
+│ │ │ │ │
+* * * * *</pre>
+                        <p><strong>Operators</strong></p>
+                        <ul class="tip-list">
+                            <li><span class="hint-code">*</span> every value · <span class="hint-code">1,3</span> a list · <span class="hint-code">1-5</span> a range · <span class="hint-code">*/15</span> a step · <span class="hint-code">9-17/2</span> a stepped range.</li>
+                            <li>A sixth leading field is read as seconds, so <span class="hint-code">*/30 * * * * *</span> runs twice a minute.</li>
+                            <li>Macros: <span class="hint-code">@yearly</span> <span class="hint-code">@monthly</span> <span class="hint-code">@weekly</span> <span class="hint-code">@daily</span> <span class="hint-code">@hourly</span> <span class="hint-code">@reboot</span>.</li>
+                        </ul>
+                        <p><strong>Tips</strong></p>
+                        <ul class="tip-list">
+                            <li>When day-of-month and day-of-week are <em>both</em> restricted, cron runs on days matching <em>either</em> one — not both.</li>
+                            <li>Next runs are computed on the selected time zone's wall clock, so a daily job keeps its local hour across daylight-saving changes. Times that do not exist in a spring-forward gap are skipped.</li>
+                            <li><span class="hint-code">L</span>, <span class="hint-code">W</span> and <span class="hint-code">#</span> are Quartz extensions that standard cron does not accept, so they are reported as errors here.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

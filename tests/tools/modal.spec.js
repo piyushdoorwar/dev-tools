@@ -4,6 +4,7 @@ import { openTool } from '../helpers.js';
 // tool -> a selector that opens its primary modal, and the modal root
 const MODALS = {
   'base-converter':      ['#schemaHelpBtn', '#schemaHelpModal'],
+  'cron-expression-generator': ['#helpBtn', '#helpModal'],
   'crypto-generator':    ['#securityInfoBtn', '#securityInfoModal'],
   'fake-data-generator': ['#schemaHelpBtn', '#schemaHelpModal'],
   'regex-tester':        ['#openCheatSheetBtn', '#cheatSheetModal'],
@@ -126,7 +127,7 @@ test('tip lists in modals render without list markers', async ({ page }) => {
 test('a closed modal is never visible in any tool', async ({ page }) => {
   // A tool that ships no overlay layout rendered its dialog inline, on the
   // page, permanently — the shared layer now hides closed dialogs regardless.
-  const TOOLS = ['base-converter','crypto-generator','encoder-decoder','fake-data-generator',
+  const TOOLS = ['base-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator',
     'file-compressor','image-converter','json-diff','json-toon-converter','json-xml-converter',
     'jwt-debugger','markdown-editor','qr-generator','regex-tester','sql-formatter','text-diff',
     'timestamp-converter'];
@@ -168,6 +169,7 @@ test('the close button sits beside the title, not under it', async ({ page }) =>
   // line. Cheap to miss by eye, cheap to assert.
   const CASES = [
     ['timestamp-converter', '#helpBtn', '#helpModal'],
+    ['cron-expression-generator', '#helpBtn', '#helpModal'],
     ['base-converter', '#schemaHelpBtn', '#schemaHelpModal'],
     ['crypto-generator', '#securityInfoBtn', '#securityInfoModal'],
   ];

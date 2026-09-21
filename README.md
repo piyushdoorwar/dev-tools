@@ -6,6 +6,7 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 
 - Base Converter
 - Color Converter
+- Cron Expression Generator
 - Crypto Generator
 - Encoder / Decoder
 - Fake Data Generator

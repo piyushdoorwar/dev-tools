@@ -14,6 +14,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["HEX, RGB, HSL, and OKLCH conversion", "WCAG AA and AAA contrast ratios", "Alpha compositing and sRGB gamut warnings"],
   },
   {
+    id: "cron-expression-generator",
+    name: "Cron Expression Generator",
+    route: "cron-expression-generator",
+    description: "Build, parse, and explain cron expressions in plain English, then preview the next scheduled run times in any time zone.",
+    capabilities: ["Plain-English schedule explanation", "Next run times in any time zone", "Per-field editor with common presets"],
+  },
+  {
     id: "crypto-generator",
     name: "Crypto Generator",
     route: "crypto-generator",

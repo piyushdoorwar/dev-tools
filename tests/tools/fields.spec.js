@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { openTool } from '../helpers.js';
 
-const TOOLS = ['base-converter','color-converter','crypto-generator','encoder-decoder','fake-data-generator','file-compressor',
+const TOOLS = ['base-converter','color-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator','file-compressor',
  'id-generator','image-converter','json-diff','json-toon-converter','json-xml-converter',
  'jwt-debugger','markdown-editor','qr-generator','regex-tester','sql-formatter','text-diff','timestamp-converter',
  'unit-converter'];
