@@ -5,8 +5,15 @@ import { HOME_DESCRIPTION, SITE_URL, TOOL_CATALOG, toolTitle, toolURL } from '..
 
 const readDist = (asset) => readFile(new URL(`../dist/${asset}`, import.meta.url), 'utf8');
 
+// Mirrors the escaping scripts/seo.mjs applies when it writes a route page.
+const escapeHtml = (value) => String(value)
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;');
+
 test('SEO catalog has unique logical routes with complete metadata', () => {
-  assert.equal(TOOL_CATALOG.length, 23);
+  assert.equal(TOOL_CATALOG.length, 26);
   assert.equal(new Set(TOOL_CATALOG.map((tool) => tool.id)).size, TOOL_CATALOG.length);
   assert.equal(new Set(TOOL_CATALOG.map((tool) => tool.route)).size, TOOL_CATALOG.length);
   for (const tool of TOOL_CATALOG) {
@@ -28,11 +35,13 @@ test('homepage and every tool route have indexable, unique server-rendered SEO d
     const html = await readDist(`${tool.route}/index.html`);
     const title = html.match(/<title>([^<]+)<\/title>/)?.[1];
     const description = html.match(/<meta name="description" content="([^"]+)"/i)?.[1];
-    assert.equal(title, toolTitle(tool));
-    assert.equal(description, tool.description.replaceAll('&', '&amp;').replaceAll('"', '&quot;'));
+    // Rendered HTML escapes the name, so compare against the escaped form —
+    // "Word & Character Counter" reaches the page as "Word &amp; Character Counter".
+    assert.equal(title, escapeHtml(toolTitle(tool)));
+    assert.equal(description, escapeHtml(tool.description));
     assert.match(html, new RegExp(`<link rel="canonical" href="${toolURL(tool)}"`));
     assert.match(html, /<meta name="robots" content="index, follow,/);
-    assert.match(html, new RegExp(`<h3 class="modal__tool-about-title" id="toolAboutTitle">${tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</h3>`));
+    assert.match(html, new RegExp(`<h3 class="modal__tool-about-title" id="toolAboutTitle">${escapeHtml(tool.name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}</h3>`));
     const json = html.match(/<script id="seoStructuredData" type="application\/ld\+json">([^<]+)<\/script>/)?.[1];
     const data = JSON.parse(json);
     assert.ok(data['@graph'].some((item) => item['@type'] === 'WebApplication' && item.url === toolURL(tool)));

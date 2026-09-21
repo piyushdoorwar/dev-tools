@@ -48,7 +48,7 @@ const TOOL_ROUTES = [
   'qr-generator',
   'regex-tester',
   'sql-formatter',
-  'text-diff','timestamp-converter',
+  'text-diff','text-utilities','timestamp-converter',
   'unit-converter',
 ];
 

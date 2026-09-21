@@ -5,7 +5,7 @@ const TOOLS = [
   'base-converter', 'color-converter','cron-expression-generator', 'crypto-generator','encoder-decoder', 'fake-data-generator', 'file-compressor',
   'html-preview', 'id-generator', 'image-converter', 'json-diff', 'json-toon-converter',
   'json-xml-converter', 'jwt-debugger', 'markdown-editor', 'qr-generator',
-  'regex-tester', 'sql-formatter', 'text-diff','timestamp-converter', 'unit-converter',
+  'regex-tester', 'sql-formatter', 'text-diff','text-utilities','timestamp-converter', 'unit-converter',
 ];
 
 for (const tool of TOOLS) {

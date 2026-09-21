@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Utilities</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Text Utilities</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="About these counts" aria-label="About these counts">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="mode-switch" role="tablist" aria-label="Text utility">
+                    <button class="mode-btn active" type="button" role="tab" id="tab-clean" data-mode="clean" aria-selected="true" aria-controls="clean-panel">Clean &amp; sort</button>
+                    <button class="mode-btn" type="button" role="tab" id="tab-count" data-mode="count" aria-selected="false" aria-controls="count-panel">Count</button>
+                    <button class="mode-btn" type="button" role="tab" id="tab-lorem" data-mode="lorem" aria-selected="false" aria-controls="lorem-panel">Lorem ipsum</button>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <span class="stat-chip"><span class="stat-value" id="chip-words">0</span> words</span>
+                <span class="stat-chip"><span class="stat-value" id="chip-chars">0</span> characters</span>
+                <span class="stat-chip"><span class="stat-value" id="chip-lines">0</span> lines</span>
+                <span class="stat-chip"><span class="stat-value" id="chip-tokens">0</span> ≈ tokens</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <section class="panel input-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Input</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Insert sample text" aria-label="Insert sample text">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="copy-input" data-tooltip="Copy input" aria-label="Copy input">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea id="input" class="editor" spellcheck="false" autocomplete="off"
+                              placeholder="Paste or type text here."></textarea>
+                </div>
+            </section>
+
+            <section class="panel output-panel" id="clean-panel" role="tabpanel" aria-labelledby="tab-clean">
+                <div class="panel-header">
+                    <h2 class="panel-title">Cleaned output</h2>
+                    <div class="action-group">
+                        <button class="btn btn-secondary btn-sm" type="button" data-action="apply-to-input">Replace input</button>
+                        <button class="action-btn" type="button" data-action="download" data-tooltip="Download" aria-label="Download">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="copy-output" data-tooltip="Copy output" aria-label="Copy output">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="ops">
+                        <label class="op"><input type="checkbox" id="op-trim" checked> Trim each line</label>
+                        <label class="op"><input type="checkbox" id="op-collapse"> Collapse repeated spaces</label>
+                        <label class="op"><input type="checkbox" id="op-empty"> Remove empty lines</label>
+                        <label class="op"><input type="checkbox" id="op-dedupe"> Remove duplicate lines</label>
+                        <label class="op"><input type="checkbox" id="op-ignore-case"> Ignore case when sorting and deduping</label>
+                        <label class="op"><input type="checkbox" id="op-number"> Number the lines</label>
+                    </div>
+
+                    <div class="op-selects">
+                        <div class="op-cell">
+                            <span class="field-label">Sort</span>
+                            <div id="sort-dropdown" class="dd" data-dd aria-label="Sort order">
+                                <button id="sort-trigger" class="dd__trigger" type="button" aria-label="Sort order">
+                                    <span id="sort-value" class="dd__value">Keep order</span>
+                                </button>
+                                <div id="sort-menu" class="dd__menu" role="listbox" aria-label="Sort options">
+                                    <button class="dd__option is-active" type="button" role="option" data-value="none" aria-selected="true">Keep order</button>
+                                    <button class="dd__option" type="button" role="option" data-value="asc">A → Z</button>
+                                    <button class="dd__option" type="button" role="option" data-value="desc">Z → A</button>
+                                    <button class="dd__option" type="button" role="option" data-value="length-asc">Shortest first</button>
+                                    <button class="dd__option" type="button" role="option" data-value="length-desc">Longest first</button>
+                                    <button class="dd__option" type="button" role="option" data-value="reverse">Reverse</button>
+                                    <button class="dd__option" type="button" role="option" data-value="shuffle">Shuffle</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="op-cell">
+                            <span class="field-label">Letter case</span>
+                            <div id="case-dropdown" class="dd" data-dd aria-label="Letter case">
+                                <button id="case-trigger" class="dd__trigger" type="button" aria-label="Letter case">
+                                    <span id="case-value" class="dd__value">Keep case</span>
+                                </button>
+                                <div id="case-menu" class="dd__menu" role="listbox" aria-label="Letter case options">
+                                    <button class="dd__option is-active" type="button" role="option" data-value="keep" aria-selected="true">Keep case</button>
+                                    <button class="dd__option" type="button" role="option" data-value="lower">lower case</button>
+                                    <button class="dd__option" type="button" role="option" data-value="upper">UPPER CASE</button>
+                                    <button class="dd__option" type="button" role="option" data-value="title">Title Case</button>
+                                    <button class="dd__option" type="button" role="option" data-value="sentence">Sentence case</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="pipeline" id="pipeline">No changes — the output matches the input.</p>
+                    <textarea id="output" class="editor" readonly spellcheck="false"
+                              placeholder="The cleaned text appears here."></textarea>
+                </div>
+            </section>
+
+            <section class="panel output-panel" id="count-panel" role="tabpanel" aria-labelledby="tab-count" hidden>
+                <div class="panel-header">
+                    <h2 class="panel-title">Counts</h2>
+                    <button class="action-btn" type="button" data-action="copy-stats" data-tooltip="Copy all counts" aria-label="Copy all counts">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                    </button>
+                </div>
+                <div class="panel-body">
+                    <div class="stat-grid" id="stat-grid"></div>
+                    <h3 class="subhead">Most frequent words</h3>
+                    <div class="frequency" id="frequency"></div>
+                </div>
+            </section>
+
+            <section class="panel output-panel" id="lorem-panel" role="tabpanel" aria-labelledby="tab-lorem" hidden>
+                <div class="panel-header">
+                    <h2 class="panel-title">Lorem ipsum</h2>
+                    <button class="btn btn-primary btn-sm" type="button" data-action="generate">Generate</button>
+                </div>
+                <div class="panel-body">
+                    <div class="lorem-controls">
+                        <div class="op-cell">
+                            <label class="field-label" for="lorem-count">How many</label>
+                            <input id="lorem-count" class="lorem-count" type="number" min="1" max="200" value="3">
+                        </div>
+                        <div class="op-cell">
+                            <span class="field-label">Of</span>
+                            <div id="unit-dropdown" class="dd" data-dd aria-label="Lorem unit">
+                                <button id="unit-trigger" class="dd__trigger" type="button" aria-label="Lorem unit">
+                                    <span id="unit-value" class="dd__value">Paragraphs</span>
+                                </button>
+                                <div id="unit-menu" class="dd__menu" role="listbox" aria-label="Lorem unit options">
+                                    <button class="dd__option is-active" type="button" role="option" data-value="paragraphs" aria-selected="true">Paragraphs</button>
+                                    <button class="dd__option" type="button" role="option" data-value="sentences">Sentences</button>
+                                    <button class="dd__option" type="button" role="option" data-value="words">Words</button>
+                                    <button class="dd__option" type="button" role="option" data-value="list">List items</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ops">
+                        <label class="op"><input type="checkbox" id="lorem-classic" checked> Start with “Lorem ipsum dolor sit amet”</label>
+                        <label class="op"><input type="checkbox" id="lorem-append"> Append to the existing text instead of replacing it</label>
+                    </div>
+
+                    <p class="field-hint">Generated text lands in the input panel, so the counts and the cleaning options apply to it straight away.</p>
+                    <div class="lorem-preview" id="lorem-preview">Press Generate to produce placeholder copy.</div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How the counts work</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Definitions</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>Characters</strong> counts code points, so an emoji or an accented letter counts once rather than twice.</li>
+                            <li><strong>Words</strong> are runs of non-whitespace, which is what word processors count. Hyphenated words count once.</li>
+                            <li><strong>Sentences</strong> end at <span class="hint-code">.</span> <span class="hint-code">!</span> <span class="hint-code">?</span> or <span class="hint-code">…</span>, so abbreviations such as “e.g.” inflate the number slightly.</li>
+                            <li><strong>Reading time</strong> assumes 200 words per minute, speaking time 130.</li>
+                        </ul>
+                        <p><strong>Token estimate</strong></p>
+                        <ul class="tip-list">
+                            <li>The token figure is an <em>estimate</em> for English text in GPT-style byte-pair encoders: roughly one token per four characters of a word, plus one for each punctuation mark and line break.</li>
+                            <li>It is calculated locally — no text leaves the browser — so it cannot match a model's real tokenizer exactly. Treat it as ±10–20% for prompt budgeting, and check the real count before paying for a long run.</li>
+                            <li>Code, non-English text, and long unusual words tokenize more heavily than this estimate suggests.</li>
+                        </ul>
+                        <p><strong>Cleaning order</strong></p>
+                        <ul class="tip-list">
+                            <li>Operations always run in the order shown above the output: trim, collapse, drop empty lines, dedupe, sort, recase, number. The pipeline line names the steps that are actually active.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

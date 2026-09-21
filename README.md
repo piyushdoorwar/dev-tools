@@ -18,13 +18,16 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - JSON to TOON / TOON to JSON Converter
 - JSON to XML / XML to JSON Converter
 - JWT Debugger
+- Lorem Ipsum Generator
 - Markdown Editor
 - QR Generator
 - Regex Tester
 - SQL Formatter
+- Text Cleaner
 - Text Diff
 - Timestamp Converter
 - Unit Converter
+- Word & Character Counter
 
 ## Run locally
 

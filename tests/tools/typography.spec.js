@@ -4,7 +4,7 @@ import { openTool } from '../helpers.js';
 const TOOLS = ['base-converter','color-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator','file-compressor',
  'html-preview','id-generator','image-converter','json-diff','json-toon-converter',
  'json-xml-converter','jwt-debugger','markdown-editor','qr-generator','regex-tester',
- 'sql-formatter','text-diff','timestamp-converter','unit-converter'];
+ 'sql-formatter','text-diff','text-utilities','timestamp-converter','unit-converter'];
 
 const titleStyle = (page) => page.evaluate(() => {
   const h1 = document.querySelector('h1');
