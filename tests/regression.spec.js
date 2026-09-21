@@ -131,6 +131,74 @@ test('info modal keeps the basic content and appends details for the active tool
   await expect(page.locator('#toolAboutDescription')).toContainText('JSON Web Tokens');
 });
 
+test('settings reports what is stored and clears it on confirmation', async ({ page }) => {
+  await page.goto('/');
+
+  // Pin a tool and open another so there is real state to remove, plus a key
+  // from a neighbouring app on the same origin, which must survive.
+  await page.locator('#toolList .menu__item[data-tool-id="markdown-editor"]').click();
+  await page.locator('#toolList .menu__pin[data-tool-id="jwt-debugger"]').click();
+  await page.evaluate(() => localStorage.setItem('someone-elses-app', 'keep me'));
+  // Back to the home screen first: reloading on a tool route would record that
+  // tool as recent again the moment the page comes back.
+  await page.locator('#brandHome').click();
+  await expect.poll(() => page.evaluate(() =>
+    Object.keys(localStorage).filter((key) => key.startsWith('devtools:')).length)).toBeGreaterThan(0);
+
+  await page.locator('#settingsBtn').click();
+  await expect(page.locator('#settingsModal')).toHaveAttribute('aria-hidden', 'false');
+  await expect(page.locator('[data-storage="settings"] .settings-storage__detail')).toHaveText(/saved setting/);
+  await expect(page.locator('[data-storage="offline"]')).toBeVisible();
+
+  // The first click only arms the button; nothing is removed yet.
+  await page.locator('#clearCacheBtn').click();
+  await expect(page.locator('#clearCacheLabel')).toHaveText('Yes, clear everything');
+  await expect(page.locator('#clearCacheBtn')).toHaveClass(/is-armed/);
+  expect(await page.evaluate(() =>
+    Object.keys(localStorage).filter((key) => key.startsWith('devtools:')).length)).toBeGreaterThan(0);
+
+  // Cancelling disarms it and still removes nothing.
+  await page.locator('#clearCacheCancel').click();
+  await expect(page.locator('#clearCacheLabel')).toHaveText('Clear cached data');
+  expect(await page.evaluate(() =>
+    Object.keys(localStorage).filter((key) => key.startsWith('devtools:')).length)).toBeGreaterThan(0);
+
+  await page.locator('#clearCacheBtn').click();
+  await page.locator('#clearCacheBtn').click();
+
+  // It reloads itself once the data is gone.
+  await page.waitForURL('**/');
+  await page.waitForLoadState('load');
+  await expect.poll(() => page.evaluate(() =>
+    Object.keys(localStorage).filter((key) => key.startsWith('devtools:')))).toEqual([]);
+  // A key belonging to another app on the same origin is not ours to delete.
+  expect(await page.evaluate(() => localStorage.getItem('someone-elses-app'))).toBe('keep me');
+  await expect(page.locator('#recentTools [data-tool-id="markdown-editor"]')).toHaveCount(0);
+});
+
+test('the settings and support dialogs coexist without trapping page scroll', async ({ page }) => {
+  await page.goto('/');
+
+  await page.locator('#settingsBtn').click();
+  await expect(page.locator('#settingsModal')).toHaveAttribute('aria-hidden', 'false');
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#settingsModal')).toHaveAttribute('aria-hidden', 'true');
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe('');
+
+  // Closing one dialog must not unlock scroll while the other is still open.
+  // The scrim makes this unreachable by clicking, so drive it directly.
+  await page.locator('#supportBtn').click();
+  await page.evaluate(() => document.getElementById('settingsBtn').click());
+  await page.locator('#settingsModalClose').click();
+  await expect(page.locator('#supportModal')).toHaveAttribute('aria-hidden', 'false');
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+
+  await page.locator('#modalClose').click();
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe('');
+});
+
 test('dashboard creates an iframe only for the selected tool', async ({ page }) => {
   await page.goto('/');
   for (const link of await page.locator('#toolList .menu__item').all()) {

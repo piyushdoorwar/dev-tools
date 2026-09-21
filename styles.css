@@ -222,6 +222,12 @@ body {
   display: none;
 }
 
+/* The rail is one icon wide, so the footer buttons stack instead of sitting
+   side by side. */
+.app.sidebar-collapsed .sidebar__footer-actions {
+  flex-direction: column;
+}
+
 .app.sidebar-collapsed .hint {
   display: none;
 }
@@ -616,6 +622,12 @@ body {
   gap: 12px;
 }
 
+.sidebar__footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .sidebar__version {
   font-size: 12px;
   font-weight: 500;
@@ -803,6 +815,131 @@ body {
   color: var(--text-muted);
   margin: 0;
   text-align: center;
+}
+
+/* Settings modal */
+.settings-section__title {
+  margin: 0 0 10px;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.settings-storage {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.settings-storage__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-secondary);
+}
+
+.settings-storage__label {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.settings-storage__detail {
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.settings-storage__note {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.settings-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-btn:hover:not(:disabled) {
+  border-color: var(--purple-light);
+  color: var(--text);
+}
+
+.settings-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* display: inline-flex above would otherwise beat the [hidden] default, so
+   the Cancel button would sit there before the clear is even armed. */
+.settings-btn[hidden] {
+  display: none;
+}
+
+.settings-btn--danger {
+  border-color: rgba(255, 107, 157, 0.35);
+  color: var(--pink);
+}
+
+.settings-btn--danger:hover:not(:disabled) {
+  border-color: var(--pink);
+  background: rgba(255, 107, 157, 0.12);
+  color: var(--pink);
+}
+
+/* Armed is the confirmation state: the same button, now clearly the one that
+   destroys something. */
+.settings-btn--danger.is-armed {
+  border-color: var(--pink);
+  background: var(--pink);
+  color: var(--bg);
+}
+
+.settings-btn--danger.is-armed:hover:not(:disabled) {
+  background: #ff85ae;
+  color: var(--bg);
+}
+
+.settings-section .modal__subtext {
+  margin-top: 24px;
+}
+
+.settings-status {
+  margin: 12px 0 0;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .modal__tool-about {

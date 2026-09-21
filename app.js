@@ -41,6 +41,14 @@ const els = {
   supportBtn: document.getElementById("supportBtn"),
   supportModal: document.getElementById("supportModal"),
   modalClose: document.getElementById("modalClose"),
+  settingsBtn: document.getElementById("settingsBtn"),
+  settingsModal: document.getElementById("settingsModal"),
+  settingsModalClose: document.getElementById("settingsModalClose"),
+  storageSummary: document.getElementById("storageSummary"),
+  clearCacheBtn: document.getElementById("clearCacheBtn"),
+  clearCacheLabel: document.getElementById("clearCacheLabel"),
+  clearCacheCancel: document.getElementById("clearCacheCancel"),
+  clearCacheStatus: document.getElementById("clearCacheStatus"),
   commandPalette: document.getElementById("commandPalette"),
   commandPaletteInput: document.getElementById("commandPaletteInput"),
   commandPaletteList: document.getElementById("commandPaletteList"),
@@ -512,32 +520,239 @@ els.collapseBtn.addEventListener("click", toggleSidebar);
 els.expandBtn.addEventListener("click", toggleSidebar);
 els.brandHome.addEventListener("click", () => setActive(null));
 
-// Support Modal
-function openSupportModal() {
-  els.supportModal.setAttribute("aria-hidden", "false");
+// Modals (support, settings)
+const MODALS = [els.supportModal, els.settingsModal];
+
+function openModal(modal) {
+  modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
 }
 
+function closeModal(modal) {
+  modal.setAttribute("aria-hidden", "true");
+  // Another dialog may still be up — only release the page scroll once none are.
+  if (MODALS.every((other) => other.getAttribute("aria-hidden") !== "false")) {
+    document.body.style.overflow = "";
+  }
+}
+
+function openSupportModal() {
+  openModal(els.supportModal);
+}
+
 function closeSupportModal() {
-  els.supportModal.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
+  closeModal(els.supportModal);
 }
 
 els.supportBtn.addEventListener("click", openSupportModal);
 els.modalClose.addEventListener("click", closeSupportModal);
+els.settingsModalClose.addEventListener("click", () => closeSettingsModal());
 
 // Close modal when clicking outside
-els.supportModal.addEventListener("click", (e) => {
-  if (e.target === els.supportModal) {
-    closeSupportModal();
-  }
-});
+for (const modal of MODALS) {
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal(modal);
+  });
+}
 
 // Close modal with Escape key
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && els.supportModal.getAttribute("aria-hidden") === "false") {
-    closeSupportModal();
+  if (e.key !== "Escape") return;
+  for (const modal of MODALS) {
+    if (modal.getAttribute("aria-hidden") === "false") closeModal(modal);
   }
+});
+
+/* --- Settings: what this app has stored, and removing it ------------------
+ *
+ * Everything below is deliberately scoped to Dev Tools rather than to the
+ * origin. On GitHub Pages every project of an account shares one origin, so a
+ * blanket localStorage.clear() or caches wipe would take a neighbouring app's
+ * data with it. The app's own keys are prefixed, its caches are versioned
+ * under one prefix, and its service worker is scoped to the app path, so each
+ * kind of storage can be filtered precisely.
+ * -------------------------------------------------------------------------- */
+
+const APP_STORAGE_PREFIX = "devtools:";
+const APP_CACHE_PREFIX = "dev-tools-v";
+
+function appStorageKeys(store) {
+  try {
+    return Object.keys(store).filter((key) => key.startsWith(APP_STORAGE_PREFIX));
+  } catch {
+    return [];
+  }
+}
+
+async function appCacheNames() {
+  if (!("caches" in window)) return [];
+  try {
+    return (await caches.keys()).filter((name) => name.startsWith(APP_CACHE_PREFIX));
+  } catch {
+    return [];
+  }
+}
+
+async function appServiceWorkers() {
+  if (!("serviceWorker" in navigator)) return [];
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    return registrations.filter((registration) => {
+      try {
+        return new URL(registration.scope).pathname.startsWith(APP_ROOT_PATH);
+      } catch {
+        return false;
+      }
+    });
+  } catch {
+    return [];
+  }
+}
+
+const plural = (count, noun) => `${count} ${noun}${count === 1 ? "" : "s"}`;
+
+/* The origin-wide navigator.storage.estimate() is deliberately not reported
+   here: on GitHub Pages it would include every other app on the account, and
+   a number that overstates what this button removes is worse than no number. */
+async function summarizeStorage() {
+  const settings = appStorageKeys(localStorage).length + appStorageKeys(sessionStorage).length;
+
+  let cachedFiles = 0;
+  for (const name of await appCacheNames()) {
+    try {
+      const cache = await caches.open(name);
+      cachedFiles += (await cache.keys()).length;
+    } catch {
+      /* A cache we cannot open simply is not counted. */
+    }
+  }
+
+  return [
+    {
+      key: "settings",
+      label: "Preferences",
+      detail: settings === 0 ? "Nothing saved yet" : plural(settings, "saved setting"),
+      note: "Pinned tools, recently used, last seen version",
+    },
+    {
+      key: "offline",
+      label: "Offline copy",
+      detail: cachedFiles === 0 ? "Not cached" : plural(cachedFiles, "file"),
+      note: "Lets the app and every tool open without a connection",
+    },
+  ];
+}
+
+async function renderStorageSummary() {
+  const rows = await summarizeStorage();
+  els.storageSummary.innerHTML = "";
+
+  for (const row of rows) {
+    const item = document.createElement("li");
+    item.className = "settings-storage__item";
+    item.dataset.storage = row.key;
+
+    const label = document.createElement("span");
+    label.className = "settings-storage__label";
+    label.textContent = row.label;
+
+    const detail = document.createElement("span");
+    detail.className = "settings-storage__detail";
+    detail.textContent = row.detail;
+
+    const note = document.createElement("span");
+    note.className = "settings-storage__note";
+    note.textContent = row.note;
+
+    item.append(label, detail, note);
+    els.storageSummary.appendChild(item);
+  }
+}
+
+/* Clearing is destructive and one click away from a misclick, so the button
+   arms itself first and says exactly what it is about to remove. */
+let clearArmed = false;
+
+function disarmClear() {
+  clearArmed = false;
+  els.clearCacheBtn.classList.remove("is-armed");
+  els.clearCacheLabel.textContent = "Clear cached data";
+  els.clearCacheCancel.hidden = true;
+}
+
+function armClear() {
+  clearArmed = true;
+  els.clearCacheBtn.classList.add("is-armed");
+  els.clearCacheLabel.textContent = "Yes, clear everything";
+  els.clearCacheCancel.hidden = false;
+}
+
+function setClearStatus(message) {
+  els.clearCacheStatus.hidden = !message;
+  els.clearCacheStatus.textContent = message || "";
+}
+
+async function clearAppData() {
+  for (const store of [localStorage, sessionStorage]) {
+    for (const key of appStorageKeys(store)) store.removeItem(key);
+  }
+
+  for (const name of await appCacheNames()) {
+    try {
+      await caches.delete(name);
+    } catch {
+      /* Already gone, or blocked — the reload below still leaves a clean app. */
+    }
+  }
+
+  // Unregistering forces a fresh install on the next load, so a stale worker
+  // cannot serve the assets that were just deleted.
+  for (const registration of await appServiceWorkers()) {
+    try {
+      await registration.unregister();
+    } catch {
+      /* Nothing more to do; the caches it served are gone regardless. */
+    }
+  }
+}
+
+async function openSettingsModal() {
+  disarmClear();
+  setClearStatus(null);
+  openModal(els.settingsModal);
+  await renderStorageSummary();
+}
+
+function closeSettingsModal() {
+  disarmClear();
+  closeModal(els.settingsModal);
+}
+
+els.settingsBtn.addEventListener("click", openSettingsModal);
+els.clearCacheCancel.addEventListener("click", () => {
+  disarmClear();
+  // Backing out should take the warning with it, or the dialog keeps shouting
+  // about something that is no longer about to happen.
+  setClearStatus(null);
+});
+
+els.clearCacheBtn.addEventListener("click", async () => {
+  if (!clearArmed) {
+    armClear();
+    setClearStatus("This removes every preference and the offline copy of the app.");
+    return;
+  }
+
+  els.clearCacheBtn.disabled = true;
+  setClearStatus("Clearing…");
+  await clearAppData();
+  disarmClear();
+  await renderStorageSummary();
+  els.clearCacheBtn.disabled = false;
+  setClearStatus("Cleared. Reloading…");
+  // A reload is what makes the app forget the state it is already holding in
+  // memory — the pinned list, the open tool — rather than only on disk.
+  window.setTimeout(() => window.location.reload(), 700);
 });
 
 function renderCommandPalette() {
