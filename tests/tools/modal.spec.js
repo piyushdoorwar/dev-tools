@@ -4,6 +4,7 @@ import { openTool } from '../helpers.js';
 // tool -> a selector that opens its primary modal, and the modal root
 const MODALS = {
   'base-converter':      ['#schemaHelpBtn', '#schemaHelpModal'],
+  'chmod-calculator':    ['#helpBtn', '#helpModal'],
   'cron-expression-generator': ['#helpBtn', '#helpModal'],
   'crypto-generator':    ['#securityInfoBtn', '#securityInfoModal'],
   'fake-data-generator': ['#schemaHelpBtn', '#schemaHelpModal'],
@@ -130,7 +131,7 @@ test('tip lists in modals render without list markers', async ({ page }) => {
 test('a closed modal is never visible in any tool', async ({ page }) => {
   // A tool that ships no overlay layout rendered its dialog inline, on the
   // page, permanently — the shared layer now hides closed dialogs regardless.
-  const TOOLS = ['base-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator',
+  const TOOLS = ['base-converter','chmod-calculator','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator',
     'file-compressor','http-status-codes','image-converter','json-diff','json-toon-converter','json-xml-converter',
     'jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester','sql-formatter','text-diff','text-utilities',
     'timestamp-converter'];

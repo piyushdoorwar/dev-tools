@@ -1,0 +1,691 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-actions,
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* --- Toolbar ------------------------------------------------------------ */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.mode-switch,
+.type-switch {
+    display: flex;
+    gap: var(--space-1);
+    padding: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool. Without these the overlay is a plain block and the
+   dialog renders inline, permanently visible.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+/* Same split: main.css gives the header its padding and rule, the row layout
+   is the tool's. Without this the close button wraps under the title. */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.footnote {
+    margin-top: var(--space-3);
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+/* --- Layout ------------------------------------------------------------- */
+
+.main-content {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.mode-pane {
+    display: grid;
+    grid-template-columns: minmax(340px, 1fr) minmax(340px, 1fr);
+    gap: var(--space-4);
+    flex: 1;
+    min-height: 0;
+}
+
+.mode-pane[hidden] {
+    display: none;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-4);
+    overflow-y: auto;
+}
+
+.panel-note {
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+}
+
+.section-label {
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* --- Entry fields ------------------------------------------------------- */
+
+.entry-row {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.entry {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.entry-grow {
+    flex: 1;
+    min-width: 180px;
+}
+
+.entry .input {
+    width: 100%;
+}
+
+#octal {
+    width: 7rem;
+    font-size: var(--text-lg);
+    letter-spacing: 0.08em;
+}
+
+#symbolic {
+    width: 12rem;
+    letter-spacing: 0.08em;
+}
+
+#umask {
+    width: 7rem;
+    font-size: var(--text-lg);
+    letter-spacing: 0.08em;
+}
+
+.field-error {
+    min-height: 0;
+}
+
+/* --- Permission matrix -------------------------------------------------- */
+
+.matrix {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.matrix th {
+    padding: 0 var(--space-2) var(--space-2);
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-align: center;
+}
+
+.matrix thead th:first-child {
+    width: 8rem;
+}
+
+.col-weight {
+    margin-left: 5px;
+    color: var(--accent-purple-light);
+    font-family: var(--font-mono);
+}
+
+.matrix td {
+    padding: 3px var(--space-2);
+    text-align: center;
+}
+
+.row-head {
+    color: var(--text-primary);
+    font-size: var(--chrome-base);
+    font-weight: 600;
+    text-align: left !important;
+    white-space: nowrap;
+}
+
+.row-who {
+    margin-left: var(--space-2);
+    color: var(--text-disabled);
+    font-family: var(--font-mono);
+    font-weight: 400;
+}
+
+/* A cell is a checkbox wearing a tile. The input stays in the accessibility
+   tree and keeps its keyboard behaviour; only its paint is replaced. */
+.cell {
+    position: relative;
+    display: block;
+    cursor: pointer;
+}
+
+.cell input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.cell-face {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+    color: var(--text-disabled);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-base);
+    font-weight: 600;
+    transition: var(--transition-control);
+}
+
+.cell:hover .cell-face {
+    border-color: var(--accent-purple-light);
+    color: var(--text-secondary);
+}
+
+.cell input:checked + .cell-face {
+    border-color: rgba(var(--accent-purple-light-rgb), 0.6);
+    background: rgba(var(--accent-purple-light-rgb), 0.18);
+    color: var(--text-primary);
+}
+
+.cell input:focus-visible + .cell-face {
+    outline: 2px solid var(--accent-purple-light);
+    outline-offset: 2px;
+}
+
+.digit-col {
+    width: 3.5rem;
+    color: var(--accent-yellow);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.matrix thead .digit-col {
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+}
+
+/* --- Special bits ------------------------------------------------------- */
+
+.special,
+.presets {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.special-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.special-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+    cursor: pointer;
+    transition: var(--transition-control);
+}
+
+.special-item:hover {
+    border-color: var(--border-light);
+}
+
+.special-item input {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    accent-color: var(--accent-purple-light);
+    cursor: pointer;
+}
+
+.special-item:has(input:checked) {
+    border-color: rgba(var(--accent-purple-light-rgb), 0.5);
+    background: rgba(var(--accent-purple-light-rgb), 0.1);
+}
+
+.special-text {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: baseline;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.special-name {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-base);
+    font-weight: 600;
+}
+
+.special-value {
+    color: var(--accent-yellow);
+    font-size: var(--chrome-sm);
+}
+
+.special-summary {
+    grid-column: 1 / -1;
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+/* --- Presets ------------------------------------------------------------ */
+
+.preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: var(--space-2);
+}
+
+.preset {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition-control);
+}
+
+.preset:hover {
+    border-color: var(--accent-purple-light);
+    background: var(--surface-soft);
+}
+
+.preset.is-active {
+    border-color: rgba(var(--accent-purple-light-rgb), 0.6);
+    background: rgba(var(--accent-purple-light-rgb), 0.14);
+}
+
+.preset-octal {
+    color: var(--accent-yellow);
+    font-size: var(--chrome-base);
+    font-weight: 700;
+}
+
+.preset-label {
+    color: var(--text-primary);
+    font-size: var(--chrome-base);
+    font-weight: 600;
+}
+
+.preset-note {
+    grid-column: 1 / -1;
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+/* --- Readout ------------------------------------------------------------ */
+
+.readout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-panel);
+    background: var(--surface-soft);
+}
+
+.readout-main {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.readout-octal {
+    color: var(--accent-yellow);
+    font-size: clamp(32px, 6vw, 44px);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.readout-symbolic {
+    color: var(--text-primary);
+    font-size: clamp(18px, 3vw, 24px);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+}
+
+.readout-ls {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+}
+
+.target-row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-bottom: 10px;
+    color: var(--text-secondary);
+    font-size: var(--chrome-base);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.check input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent-purple-light);
+    cursor: pointer;
+}
+
+/* --- Commands ----------------------------------------------------------- */
+
+.commands {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.command {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--bg-secondary);
+}
+
+.command-label {
+    flex: none;
+    width: 4.5rem;
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.command-text {
+    flex: 1;
+    min-width: 0;
+    color: var(--accent-green);
+    font-size: var(--chrome-base);
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+/* --- Meaning and notices ------------------------------------------------ */
+
+.meaning {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    list-style: none;
+}
+
+.meaning-item {
+    padding-left: var(--space-3);
+    border-left: 2px solid rgba(var(--accent-purple-light-rgb), 0.5);
+    color: var(--text-secondary);
+    font-size: var(--chrome-base);
+    line-height: var(--leading-normal);
+}
+
+.meaning-item.is-empty {
+    border-left-color: var(--border-light);
+    color: var(--text-disabled);
+}
+
+.meaning-who {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.notices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.notice {
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+    border-radius: var(--radius-control);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+.notice-warn {
+    border-left-color: var(--accent-pink);
+    background: rgba(255, 107, 157, 0.08);
+    color: var(--text-secondary);
+}
+
+.notice-note {
+    border-left-color: var(--accent-blue);
+    background: rgba(93, 173, 226, 0.08);
+    color: var(--text-secondary);
+}
+
+/* --- Umask -------------------------------------------------------------- */
+
+.umask-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-3);
+}
+
+.umask-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-panel);
+    background: var(--surface-soft);
+}
+
+.umask-card-label {
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.umask-card-octal {
+    color: var(--accent-yellow);
+    font-size: clamp(28px, 5vw, 36px);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.umask-card-symbolic {
+    color: var(--text-primary);
+    font-size: var(--text-md);
+    letter-spacing: 0.08em;
+}
+
+.umask-card-note {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+.umask-explainer {
+    color: var(--text-muted);
+    font-size: var(--chrome-base);
+    line-height: var(--leading-normal);
+}
+
+.inline-code {
+    padding: 1px 4px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-soft);
+    color: var(--accent-yellow);
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+}
+
+.hint-code {
+    font-family: var(--font-mono);
+    color: var(--accent-yellow);
+}
+
+@media (max-width: 1000px) {
+    .mode-pane {
+        grid-template-columns: 1fr;
+    }
+
+    .app-container {
+        padding: var(--space-4);
+    }
+}
+}

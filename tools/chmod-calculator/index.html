@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chmod Calculator</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Chmod Calculator</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" data-action="reset" data-tooltip="Reset to 644" aria-label="Reset to 644">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-undo"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="How permissions work" aria-label="How permissions work">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="mode-switch" role="tablist" aria-label="Calculator mode">
+                    <button class="mode-btn active" type="button" role="tab" id="tab-mode" data-mode="mode" aria-selected="true" aria-controls="mode-panel">Permissions</button>
+                    <button class="mode-btn" type="button" role="tab" id="tab-umask" data-mode="umask" aria-selected="false" aria-controls="umask-panel">Umask</button>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <div class="type-switch" role="group" aria-label="Apply to">
+                    <button class="mode-btn active" type="button" data-type="file" aria-pressed="true">File</button>
+                    <button class="mode-btn" type="button" data-type="dir" aria-pressed="false">Directory</button>
+                </div>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <!-- ================= Permissions mode ================= -->
+            <section class="mode-pane" id="mode-panel" role="tabpanel" aria-labelledby="tab-mode">
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Permissions</h2>
+                        <span class="panel-note">Click a cell, or type the mode</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="entry-row">
+                            <div class="entry">
+                                <label class="field-label" for="octal">Octal</label>
+                                <input id="octal" class="input mono" type="text" inputmode="numeric" autocomplete="off"
+                                       spellcheck="false" maxlength="4" value="644" aria-describedby="octal-error">
+                            </div>
+                            <div class="entry">
+                                <label class="field-label" for="symbolic">Symbolic</label>
+                                <input id="symbolic" class="input mono" type="text" autocomplete="off"
+                                       spellcheck="false" maxlength="10" value="rw-r--r--" aria-describedby="symbolic-error">
+                            </div>
+                        </div>
+                        <p class="field-error" id="entry-error" role="status" hidden></p>
+
+                        <table class="matrix">
+                            <thead>
+                                <tr>
+                                    <th scope="col"><span class="sr-only">Class</span></th>
+                                    <th scope="col">Read<span class="col-weight">4</span></th>
+                                    <th scope="col">Write<span class="col-weight">2</span></th>
+                                    <th scope="col">Execute<span class="col-weight">1</span></th>
+                                    <th scope="col" class="digit-col">Digit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="matrix-body"></tbody>
+                        </table>
+
+                        <div class="special">
+                            <p class="section-label">Special bits</p>
+                            <div class="special-grid" id="special-grid"></div>
+                        </div>
+
+                        <div class="presets">
+                            <p class="section-label">Common modes</p>
+                            <div class="preset-grid" id="preset-grid"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Result</h2>
+                        <div class="action-group">
+                            <button class="action-btn" type="button" data-action="copy-link" data-tooltip="Copy link to this mode" aria-label="Copy link to this mode">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="readout">
+                            <div class="readout-main">
+                                <span class="readout-octal mono" id="out-octal">0644</span>
+                                <span class="readout-symbolic mono" id="out-symbolic">rw-r--r--</span>
+                            </div>
+                            <p class="readout-ls">As <code class="inline-code" id="out-ls">-rw-r--r--</code> in <code class="inline-code">ls -l</code></p>
+                        </div>
+
+                        <div class="target-row">
+                            <div class="entry entry-grow">
+                                <label class="field-label" for="target">Path</label>
+                                <input id="target" class="input mono" type="text" autocomplete="off" spellcheck="false"
+                                       placeholder="path/to/file">
+                            </div>
+                            <label class="check">
+                                <input type="checkbox" id="recursive">
+                                <span>Recursive <code class="inline-code">-R</code></span>
+                            </label>
+                        </div>
+
+                        <div class="commands" id="commands"></div>
+
+                        <h3 class="section-label">What this allows</h3>
+                        <ul class="meaning" id="meaning"></ul>
+
+                        <div class="notices" id="notices"></div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- ==================== Umask mode ==================== -->
+            <section class="mode-pane" id="umask-panel" role="tabpanel" aria-labelledby="tab-umask" hidden>
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Umask</h2>
+                        <span class="panel-note">The bits a new file does <em>not</em> get</span>
+                    </div>
+                    <div class="panel-body">
+                        <div class="entry-row">
+                            <div class="entry">
+                                <label class="field-label" for="umask">Umask</label>
+                                <input id="umask" class="input mono" type="text" inputmode="numeric" autocomplete="off"
+                                       spellcheck="false" maxlength="4" value="022">
+                            </div>
+                        </div>
+                        <p class="field-error" id="umask-error" role="status" hidden></p>
+
+                        <div class="presets">
+                            <p class="section-label">Common values</p>
+                            <div class="preset-grid" id="umask-preset-grid"></div>
+                        </div>
+
+                        <p class="umask-explainer">
+                            A umask is a mask, not a mode. The shell starts from <code class="inline-code">666</code> for a
+                            new file and <code class="inline-code">777</code> for a new directory, then removes every bit
+                            the mask names. Files never get execute from the base, which is why
+                            <code class="inline-code">022</code> yields <code class="inline-code">644</code> and not
+                            <code class="inline-code">755</code>.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Defaults it produces</h2>
+                        <div class="action-group">
+                            <button class="action-btn" type="button" data-action="copy-umask" data-tooltip="Copy umask command" aria-label="Copy umask command">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="umask-results">
+                            <div class="umask-card">
+                                <p class="umask-card-label">New files</p>
+                                <p class="umask-card-octal mono" id="umask-file-octal">644</p>
+                                <p class="umask-card-symbolic mono" id="umask-file-symbolic">rw-r--r--</p>
+                                <p class="umask-card-note" id="umask-file-note"></p>
+                            </div>
+                            <div class="umask-card">
+                                <p class="umask-card-label">New directories</p>
+                                <p class="umask-card-octal mono" id="umask-dir-octal">755</p>
+                                <p class="umask-card-symbolic mono" id="umask-dir-symbolic">rwxr-xr-x</p>
+                                <p class="umask-card-note" id="umask-dir-note"></p>
+                            </div>
+                        </div>
+
+                        <div class="commands" id="umask-commands"></div>
+
+                        <div class="notices" id="umask-notices"></div>
+                    </div>
+                </section>
+            </section>
+        </main>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How Unix permissions work</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Three classes, three bits each</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>Owner</strong> (<span class="hint-code">u</span>), <strong>group</strong> (<span class="hint-code">g</span>), <strong>others</strong> (<span class="hint-code">o</span>) each get read&nbsp;4, write&nbsp;2 and execute&nbsp;1. Add them up and you have one octal digit per class.</li>
+                            <li>Only the <em>first</em> matching class applies. A file owned by you with mode <span class="hint-code">077</span> gives you nothing, even though the group and others have everything.</li>
+                        </ul>
+                        <p><strong>Execute is not what it looks like on a directory</strong></p>
+                        <ul class="tip-list">
+                            <li>On a file, execute runs it. On a directory, execute is the right to <em>traverse</em> — to reach anything inside, including by exact path.</li>
+                            <li>Read without execute on a directory lists the names but cannot stat them. Execute without read reaches a known filename but cannot list. That asymmetry is why <span class="hint-code">711</span> exists.</li>
+                            <li>Deleting a file is governed by the write bit on its <em>directory</em>, not on the file. This is what the sticky bit exists to restrain.</li>
+                        </ul>
+                        <p><strong>The fourth digit</strong></p>
+                        <ul class="tip-list">
+                            <li><span class="hint-code">4</span> setuid — the program runs as its owner. <span class="hint-code">2</span> setgid — as its group, or on a directory, new entries inherit the group. <span class="hint-code">1</span> sticky — only a file's owner may delete it.</li>
+                            <li>A capital <span class="hint-code">S</span> or <span class="hint-code">T</span> in the symbolic form means the special bit is set but the matching execute bit is not — usually a mistake.</li>
+                        </ul>
+                        <p class="footnote">The mode is only half of it: what a user may do also depends on the owner and group of the file, the mount options, and on Linux, any ACL or SELinux policy in the way.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

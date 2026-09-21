@@ -7,6 +7,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["UTF-8 text and byte conversion", "Binary, hexadecimal, decimal, and octal output", "Live bidirectional conversion"],
   },
   {
+    id: "chmod-calculator",
+    name: "Chmod Calculator",
+    route: "chmod-calculator",
+    description: "Build Unix file permissions from a checkbox grid and read the octal, symbolic, chmod command, and umask defaults at once.",
+    capabilities: ["Octal, symbolic, and checkbox editing", "Ready-to-run chmod and umask commands", "Plain-English reading with risk warnings"],
+  },
+  {
     id: "color-converter",
     name: "Color Converter",
     route: "color-converter",

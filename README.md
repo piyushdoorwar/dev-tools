@@ -5,6 +5,7 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 ## Available tools
 
 - Base Converter
+- Chmod Calculator
 - Color Converter
 - Cron Expression Generator
 - Crypto Generator
