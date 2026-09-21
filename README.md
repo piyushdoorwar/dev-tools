@@ -12,6 +12,7 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - Fake Data Generator
 - File Compressor
 - HTML Preview
+- HTTP Status Codes
 - ID Generator
 - Image Converter
 - JSON Diff

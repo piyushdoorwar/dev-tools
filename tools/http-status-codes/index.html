@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP Status Codes</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">HTTP Status Codes</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear search" aria-label="Clear search">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="How to choose a code" aria-label="How to choose a code">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-field">
+                    <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-search"></use></svg>
+                    <input id="search" class="search-input" type="search" autocomplete="off" spellcheck="false"
+                           placeholder="Search 404, rate limit, redirect, unauthorized…" aria-label="Search status codes">
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <div class="group-filter" role="group" aria-label="Filter by class">
+                    <button class="mode-btn active" type="button" data-group="all" aria-pressed="true">All</button>
+                    <button class="mode-btn" type="button" data-group="1xx" aria-pressed="false">1xx</button>
+                    <button class="mode-btn" type="button" data-group="2xx" aria-pressed="false">2xx</button>
+                    <button class="mode-btn" type="button" data-group="3xx" aria-pressed="false">3xx</button>
+                    <button class="mode-btn" type="button" data-group="4xx" aria-pressed="false">4xx</button>
+                    <button class="mode-btn" type="button" data-group="5xx" aria-pressed="false">5xx</button>
+                </div>
+                <span class="result-count" id="result-count">—</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <section class="panel list-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Codes</h2>
+                    <span class="panel-note">Select a code for the detail</span>
+                </div>
+                <div class="panel-body">
+                    <div class="code-list" id="code-list" role="listbox" aria-label="HTTP status codes"></div>
+                </div>
+            </section>
+
+            <section class="panel detail-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Detail</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="copy-link" data-tooltip="Copy link to this code" aria-label="Copy link to this code">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="copy-detail" data-tooltip="Copy detail" aria-label="Copy detail">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <article class="detail" id="detail"></article>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Choosing a status code</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>The classes</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>1xx</strong> — the exchange is still in progress.</li>
+                            <li><strong>2xx</strong> — it worked.</li>
+                            <li><strong>3xx</strong> — look somewhere else.</li>
+                            <li><strong>4xx</strong> — the caller has to change something.</li>
+                            <li><strong>5xx</strong> — the server has to change something. Only 5xx should page you.</li>
+                        </ul>
+                        <p><strong>The pairs people get wrong</strong></p>
+                        <ul class="tip-list">
+                            <li><span class="hint-code">401</span> means unauthenticated; <span class="hint-code">403</span> means authenticated but not allowed.</li>
+                            <li><span class="hint-code">400</span> means unparseable; <span class="hint-code">422</span> means parsed but invalid.</li>
+                            <li><span class="hint-code">301</span>/<span class="hint-code">302</span> may rewrite POST to GET; <span class="hint-code">308</span>/<span class="hint-code">307</span> never do.</li>
+                            <li><span class="hint-code">429</span> blames the caller; <span class="hint-code">503</span> blames the server. Both should carry <span class="hint-code">Retry-After</span>.</li>
+                            <li><span class="hint-code">404</span> hides whether a thing exists; <span class="hint-code">410</span> confirms it existed and is gone.</li>
+                        </ul>
+                        <p><strong>Two rules worth keeping</strong></p>
+                        <ul class="tip-list">
+                            <li>Never return 200 with an error in the body. Caches, retries, and alerting all read the status line, not your JSON.</li>
+                            <li>Reserve 500 for things you did not anticipate. A predictable failure returned as 500 is an alert that wakes someone for nothing.</li>
+                        </ul>
+                        <p class="footnote">Definitions follow RFC 9110, which replaced RFC 7231 and RFC 2616 in 2022. Non-standard codes from nginx and Cloudflare are labelled as such.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="codes.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

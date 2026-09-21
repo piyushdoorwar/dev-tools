@@ -1,0 +1,446 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-actions,
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* --- Toolbar ------------------------------------------------------------ */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.toolbar-left {
+    flex: 1;
+    min-width: 260px;
+}
+
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.search-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 420px;
+}
+
+.search-icon {
+    position: absolute;
+    left: var(--space-3);
+    width: 16px;
+    height: 16px;
+    color: var(--text-disabled);
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding-left: calc(var(--space-3) * 2 + 16px);
+}
+
+.group-filter {
+    display: flex;
+    gap: var(--space-1);
+    padding: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.result-count {
+    color: var(--text-disabled);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool. Without these the overlay is a plain block and the
+   dialog renders inline, permanently visible.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+/* Same split: main.css gives the header its padding and rule, the row layout
+   is the tool's. Without this the close button wraps under the title. */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.footnote {
+    margin-top: var(--space-3);
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+/* --- Layout ------------------------------------------------------------- */
+
+.main-content {
+    display: grid;
+    grid-template-columns: minmax(280px, 2fr) minmax(360px, 3fr);
+    gap: var(--space-4);
+    flex: 1;
+    min-height: 0;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-4);
+    overflow-y: auto;
+}
+
+.panel-note {
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+}
+
+/* --- Code list ---------------------------------------------------------- */
+
+.code-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-height: 0;
+}
+
+.list-group {
+    position: sticky;
+    top: calc(var(--space-4) * -1);
+    z-index: 1;
+    margin-top: var(--space-2);
+    padding: var(--space-2) 0 var(--space-1);
+    background: var(--panel-bg);
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.list-group:first-child {
+    margin-top: 0;
+}
+
+.code-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--text-secondary);
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition-control);
+}
+
+.code-item:hover {
+    background: var(--surface-soft);
+    color: var(--text-primary);
+}
+
+.code-item.is-active {
+    border-color: rgba(var(--accent-purple-light-rgb), 0.5);
+    background: rgba(var(--accent-purple-light-rgb), 0.12);
+    color: var(--text-primary);
+}
+
+.code-number {
+    flex: none;
+    width: 2.75rem;
+    font-family: var(--font-mono);
+    font-size: var(--chrome-base);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* The class colour is the fastest way to read a long list: green succeeds,
+   yellow redirects, pink is the caller's fault, red is ours. */
+.group-1xx .code-number, .detail-code.group-1xx { color: var(--accent-blue); }
+.group-2xx .code-number, .detail-code.group-2xx { color: var(--accent-green); }
+.group-3xx .code-number, .detail-code.group-3xx { color: var(--accent-yellow); }
+.group-4xx .code-number, .detail-code.group-4xx { color: var(--accent-pink); }
+.group-5xx .code-number, .detail-code.group-5xx { color: #ff6b6b; }
+
+.code-name {
+    min-width: 0;
+    overflow: hidden;
+    font-size: var(--chrome-base);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.code-badge {
+    margin-left: auto;
+    padding: 1px var(--space-2);
+    border: 1px solid var(--border-light);
+    border-radius: 999px;
+    color: var(--text-disabled);
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+/* --- Detail ------------------------------------------------------------- */
+
+.detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.detail-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border);
+}
+
+.detail-code {
+    font-family: var(--font-mono);
+    font-size: clamp(32px, 6vw, 44px);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.detail-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.detail-name {
+    color: var(--text-primary);
+    font-size: var(--text-xl);
+    font-weight: 700;
+}
+
+.detail-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+}
+
+.detail-summary {
+    color: var(--text-primary);
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+}
+
+.detail-heading {
+    margin-top: var(--space-2);
+    color: var(--text-secondary);
+    font-size: var(--chrome-base);
+    letter-spacing: 0.02em;
+}
+
+.detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-left: var(--space-4);
+    color: var(--text-secondary);
+    font-size: var(--chrome-base);
+    line-height: var(--leading-normal);
+}
+
+.detail-list li {
+    padding-left: var(--space-1);
+}
+
+.detail-use li::marker {
+    color: var(--accent-green);
+}
+
+.detail-avoid li::marker {
+    color: var(--accent-pink);
+}
+
+.inline-code {
+    padding: 1px 4px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-soft);
+    color: var(--accent-yellow);
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+}
+
+.related {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.related-chip {
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--border-light);
+    border-radius: 999px;
+    background: var(--surface-soft);
+    color: var(--text-secondary);
+    font-size: var(--chrome-sm);
+    cursor: pointer;
+    transition: var(--transition-control);
+}
+
+.related-chip:hover {
+    border-color: var(--accent-purple-light);
+    color: var(--text-primary);
+}
+
+.detail-spec {
+    margin-top: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border);
+    color: var(--text-disabled);
+    font-size: var(--chrome-sm);
+}
+
+.detail-spec a {
+    color: var(--accent-yellow);
+}
+
+.hint-code {
+    font-family: var(--font-mono);
+    color: var(--accent-yellow);
+}
+
+.empty-state {
+    padding: var(--space-4);
+    color: var(--text-disabled);
+    font-size: var(--chrome-base);
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .app-container {
+        padding: var(--space-4);
+    }
+
+    .list-panel .panel-body {
+        max-height: 42vh;
+    }
+}
+}

@@ -38,6 +38,7 @@ const TOOL_ROUTES = [
   'fake-data-generator',
   'file-compressor',
   'html-preview',
+  'http-status-codes',
   'id-generator',
   'image-converter',
   'json-diff',

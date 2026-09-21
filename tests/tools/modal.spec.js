@@ -7,6 +7,7 @@ const MODALS = {
   'cron-expression-generator': ['#helpBtn', '#helpModal'],
   'crypto-generator':    ['#securityInfoBtn', '#securityInfoModal'],
   'fake-data-generator': ['#schemaHelpBtn', '#schemaHelpModal'],
+  'http-status-codes':   ['#helpBtn', '#helpModal'],
   'regex-tester':        ['#openCheatSheetBtn', '#cheatSheetModal'],
   'text-utilities':      ['#helpBtn', '#helpModal'],
   'timestamp-converter': ['#helpBtn', '#helpModal'],
@@ -129,7 +130,7 @@ test('a closed modal is never visible in any tool', async ({ page }) => {
   // A tool that ships no overlay layout rendered its dialog inline, on the
   // page, permanently — the shared layer now hides closed dialogs regardless.
   const TOOLS = ['base-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator',
-    'file-compressor','image-converter','json-diff','json-toon-converter','json-xml-converter',
+    'file-compressor','http-status-codes','image-converter','json-diff','json-toon-converter','json-xml-converter',
     'jwt-debugger','markdown-editor','qr-generator','regex-tester','sql-formatter','text-diff','text-utilities',
     'timestamp-converter'];
 

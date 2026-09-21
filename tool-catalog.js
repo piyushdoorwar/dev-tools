@@ -56,6 +56,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["Live HTML, CSS, and JavaScript editing", "Instant isolated preview", "Downloadable result"],
   },
   {
+    id: "http-status-codes",
+    name: "HTTP Status Codes",
+    route: "http-status-codes",
+    description: "Search every HTTP status code with plain-English meanings, when-to-use guidance, common mistakes, and the RFC that defines it.",
+    capabilities: ["Searchable 1xx-5xx reference", "When to use and what to avoid", "RFC references and related codes"],
+  },
+  {
     id: "image-converter",
     name: "Image Converter",
     route: "image-converter",
@@ -68,16 +75,6 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     route: "id-generator",
     description: "Generate and inspect developer identifiers including UUID variants and ULIDs directly in your browser.",
     capabilities: ["Multiple UUID versions", "ULID generation", "Identifier decoding and inspection"],
-  },
-  {
-    id: "lorem-ipsum-generator",
-    name: "Lorem Ipsum Generator",
-    route: "lorem-ipsum-generator",
-    toolPath: "text-utilities",
-    endpoint: "#lorem",
-    favicon: "favicon-lorem.svg",
-    description: "Generate lorem ipsum placeholder paragraphs, sentences, words, or list items locally and count them as you go.",
-    capabilities: ["Paragraph, sentence, word, and list output", "Classic Lorem ipsum opening", "Instant word and character counts"],
   },
   {
     id: "json-diff",
@@ -112,6 +109,16 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     route: "jwt-debugger",
     description: "Decode, inspect, edit, and verify JSON Web Tokens with readable header, payload, signature, and timestamp details.",
     capabilities: ["JWT header and payload decoding", "Signature verification tools", "Claim and timestamp inspection"],
+  },
+  {
+    id: "lorem-ipsum-generator",
+    name: "Lorem Ipsum Generator",
+    route: "lorem-ipsum-generator",
+    toolPath: "text-utilities",
+    endpoint: "#lorem",
+    favicon: "favicon-lorem.svg",
+    description: "Generate lorem ipsum placeholder paragraphs, sentences, words, or list items locally and count them as you go.",
+    capabilities: ["Paragraph, sentence, word, and list output", "Classic Lorem ipsum opening", "Instant word and character counts"],
   },
   {
     id: "markdown-editor",
