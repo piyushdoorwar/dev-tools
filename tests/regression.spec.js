@@ -47,6 +47,7 @@ const TOOL_ROUTES = [
   'jwt-debugger',
   'markdown-editor',
   'qr-generator',
+  'regex-cheatsheet',
   'regex-tester',
   'sql-formatter',
   'text-diff','text-utilities','timestamp-converter',

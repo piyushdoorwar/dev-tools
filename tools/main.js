@@ -15,6 +15,27 @@
   root.$ = root.$ || ((selector, scope = document) => scope.querySelector(selector));
   root.$$ = root.$$ || ((selector, scope = document) => Array.from(scope.querySelectorAll(selector)));
 
+  /* Cross-tool navigation.
+   *
+   * A tool page runs inside the dashboard's iframe, so navigating itself to a
+   * sibling would leave the shell showing the wrong tool in the sidebar and
+   * the wrong route in the address bar. Ask the shell to do it instead, and
+   * fall back to a plain relative navigation when the page is standalone.
+   *
+   *   DevToolsMain.openTool({ id: 'regex-tester', hash: '#pattern=%5Cd%2B' })
+   *
+   * `id` must be a catalog id; `path` overrides the directory when a tool's
+   * id and folder differ.
+   */
+  root.openTool = root.openTool || function openTool({ id, path = id, hash = "" } = {}) {
+    if (!id) return;
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: "devtools:open-tool", toolId: id, hash }, window.location.origin);
+      return;
+    }
+    window.location.href = `../${path}/${hash}`;
+  };
+
   root.copyText = root.copyText || async function copyText(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(text);

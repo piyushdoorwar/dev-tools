@@ -195,6 +195,12 @@
                 <div class="empty__header-text">
                   <h1 class="empty__title">Welcome to Dev Tools</h1>
                   <p class="empty__subtitle">Your all-in-one developer utilities dashboard — powerful, fast, and free</p>
+                  <p class="empty__privacy">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>All processing is local — no server, your data never leaves your browser.</span>
+                  </p>
                 </div>
               </div>
 
@@ -220,19 +226,11 @@
                 <div class="empty__features" id="quickLaunchTools"></div>
               </section>
 
-              <section class="empty__section" aria-labelledby="allToolsTitle">
-                <div class="empty__section-header">
-                  <div>
-                    <h2 id="allToolsTitle" class="empty__section-title">All developer tools</h2>
-                    <p class="empty__section-subtitle">Browse every free browser utility.</p>
-                  </div>
-                  <span class="empty__section-meta">19 tools</span>
-                </div>
-                <nav class="seo-tool-links" id="allToolLinks" aria-label="All developer tools">
-                  <!-- SEO_TOOL_LINKS -->
-                </nav>
-              </section>
-              
+              <!-- Kept in the DOM for crawlers and deep links; the sidebar and ⌘K are the on-screen browse paths. -->
+              <nav class="seo-tool-links sr-only" id="allToolLinks" aria-label="All developer tools">
+                <!-- SEO_TOOL_LINKS -->
+              </nav>
+
               <div class="empty__cta">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 18l6-6-6-6"></path>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regex Cheat Sheet</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Regex Cheat Sheet</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="btn btn-primary btn-sm" type="button" data-action="open-tester">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-swap"></use></svg>
+                        Open Regex Tester
+                    </button>
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="How to use this" aria-label="How to use this">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="mode-switch" role="tablist" aria-label="Reference section">
+                    <button class="mode-btn active" type="button" role="tab" id="tab-syntax" data-mode="syntax" aria-selected="true" aria-controls="syntax-panel">Syntax</button>
+                    <button class="mode-btn" type="button" role="tab" id="tab-patterns" data-mode="patterns" aria-selected="false" aria-controls="patterns-panel">Patterns</button>
+                </div>
+                <div class="search-field">
+                    <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-search"></use></svg>
+                    <input id="search" class="search-input" type="search" autocomplete="off" spellcheck="false"
+                           placeholder="Search lookahead, email, lazy, backreference…" aria-label="Search the reference">
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <span class="result-count" id="result-count">—</span>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <section class="panel" id="syntax-panel" role="tabpanel" aria-labelledby="tab-syntax">
+                <div class="panel-header">
+                    <h2 class="panel-title">JavaScript regex syntax</h2>
+                    <span class="panel-note">ECMAScript flavour</span>
+                </div>
+                <div class="panel-body">
+                    <div class="sections" id="sections"></div>
+                </div>
+            </section>
+
+            <section class="panel" id="patterns-panel" role="tabpanel" aria-labelledby="tab-patterns" hidden>
+                <div class="panel-header">
+                    <h2 class="panel-title">Pattern library</h2>
+                    <span class="panel-note">Every pattern is tested against its own samples</span>
+                </div>
+                <div class="panel-body">
+                    <div class="pattern-list" id="pattern-list"></div>
+                </div>
+            </section>
+        </main>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Using this reference</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>What is here</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>Syntax</strong> — character classes, anchors, quantifiers, groups, lookaround, flags, replacement strings, and the traps that cost the most time.</li>
+                            <li><strong>Patterns</strong> — ready-to-use expressions with the samples they do and do not match. The test suite runs every pattern against those samples, so what the card claims is what the regex does.</li>
+                        </ul>
+                        <p><strong>Working with the tester</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>Test it</strong> on any pattern card opens the Regex Tester with that pattern, its flags, and its sample lines already loaded.</li>
+                            <li>The tester links back here from its cheat sheet, so you can move between reference and experiment without losing your place.</li>
+                        </ul>
+                        <p><strong>Before you ship a pattern</strong></p>
+                        <ul class="tip-list">
+                            <li>Validation is rarely a regex problem alone. An email pattern catches typos; only a confirmation email proves the address exists.</li>
+                            <li>Escape anything a user typed before putting it inside <span class="hint-code">new RegExp()</span>.</li>
+                            <li>Watch for nested quantifiers over overlapping sets — <span class="hint-code">(a+)+</span> shapes can hang on hostile input.</li>
+                        </ul>
+                        <p class="footnote">Everything is the JavaScript (ECMAScript) flavour. Where PCRE, Python or Ruby differ in a way that matters, the syntax rows say so.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -8,6 +8,7 @@ const MODALS = {
   'crypto-generator':    ['#securityInfoBtn', '#securityInfoModal'],
   'fake-data-generator': ['#schemaHelpBtn', '#schemaHelpModal'],
   'http-status-codes':   ['#helpBtn', '#helpModal'],
+  'regex-cheatsheet':    ['#helpBtn', '#helpModal'],
   'regex-tester':        ['#openCheatSheetBtn', '#cheatSheetModal'],
   'text-utilities':      ['#helpBtn', '#helpModal'],
   'timestamp-converter': ['#helpBtn', '#helpModal'],
@@ -131,7 +132,7 @@ test('a closed modal is never visible in any tool', async ({ page }) => {
   // page, permanently — the shared layer now hides closed dialogs regardless.
   const TOOLS = ['base-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator',
     'file-compressor','http-status-codes','image-converter','json-diff','json-toon-converter','json-xml-converter',
-    'jwt-debugger','markdown-editor','qr-generator','regex-tester','sql-formatter','text-diff','text-utilities',
+    'jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester','sql-formatter','text-diff','text-utilities',
     'timestamp-converter'];
 
   for (const tool of TOOLS) {

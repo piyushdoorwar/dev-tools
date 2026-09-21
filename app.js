@@ -12,7 +12,7 @@ const QUICK_LAUNCH_TOOL_IDS = [
   "id-generator",
   "base-converter",
 ];
-const NEW_TOOL_IDS = new Set(["http-status-codes", "text-cleaner", "word-counter", "lorem-ipsum-generator", "cron-expression-generator", "color-converter", "encoder-decoder", "image-converter", "base-converter", "json-toon-converter", "toon-json-converter"]);
+const NEW_TOOL_IDS = new Set(["regex-cheatsheet", "http-status-codes", "text-cleaner", "word-counter", "lorem-ipsum-generator", "cron-expression-generator", "color-converter", "encoder-decoder", "image-converter", "base-converter", "json-toon-converter", "toon-json-converter"]);
 const TOOL_CATALOG = globalThis.DEV_TOOLS_CATALOG;
 
 if (!Array.isArray(TOOL_CATALOG) || TOOL_CATALOG.length === 0) {
@@ -371,6 +371,7 @@ function createWelcomeToolButton(tool, options = {}) {
     const badge = document.createElement("span");
     badge.className = "empty__feature-badge";
     if (options.badge === "Pinned") {
+      button.classList.add("has-pin");
       badge.classList.add("is-pinned");
       badge.setAttribute("aria-label", "Pinned");
       badge.innerHTML = `
@@ -965,3 +966,30 @@ async function loadDeployedVersion() {
 }
 
 loadDeployedVersion();
+
+/* A tool asking the shell to open a sibling tool (DevToolsMain.openTool).
+ *
+ * Without this, a link between two tools would either navigate the iframe —
+ * leaving the sidebar and the URL pointing at the wrong tool — or blow the
+ * whole shell away with target="_top". The message is only honoured when it
+ * comes from this origin and from one of our own frames.
+ */
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin) return;
+  const { type, toolId, hash } = event.data || {};
+  if (type !== "devtools:open-tool" || typeof toolId !== "string") return;
+  if (![...framesById.values()].some((frame) => frame.contentWindow === event.source)) return;
+
+  const tool = TOOLS.find((item) => item.id === toolId);
+  if (!tool) return;
+
+  const frame = getOrCreateFrame(tool, { loading: "eager" });
+  // A hash carries state (a prefilled pattern, a selected mode). Reassigning
+  // src with a different hash on an already-loaded frame only fires
+  // hashchange, so the target tool must handle both that and its first load.
+  if (typeof hash === "string" && hash) {
+    const target = `${tool.url.split("#")[0]}${hash}`;
+    if (frame.src !== new URL(target, window.location.href).href) frame.src = target;
+  }
+  setActive(tool);
+});

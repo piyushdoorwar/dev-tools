@@ -577,5 +577,44 @@ document.addEventListener('keydown', (event) => {
   }
 });
 
+const openFullCheatSheetBtn = document.getElementById('openFullCheatSheetBtn');
+
+openFullCheatSheetBtn.addEventListener('click', () => {
+  closeModal(cheatSheetModal);
+  window.DevToolsMain.openTool({ id: 'regex-cheatsheet' });
+});
+
+/* A pattern handed over from the cheat sheet arrives in the hash:
+ * #pattern=…&flags=…&text=…
+ *
+ * The shell may reuse an already-loaded frame and only change the hash, so
+ * this has to work on first load and on hashchange alike.
+ */
+function applyLinkedPattern() {
+  const raw = window.location.hash.slice(1);
+  if (!raw || !raw.includes('=')) {
+    return false;
+  }
+
+  const params = new URLSearchParams(raw);
+  const pattern = params.get('pattern');
+  if (pattern === null) {
+    return false;
+  }
+
+  regexInput.value = pattern;
+  setFlagState(params.get('flags') ?? 'g');
+  if (params.get('text') !== null) {
+    textInput.value = params.get('text');
+  }
+  updateAll();
+  showToast('Pattern loaded from the cheat sheet');
+  return true;
+}
+
+window.addEventListener('hashchange', applyLinkedPattern);
+
 setFlagState('g');
-updateAll();
+if (!applyLinkedPattern()) {
+  updateAll();
+}

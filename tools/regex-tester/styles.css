@@ -1889,6 +1889,22 @@ textarea::selection {
   color: var(--accent-yellow);
 }
 
+/* The pointer to the full reference spans the whole auto-fit grid rather than
+   sitting in a column as if it were another cheat section. */
+.cheat-more {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin: 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
 @media (max-width: 900px) {
   .tester-layout {
     grid-template-columns: 1fr;

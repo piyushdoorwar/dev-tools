@@ -22,6 +22,7 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - Lorem Ipsum Generator
 - Markdown Editor
 - QR Generator
+- Regex Cheat Sheet
 - Regex Tester
 - SQL Formatter
 - Text Cleaner

@@ -135,6 +135,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["Multiple QR content types", "Customizable output", "Downloadable QR codes"],
   },
   {
+    id: "regex-cheatsheet",
+    name: "Regex Cheat Sheet",
+    route: "regex-cheatsheet",
+    description: "A JavaScript regex reference with syntax, flags, lookaround, and a library of tested patterns for email, URL, UUID, and more.",
+    capabilities: ["Searchable ECMAScript syntax reference", "Tested pattern library with samples", "One-click handover to the Regex Tester"],
+  },
+  {
     id: "regex-tester",
     name: "Regex Tester",
     route: "regex-tester",
