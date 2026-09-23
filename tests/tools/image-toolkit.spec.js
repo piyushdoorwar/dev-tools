@@ -585,3 +585,99 @@ test('an unknown hash falls back to the default tab', async ({ page }) => {
   await expect(page.locator('#convertPanel')).toBeVisible();
   await expect(page.locator('#modeConvert')).toHaveAttribute('aria-selected', 'true');
 });
+
+/* --- SVG editor chrome ---------------------------------------------------- */
+
+test('the empty SVG panel shows no broken-image placeholder', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+  await page.locator('#modeSvg').click();
+
+  // An <img> with no src paints the browser's broken-image mark and its alt
+  // text, which is what used to sit in the corner of both frames.
+  for (const id of ['#svgSourceImage', '#svgOutputImage']) {
+    await expect(page.locator(id)).toBeHidden();
+    expect(await page.locator(id).evaluate((img) => img.hasAttribute('src'))).toBe(false);
+  }
+  await expect(page.locator('#svgSourceEmpty')).toBeVisible();
+  await expect(page.locator('#svgOutputEmpty')).toBeVisible();
+});
+
+test('the SVG editors carry monospace type and a focus ring', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+  await page.locator('#modeSvg').click();
+
+  const idle = await page.locator('#svgInput').evaluate((node) => {
+    const style = getComputedStyle(node);
+    return { font: style.fontFamily, shadow: style.boxShadow };
+  });
+  expect(idle.font).toMatch(/mono/i);
+  expect(idle.shadow).toBe('none');
+
+  await page.locator('#svgInput').focus();
+  const focused = await page.locator('#svgInput').evaluate((node) => getComputedStyle(node).boxShadow);
+  expect(focused).not.toBe('none');
+});
+
+test('the output editor reads as a result until it has one', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+  await page.locator('#modeSvg').click();
+
+  await expect(page.locator('#svgOutput')).toHaveCSS('border-style', 'dashed');
+  await page.locator('#svgInput').fill(MESSY_SVG);
+  await expect(page.locator('#svgOutput')).not.toHaveValue('');
+  await expect(page.locator('#svgOutput')).toHaveCSS('border-style', 'solid');
+});
+
+test('the two SVG columns line up at desktop width', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await openTool(page, 'image-toolkit');
+  await page.locator('#modeSvg').click();
+
+  const top = async (selector) => (await page.locator(selector).boundingBox()).y;
+
+  // The header buttons differ per column, so without a shared row height they
+  // pushed one column's editor down.
+  expect(await top('#svgInput')).toBeCloseTo(await top('#svgOutput'), 0);
+  expect(await top('#svgSourcePreview')).toBeCloseTo(await top('#svgOutputPreview'), 0);
+
+  // The numbers and the options read before the rendered comparison.
+  const order = ['#svgOutput', '.svg-facts', '.svg-options', '#svgOutputPreview'];
+  const tops = [];
+  for (const selector of order) tops.push(await top(selector));
+  expect(tops).toEqual([...tops].sort((a, b) => a - b));
+
+  // And it reads as a toolbar action, not a primary button.
+  const button = await page.locator('#svgOpenBtn').boundingBox();
+  expect(button.height).toBeLessThan(36);
+});
+
+test('the SVG actions are icon buttons with tooltips', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+  await page.locator('#modeSvg').click();
+
+  for (const [id, label] of [
+    ['#svgOpenBtn', /open/i],
+    ['#svgClearBtn', /clear/i],
+    ['#svgCopyBtn', /copy/i],
+    ['#svgDownloadBtn', /download/i],
+  ]) {
+    const button = page.locator(id);
+    // Icon only: the label lives in the tooltip, and main.js mirrors it into
+    // aria-label so the button is still announced.
+    await expect(button).toHaveText('');
+    await expect(button).toHaveAttribute('data-tooltip', label);
+    await expect(button).toHaveAttribute('aria-label', label);
+    await expect(button.locator('svg')).toHaveCount(1);
+
+    const box = await button.boundingBox();
+    expect(box.width).toBeLessThan(44);
+  }
+
+  const tooltipVisibility = () => page.locator('#svgCopyBtn')
+    .evaluate((node) => getComputedStyle(node, '::after').visibility);
+
+  expect(await tooltipVisibility()).toBe('hidden');
+  await page.locator('#svgCopyBtn').hover();
+  // visibility is part of the reveal transition, so it flips when it finishes.
+  await expect.poll(tooltipVisibility).toBe('visible');
+});

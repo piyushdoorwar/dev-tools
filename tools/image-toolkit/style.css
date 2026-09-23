@@ -394,27 +394,145 @@ body {
 /* --- SVG optimizer ------------------------------------------------------- */
 
 .svg-io { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
-.svg-column { display: grid; gap: 0.45rem; min-width: 0; }
-.column-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; min-height: 2rem; }
 
+/* Fixed rows, not auto: the two columns are separate grids, so without a
+   shared row height the header buttons make one header taller and the editors
+   below them stop lining up. */
+/* A fixed header row keeps both editors starting at the same y: the columns
+   are separate grids, so an auto row would size to whichever header carries
+   more buttons. */
+.svg-column {
+  display: grid;
+  grid-template-rows: 2.4rem 1fr;
+  gap: 0.45rem;
+  min-width: 0;
+}
+.column-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.column-actions { display: flex; align-items: center; gap: 0.4rem; min-width: 0; }
+/* The rendered comparison sits after the numbers and the options: the two
+   editors and the settings that drive them stay together at the top, and the
+   images are the result you scroll to. */
+.svg-previews {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 0.9rem;
+}
+
+.preview-cell { display: grid; gap: 0.45rem; margin: 0; min-width: 0; }
+
+.preview-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  /* Fixed, not min-height: only one caption carries a button, and a taller
+     caption there would drop that preview below its neighbour. */
+  height: 2.3rem;
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+}
+
+/* Each action sits with what it acts on — open/clear with the source, copy
+   with the optimized code, download with the rendered result. Icon-only with
+   a tooltip, the same pattern as the other tools' editor toolbars. */
+.action-btn {
+  display: inline-grid;
+  position: relative;
+  place-items: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: 0.6rem;
+  background: var(--surface-strong);
+  color: var(--text-secondary);
+  transition: 180ms ease;
+}
+
+.action-btn:hover,
+.action-btn:focus-visible {
+  color: var(--text-primary);
+  border-color: var(--accent-purple-light);
+  background: rgba(103, 57, 183, 0.22);
+  outline: none;
+}
+
+.action-btn .ui-icon { width: 1rem; height: 1rem; }
+
+/* Appearance of the bubble comes from the shared layer; placement and the
+   reveal are local, as they are in every other tool that does this. */
+.action-btn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  transform: translateY(4px);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: 180ms ease;
+}
+
+.action-btn[data-tooltip]:hover::after,
+.action-btn[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+
+/* These two are the tool's editors, not form fields, so they get editor
+   treatment: mono type on a darker well, a readable measure, and a focus ring
+   rather than a bare border colour change. */
 .code-in,
 .code-out {
   width: 100%;
-  min-height: 16rem;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
+  min-height: 17rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--control-border-strong);
   border-radius: 0.9rem;
   color: var(--text-primary);
-  background: rgba(0, 0, 0, 0.25);
+  background:
+    linear-gradient(180deg, rgba(139, 92, 246, 0.05), transparent 5rem),
+    rgba(0, 0, 0, 0.32);
   font-family: var(--font-mono);
   font-size: 0.76rem;
-  line-height: 1.6;
+  line-height: var(--leading-code);
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
   resize: vertical;
+  transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
 }
 
+.code-in::placeholder,
+.code-out::placeholder { color: var(--text-disabled); }
+
+.code-in:hover:not(:focus) { border-color: var(--border-light); }
+
 .code-in:focus,
-.code-out:focus { border-color: var(--accent-purple-light); outline: none; }
-.code-out { color: var(--text-secondary); }
+.code-out:focus {
+  border-color: var(--focus-border);
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+/* The output is a result, not an input: dimmer, and it never looks editable. */
+.code-out {
+  color: var(--text-secondary);
+  border-style: dashed;
+  background: rgba(0, 0, 0, 0.22);
+  cursor: default;
+}
+
+.code-out:not(:placeholder-shown) {
+  border-style: solid;
+  color: var(--text-primary);
+}
 
 /* Both panes render so a heavy rounding is visible, not inferred from bytes.
    A fixed height keeps the two frames comparable whatever the artwork is. */
@@ -445,9 +563,10 @@ body {
 
 .svg-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .svg-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin-top: 0.9rem; }
+/* The savings badge shares the header row with the copy button now. */
+.column-head .savings { white-space: nowrap; }
 .option-list { display: grid; gap: 0.55rem; align-content: start; }
 .option-list .field-help { margin-top: 0.2rem; }
-.svg-panel .button-row .convert-btn { flex: 0 0 auto; }
 
 .privacy-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .privacy-copy { min-width: 0; }
@@ -526,6 +645,7 @@ body {
   .result-layout,
   .icon-result-layout,
   .svg-io,
+  .svg-previews,
   .svg-options { grid-template-columns: 1fr; }
   .drop-zone { min-height: 18rem; }
   .mode-tab span { font-size: 0.76rem; }

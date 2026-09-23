@@ -1378,6 +1378,9 @@
   });
 
   buildSizeControls();
+  // An <img> with no src renders the browser's broken-image mark and its alt
+  // text, so the empty state has to be established before anything is typed.
+  renderSvgPreviews('', '');
   clearAll();
   setMode(modeFromHash() || 'convert', { updateHash: Boolean(modeFromHash()) });
 })();
