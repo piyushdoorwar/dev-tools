@@ -403,7 +403,7 @@ body {
    more buttons. */
 .svg-column {
   display: grid;
-  grid-template-rows: 2.4rem 1fr;
+  grid-template-rows: var(--control-h) 1fr;
   gap: 0.45rem;
   min-width: 0;
 }
@@ -428,7 +428,7 @@ body {
   gap: 0.6rem;
   /* Fixed, not min-height: only one caption carries a button, and a taller
      caption there would drop that preview below its neighbour. */
-  height: 2.3rem;
+  height: var(--control-h);
   color: var(--text-secondary);
   font-size: 0.74rem;
   font-weight: 700;
@@ -437,16 +437,14 @@ body {
 
 /* Each action sits with what it acts on — open/clear with the source, copy
    with the optimized code, download with the rendered result. Icon-only with
-   a tooltip, the same pattern as the other tools' editor toolbars. */
+   a tooltip, the same pattern as the other tools' editor toolbars.
+
+   Geometry (38px square, radius, glyph size) belongs to main.css's shared
+   layer so every tool's icon buttons match; only colour and the tooltip are
+   set here. */
 .action-btn {
-  display: inline-grid;
   position: relative;
-  place-items: center;
-  width: 2.1rem;
-  height: 2.1rem;
-  padding: 0;
   border: 1px solid var(--control-border);
-  border-radius: 0.6rem;
   background: var(--surface-strong);
   color: var(--text-secondary);
   transition: 180ms ease;
@@ -459,8 +457,6 @@ body {
   background: rgba(103, 57, 183, 0.22);
   outline: none;
 }
-
-.action-btn .ui-icon { width: 1rem; height: 1rem; }
 
 /* Appearance of the bubble comes from the shared layer; placement and the
    reveal are local, as they are in every other tool that does this. */

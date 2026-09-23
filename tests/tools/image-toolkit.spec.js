@@ -646,9 +646,9 @@ test('the two SVG columns line up at desktop width', async ({ page }) => {
   for (const selector of order) tops.push(await top(selector));
   expect(tops).toEqual([...tops].sort((a, b) => a - b));
 
-  // And it reads as a toolbar action, not a primary button.
+  // And it is a square icon button at the shared size, not a labelled button.
   const button = await page.locator('#svgOpenBtn').boundingBox();
-  expect(button.height).toBeLessThan(36);
+  expect(button.width).toBeCloseTo(button.height, 0);
 });
 
 test('the SVG actions are icon buttons with tooltips', async ({ page }) => {
@@ -670,7 +670,7 @@ test('the SVG actions are icon buttons with tooltips', async ({ page }) => {
     await expect(button.locator('svg')).toHaveCount(1);
 
     const box = await button.boundingBox();
-    expect(box.width).toBeLessThan(44);
+    expect(box.width).toBeCloseTo(box.height, 0);
   }
 
   const tooltipVisibility = () => page.locator('#svgCopyBtn')
