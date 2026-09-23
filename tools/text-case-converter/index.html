@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Case Converter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Text Case Converter</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="How word splitting works" aria-label="How word splitting works">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel input-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <h2 class="panel-title">Input</h2>
+                        <div class="mode-switch" role="group" aria-label="Conversion mode">
+                            <button class="mode-btn" type="button" data-bulk="false" aria-pressed="false"
+                                    data-tooltip="Every word boundary in the input becomes one identifier">Whole text</button>
+                            <button class="mode-btn active" type="button" data-bulk="true" aria-pressed="true"
+                                    data-tooltip="Each line is converted on its own, preserving line order">Line by line</button>
+                        </div>
+                    </div>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Insert sample text" aria-label="Insert sample text">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea id="input" class="editor" spellcheck="false" autocomplete="off"
+                              placeholder="Paste or type text here, e.g. some-variable_name or SomeClassName."></textarea>
+                </div>
+            </section>
+
+            <section class="panel output-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Converted</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="copy-all" data-tooltip="Copy all cases" aria-label="Copy all cases">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="case-grid" id="case-grid">
+                        <div class="case-card" data-case="camel">
+                            <div class="case-card-header">
+                                <span class="case-card-label">camelCase</span>
+                                <button class="action-btn" type="button" data-action="copy-case" data-case="camel" data-tooltip="Copy camelCase" aria-label="Copy camelCase">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                            </div>
+                            <textarea class="case-output mono" id="out-camel" readonly spellcheck="false" aria-label="camelCase output"></textarea>
+                        </div>
+
+                        <div class="case-card" data-case="pascal">
+                            <div class="case-card-header">
+                                <span class="case-card-label">PascalCase</span>
+                                <button class="action-btn" type="button" data-action="copy-case" data-case="pascal" data-tooltip="Copy PascalCase" aria-label="Copy PascalCase">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                            </div>
+                            <textarea class="case-output mono" id="out-pascal" readonly spellcheck="false" aria-label="PascalCase output"></textarea>
+                        </div>
+
+                        <div class="case-card" data-case="snake">
+                            <div class="case-card-header">
+                                <span class="case-card-label">snake_case</span>
+                                <button class="action-btn" type="button" data-action="copy-case" data-case="snake" data-tooltip="Copy snake_case" aria-label="Copy snake_case">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                            </div>
+                            <textarea class="case-output mono" id="out-snake" readonly spellcheck="false" aria-label="snake_case output"></textarea>
+                        </div>
+
+                        <div class="case-card" data-case="kebab">
+                            <div class="case-card-header">
+                                <span class="case-card-label">kebab-case</span>
+                                <button class="action-btn" type="button" data-action="copy-case" data-case="kebab" data-tooltip="Copy kebab-case" aria-label="Copy kebab-case">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                            </div>
+                            <textarea class="case-output mono" id="out-kebab" readonly spellcheck="false" aria-label="kebab-case output"></textarea>
+                        </div>
+
+                        <div class="case-card" data-case="constant">
+                            <div class="case-card-header">
+                                <span class="case-card-label">CONSTANT_CASE</span>
+                                <button class="action-btn" type="button" data-action="copy-case" data-case="constant" data-tooltip="Copy CONSTANT_CASE" aria-label="Copy CONSTANT_CASE">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                            </div>
+                            <textarea class="case-output mono" id="out-constant" readonly spellcheck="false" aria-label="CONSTANT_CASE output"></textarea>
+                        </div>
+
+                        <div class="case-card" data-case="title">
+                            <div class="case-card-header">
+                                <span class="case-card-label">Title Case</span>
+                                <button class="action-btn" type="button" data-action="copy-case" data-case="title" data-tooltip="Copy Title Case" aria-label="Copy Title Case">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                            </div>
+                            <textarea class="case-output mono" id="out-title" readonly spellcheck="false" aria-label="Title Case output"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How word splitting works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Case styles</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>camelCase</strong> — first word lowercase, each following word capitalized, no separators. Used for JavaScript variables and function names.</li>
+                            <li><strong>PascalCase</strong> — every word capitalized, no separators. Used for class names and React component names.</li>
+                            <li><strong>snake_case</strong> — lowercase words joined by underscores. Used for Python variables and SQL column names.</li>
+                            <li><strong>kebab-case</strong> — lowercase words joined by hyphens. Used for URL slugs, CSS classes, and file names.</li>
+                            <li><strong>CONSTANT_CASE</strong> — uppercase words joined by underscores. Used for constants and environment variables.</li>
+                            <li><strong>Title Case</strong> — every word capitalized, separated by spaces. Used for headings and document titles.</li>
+                        </ul>
+                        <p><strong>Boundaries</strong></p>
+                        <ul class="tip-list">
+                            <li>Spaces, hyphens, underscores, dots, and other punctuation always split words.</li>
+                            <li>A lowercase letter or digit followed by an uppercase letter splits too, so <span class="hint-code">fooBar</span> becomes <span class="hint-code">foo</span> / <span class="hint-code">Bar</span>.</li>
+                            <li>A run of capitals followed by a capital-plus-lowercase splits before the last capital, so <span class="hint-code">XMLParser</span> becomes <span class="hint-code">XML</span> / <span class="hint-code">Parser</span>.</li>
+                            <li>Every word is lowercased before it is rebuilt, so the output case comes entirely from the target style, not from whatever casing the input happened to use.</li>
+                        </ul>
+                        <p><strong>Whole text vs. line by line</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>Whole text</strong> treats the entire input, including line breaks, as one identifier.</li>
+                            <li><strong>Line by line</strong> converts each line on its own, so a list of phrases becomes a matching list of identifiers in the same order, one per line.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

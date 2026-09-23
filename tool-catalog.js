@@ -163,6 +163,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["SQL formatting and beautification", "Readable indentation", "Local query processing"],
   },
   {
+    id: "text-case-converter",
+    name: "Text Case Converter",
+    route: "text-case-converter",
+    description: "Convert text into camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, and Title Case at once, with a line-by-line bulk mode.",
+    capabilities: ["Six identifier styles converted at once", "Camel, Pascal, snake, kebab, constant, and title case", "Bulk mode converts each line independently"],
+  },
+  {
     id: "text-cleaner",
     name: "Text Cleaner",
     route: "text-cleaner",
