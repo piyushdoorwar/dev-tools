@@ -73,6 +73,56 @@ body {
   outline: none;
 }
 
+/* --- Mode bar ------------------------------------------------------------
+   Three workflows over one image pipeline. The bar scrolls rather than wraps
+   on narrow screens so the tabs keep a single, predictable row. */
+
+.mode-bar {
+  display: flex;
+  gap: 0.4rem;
+  max-width: 1260px;
+  margin: 0.9rem auto 0;
+  padding: 0.3rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: rgba(30, 30, 30, 0.7);
+  scrollbar-width: none;
+}
+
+.mode-bar::-webkit-scrollbar { display: none; }
+
+.mode-tab {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.6rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 0.8rem;
+  color: var(--text-secondary);
+  background: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: 180ms ease;
+}
+
+.mode-tab:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mode-tab.is-active {
+  color: white;
+  border-color: rgba(139, 92, 246, 0.55);
+  background: rgba(103, 57, 183, 0.32);
+}
+
+.mode-tab .ui-icon { width: 1.05rem; height: 1.05rem; }
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(22rem, 0.92fr);
@@ -80,6 +130,9 @@ body {
   max-width: 1260px;
   margin: 1rem auto 0;
 }
+
+/* SVG work is one wide editor pair, not a two-panel step flow. */
+.svg-panel { grid-column: 1 / -1; }
 
 .panel {
   min-width: 0;
@@ -257,11 +310,144 @@ body {
 .range { width: 100%; margin: 0.8rem 0 0.25rem; accent-color: var(--accent-purple-light); }
 .range-labels { display: flex; justify-content: space-between; color: var(--text-disabled); font-size: 0.62rem; }
 
+/* The swatch trigger and popover come from the shared layer; only the size of
+   the trigger inside this two-column field is set here. */
 .color-control { display: grid; grid-template-columns: 3rem 1fr; gap: 0.55rem; margin-top: 0.48rem; }
 .color-control input { min-height: 2.65rem; }
-.color-control input[type="color"] { width: 3rem; padding: 0.24rem; }
+.color-control .picker { height: 2.65rem; }
+.color-control .swatch { width: 100%; height: 100%; }
 .color-control input[type="text"] { width: 100%; padding: 0 0.75rem; font-family: var(--font-mono); text-transform: uppercase; outline: none; }
 .color-control input:focus { border-color: var(--accent-purple-light); }
+
+.text-field { width: 100%; min-height: 2.65rem; margin-top: 0.48rem; padding: 0 0.75rem; }
+
+.custom-size { display: flex; align-items: center; gap: 0.55rem; }
+.custom-size .text-field { width: 8rem; }
+.custom-size__times { color: var(--text-disabled); font-size: 0.8rem; }
+.custom-size__height { margin-top: 0.48rem; color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.8rem; }
+
+/* --- Icon pack ----------------------------------------------------------- */
+
+.size-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.45rem; margin-top: 0.55rem; }
+
+.size-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  background: rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: 180ms ease;
+}
+
+.size-option:hover { border-color: rgba(139, 92, 246, 0.5); }
+.size-option:has(input:checked) { border-color: rgba(139, 92, 246, 0.55); background: rgba(103, 57, 183, 0.16); }
+.size-option input { flex-shrink: 0; width: 1rem; height: 1rem; margin: 0; accent-color: var(--accent-purple-light); }
+.size-option span { display: grid; min-width: 0; }
+.size-option strong { font-size: 0.76rem; font-weight: 750; }
+.size-option small { color: var(--text-disabled); font-size: 0.64rem; }
+
+.inline-toggle { display: inline-flex; align-items: center; gap: 0.45rem; color: var(--text-secondary); font-size: 0.74rem; font-weight: 650; cursor: pointer; }
+.inline-toggle input { width: 1rem; height: 1rem; margin: 0; accent-color: var(--accent-purple-light); }
+
+.icon-result-layout { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(19rem, 0.85fr); gap: 1rem; }
+
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); gap: 0.6rem; margin: 0; padding: 0; list-style: none; }
+
+.icon-card {
+  min-width: 0;
+  padding: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.022);
+  text-align: center;
+}
+
+.icon-frame { display: grid; place-items: center; height: 5rem; margin-bottom: 0.5rem; overflow: hidden; border-radius: 0.6rem; }
+.icon-frame img { max-width: 64px; max-height: 64px; image-rendering: auto; }
+.icon-name { margin: 0; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 650; }
+.icon-meta { margin: 0.2rem 0 0; color: var(--text-disabled); font-size: 0.62rem; }
+
+.button-row { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 0.9rem; }
+
+.ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--control-border);
+  border-radius: 0.85rem;
+  color: var(--text-secondary);
+  background: var(--surface-strong);
+  font-weight: 700;
+  transition: 180ms ease;
+}
+
+.ghost-btn:hover,
+.ghost-btn:focus-visible { color: var(--text-primary); border-color: var(--accent-purple-light); background: rgba(103, 57, 183, 0.22); outline: none; }
+
+/* --- SVG optimizer ------------------------------------------------------- */
+
+.svg-io { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+.svg-column { display: grid; gap: 0.45rem; min-width: 0; }
+.column-head { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; min-height: 2rem; }
+
+.code-in,
+.code-out {
+  width: 100%;
+  min-height: 16rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.25);
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.code-in:focus,
+.code-out:focus { border-color: var(--accent-purple-light); outline: none; }
+.code-out { color: var(--text-secondary); }
+
+/* Both panes render so a heavy rounding is visible, not inferred from bytes.
+   A fixed height keeps the two frames comparable whatever the artwork is. */
+.svg-preview {
+  display: grid;
+  place-items: center;
+  height: 12rem;
+  padding: 0.75rem;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+}
+
+/* An SVG with only a viewBox has no intrinsic size, so an <img> falls back to
+   its 300×150 default and overflows the frame. Sizing the image to the frame
+   and letting object-fit do the scaling fits both kinds of document. */
+.svg-preview img {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: contain;
+}
+.preview-empty { margin: 0; color: var(--text-disabled); font-size: 0.7rem; }
+
+.savings { color: var(--text-disabled); font-size: 0.7rem; font-weight: 700; }
+.savings.is-positive { color: var(--accent-green); }
+
+.svg-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.svg-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; margin-top: 0.9rem; }
+.option-list { display: grid; gap: 0.55rem; align-content: start; }
+.option-list .field-help { margin-top: 0.2rem; }
+.svg-panel .button-row .convert-btn { flex: 0 0 auto; }
 
 .privacy-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .privacy-copy { min-width: 0; }
@@ -337,8 +523,12 @@ body {
 @media (max-width: 860px) {
   .workspace { grid-template-columns: 1fr; }
   .result-panel { grid-column: auto; }
-  .result-layout { grid-template-columns: 1fr; }
+  .result-layout,
+  .icon-result-layout,
+  .svg-io,
+  .svg-options { grid-template-columns: 1fr; }
   .drop-zone { min-height: 18rem; }
+  .mode-tab span { font-size: 0.76rem; }
 }
 
 @media (max-width: 520px) {
@@ -351,6 +541,9 @@ body {
   .preview-frame { min-height: 14rem; }
   .privacy-card { align-items: flex-start; }
   .download-btn { width: 100%; }
+  .size-grid { grid-template-columns: 1fr; }
+  .button-row { flex-direction: column; }
+  .button-row > * { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {

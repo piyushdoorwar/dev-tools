@@ -12,7 +12,7 @@ const QUICK_LAUNCH_TOOL_IDS = [
   "id-generator",
   "base-converter",
 ];
-const NEW_TOOL_IDS = new Set(["chmod-calculator", "regex-cheatsheet", "http-status-codes", "text-cleaner", "word-counter", "lorem-ipsum-generator", "cron-expression-generator", "color-converter", "encoder-decoder", "image-converter", "base-converter", "json-toon-converter", "toon-json-converter"]);
+const NEW_TOOL_IDS = new Set(["chmod-calculator", "regex-cheatsheet", "http-status-codes", "text-cleaner", "word-counter", "lorem-ipsum-generator", "cron-expression-generator", "color-converter", "encoder-decoder", "image-toolkit", "base-converter", "json-toon-converter", "toon-json-converter"]);
 const TOOL_CATALOG = globalThis.DEV_TOOLS_CATALOG;
 
 if (!Array.isArray(TOOL_CATALOG) || TOOL_CATALOG.length === 0) {

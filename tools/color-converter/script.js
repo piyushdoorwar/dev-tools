@@ -144,43 +144,6 @@ function hslToRgb(h, s, l) {
   return { r: (r1 + m) * 255, g: (g1 + m) * 255, b: (b1 + m) * 255 };
 }
 
-/* --- HSV ----------------------------------------------------------------
-   Only the picker uses this: a saturation/brightness pad plus a hue rail is
-   the shape people already know, and it maps to HSV, not HSL.
-   ------------------------------------------------------------------------ */
-
-function rgbToHsv({ r, g, b }) {
-  const rr = r / 255;
-  const gg = g / 255;
-  const bb = b / 255;
-  const max = Math.max(rr, gg, bb);
-  const d = max - Math.min(rr, gg, bb);
-
-  let h = 0;
-  if (d !== 0) {
-    if (max === rr) h = ((gg - bb) / d) % 6;
-    else if (max === gg) h = (bb - rr) / d + 2;
-    else h = (rr - gg) / d + 4;
-    h *= 60;
-    if (h < 0) h += 360;
-  }
-  return { h, s: max === 0 ? 0 : d / max, v: max };
-}
-
-function hsvToRgb(h, s, v) {
-  const c = v * s;
-  const hp = (((h % 360) + 360) % 360) / 60;
-  const x = c * (1 - Math.abs((hp % 2) - 1));
-  const [r1, g1, b1] = hp < 1 ? [c, x, 0]
-    : hp < 2 ? [x, c, 0]
-    : hp < 3 ? [0, c, x]
-    : hp < 4 ? [0, x, c]
-    : hp < 5 ? [x, 0, c]
-    : [c, 0, x];
-  const m = v - c;
-  return { r: (r1 + m) * 255, g: (g1 + m) * 255, b: (b1 + m) * 255 };
-}
-
 /* --- Parsing ------------------------------------------------------------ */
 
 const NUM = String.raw`[-+]?(?:\d*\.\d+|\d+\.?)(?:e[-+]?\d+)?`;
@@ -516,175 +479,12 @@ function render() {
 }
 
 /* --- Colour picker -------------------------------------------------------
-   `<input type="color">` opens the operating system's dialog: it ignores the
-   page theme, has no alpha, and on Linux is a full modal. This is a popover
-   built from the same tokens as the rest of the tool.
-
-   Hue and opacity are real range inputs, so they are keyboard and screen
-   reader operable for free; only the two-dimensional pad needs its own key
-   handling. The text field beside the swatch stays the exact-value control.
+   The popover itself is the shared component (DevToolsMain.createColorPicker,
+   see tools/style-guide.md). This tool only supplies the trigger element and
+   keeps its text field as the exact-value control.
    ------------------------------------------------------------------------ */
 
-const PRESETS = [
-  ["#FFFFFF", "White"], ["#B8B8B8", "Grey"], ["#0D0D0D", "Near black"],
-  ["#6739B7", "Purple"], ["#8B5CF6", "Purple light"], ["#FFD700", "Yellow"],
-  ["#00D09C", "Green"], ["#FF6B9D", "Pink"], ["#5DADE2", "Blue"],
-];
-
-function createPicker(key, root, onPick) {
-  const trigger = root.querySelector(".swatch");
-  const fill = root.querySelector(".swatch__fill");
-  const panel = root.querySelector(".picker__panel");
-  const pad = root.querySelector(".sv");
-  const hue = root.querySelector(".slider--hue");
-  const alpha = root.querySelector(".slider--alpha");
-  const presets = root.querySelector(".picker__presets");
-
-  // The pad is the only place hue survives at s=0 or v=0, where it cannot be
-  // recovered from RGB. Holding it here is what stops a drag to black from
-  // resetting the rail to red.
-  const hsv = { h: 0, s: 0, v: 1, a: 1 };
-  let dragging = false;
-
-  for (const [hex, name] of PRESETS) {
-    const preset = document.createElement("button");
-    preset.className = "preset";
-    preset.type = "button";
-    preset.dataset.value = hex;
-    preset.style.setProperty("--preset", hex);
-    preset.setAttribute("aria-label", name);
-    preset.addEventListener("click", () => {
-      const picked = parseHex(hex);
-      emit({ ...picked, a: hsv.a });
-    });
-    presets.appendChild(preset);
-  }
-
-  function paint() {
-    const rgb = hsvToRgb(hsv.h, hsv.s, hsv.v);
-    const opaque = formatHex({ ...rgb, a: 1 });
-    fill.style.background = formatHex({ ...rgb, a: hsv.a });
-    pad.style.setProperty("--hue", `hsl(${hsv.h} 100% 50%)`);
-    pad.style.setProperty("--x", `${hsv.s * 100}%`);
-    pad.style.setProperty("--y", `${(1 - hsv.v) * 100}%`);
-    pad.style.setProperty("--thumb", opaque);
-    alpha.style.setProperty("--to", opaque);
-    hue.value = String(Math.round(hsv.h));
-    alpha.value = String(Math.round(hsv.a * 100));
-  }
-
-  function emit(rgba) {
-    onPick(formatHex(rgba));
-  }
-
-  function commit() {
-    emit({ ...hsvToRgb(hsv.h, hsv.s, hsv.v), a: hsv.a });
-  }
-
-  function padTo(event) {
-    const box = pad.getBoundingClientRect();
-    hsv.s = clamp((event.clientX - box.left) / box.width, 0, 1);
-    hsv.v = 1 - clamp((event.clientY - box.top) / box.height, 0, 1);
-    paint();
-    commit();
-  }
-
-  // Pointer events cover mouse, touch and pen in one path, and capture keeps
-  // the drag alive when it leaves the pad — no document-level listener runs
-  // while idle.
-  pad.addEventListener("pointerdown", (event) => {
-    dragging = true;
-    pad.setPointerCapture(event.pointerId);
-    pad.focus();
-    event.preventDefault();
-    padTo(event);
-  });
-  pad.addEventListener("pointermove", (event) => { if (dragging) padTo(event); });
-  pad.addEventListener("pointerup", (event) => {
-    dragging = false;
-    pad.releasePointerCapture(event.pointerId);
-  });
-  pad.addEventListener("pointercancel", () => { dragging = false; });
-
-  const PAD_KEYS = {
-    ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowDown: [0, -1], ArrowUp: [0, 1],
-  };
-  pad.addEventListener("keydown", (event) => {
-    const step = PAD_KEYS[event.key];
-    if (step) {
-      const size = event.shiftKey ? 0.1 : 0.01;
-      hsv.s = clamp(hsv.s + step[0] * size, 0, 1);
-      hsv.v = clamp(hsv.v + step[1] * size, 0, 1);
-    } else if (event.key === "Home") hsv.s = 0;
-    else if (event.key === "End") hsv.s = 1;
-    else return;
-
-    event.preventDefault();
-    paint();
-    commit();
-  });
-
-  hue.addEventListener("input", () => { hsv.h = Number(hue.value); paint(); commit(); });
-  alpha.addEventListener("input", () => { hsv.a = Number(alpha.value) / 100; paint(); commit(); });
-
-  function open() {
-    if (root.classList.contains("is-open")) return;
-    closeAllPickers();
-    root.classList.add("is-open");
-    trigger.setAttribute("aria-expanded", "true");
-    requestAnimationFrame(() => pad.focus());
-  }
-
-  function close({ restoreFocus = false } = {}) {
-    if (!root.classList.contains("is-open")) return;
-    root.classList.remove("is-open");
-    trigger.setAttribute("aria-expanded", "false");
-    if (restoreFocus) trigger.focus();
-  }
-
-  trigger.addEventListener("click", () => {
-    if (root.classList.contains("is-open")) close({ restoreFocus: true });
-    else open();
-  });
-
-  panel.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    event.stopPropagation();
-    close({ restoreFocus: true });
-  });
-
-  // Leaving the popover by Tab is a dismissal; clicking outside is handled once
-  // for every picker below.
-  root.addEventListener("focusout", (event) => {
-    if (!root.contains(event.relatedTarget)) close();
-  });
-
-  return {
-    key,
-    close,
-    // Re-derive the pad from a colour the user typed. Hue is only taken from
-    // the new colour when it has one: converting grey back to HSV reports hue
-    // 0, which would silently swing the rail to red.
-    sync(color) {
-      const next = rgbToHsv(color);
-      hsv.h = next.s < 1e-6 || next.v < 1e-6 ? hsv.h : next.h;
-      hsv.s = next.s;
-      hsv.v = next.v;
-      hsv.a = color.a;
-      paint();
-    },
-    paint,
-  };
-}
-
 const pickers = {};
-function closeAllPickers() {
-  Object.values(pickers).forEach((picker) => picker.close());
-}
-
-document.addEventListener("pointerdown", (event) => {
-  if (!event.target.closest(".picker")) closeAllPickers();
-});
 
 /* --- Field wiring ------------------------------------------------------- */
 
@@ -710,7 +510,7 @@ function readField(key) {
   error.hidden = true;
   error.textContent = "";
   // The pad works in sRGB, so an out-of-gamut colour reaches it clipped.
-  pickers[key]?.sync(result.color);
+  pickers[key]?.setColor(result.color);
   render();
 }
 
@@ -723,16 +523,20 @@ function setField(key, text, { toast = "" } = {}) {
 for (const [key, field] of Object.entries(FIELDS)) {
   field.input.addEventListener("input", () => readField(key));
   field.input.addEventListener("focus", () => selectTarget(key));
-  pickers[key] = createPicker(key, field.picker, (hex) => {
-    // Write straight to the field rather than through sync(), so the pad keeps
-    // the hue it is being dragged around.
-    field.input.value = hex;
-    state.raw[key] = hex;
-    const result = parseColor(hex);
-    state[key] = result.ok ? result.color : null;
-    field.error.hidden = true;
-    selectTarget(key);
-    render();
+  pickers[key] = window.DevToolsMain.createColorPicker(field.picker, {
+    label: key === "fg" ? "foreground colour" : "background colour",
+    value: DEFAULTS[key],
+    // Write straight to the field rather than back through setColor(), so the
+    // pad keeps the hue it is being dragged around.
+    onChange: ({ hex }) => {
+      field.input.value = hex;
+      state.raw[key] = hex;
+      const result = parseColor(hex);
+      state[key] = result.ok ? result.color : null;
+      field.error.hidden = true;
+      selectTarget(key);
+      render();
+    },
   });
 }
 

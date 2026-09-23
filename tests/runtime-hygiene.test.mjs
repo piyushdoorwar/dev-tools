@@ -6,7 +6,7 @@ test('application code does not register deprecated unload handlers', async () =
   const files = [
     'app.js',
     'index.html',
-    'tools/image-converter/script.js',
+    'tools/image-toolkit/script.js',
   ];
   for (const file of files) {
     const contents = await readFile(new URL(`../${file}`, import.meta.url), 'utf8');

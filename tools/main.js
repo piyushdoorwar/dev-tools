@@ -383,6 +383,326 @@
     });
   }
 
+  /* --- Colour picker -------------------------------------------------------
+     Shared popover replacing `<input type="color">`, whose dialog is drawn by
+     the operating system and cannot be themed (see tools/main.css for the
+     markup contract and the class names this builds).
+
+     Hue and opacity are real range inputs, so they are keyboard and screen
+     reader operable for free; only the two-dimensional pad needs its own key
+     handling. A tool keeps its own text field as the exact-value control and
+     drives the swatch through setColor().
+
+       const picker = DevToolsMain.createColorPicker(node, {
+         alpha: false,
+         onChange: ({ hex }) => { ... },
+       });
+
+     The same change also fires as `picker:change` on the root, so a tool can
+     listen instead of passing a callback.
+     ---------------------------------------------------------------------- */
+
+  const PICKER_PRESETS = [
+    ["#FFFFFF", "White"], ["#B8B8B8", "Grey"], ["#0D0D0D", "Near black"],
+    ["#6739B7", "Purple"], ["#8B5CF6", "Purple light"], ["#FFD700", "Yellow"],
+    ["#00D09C", "Green"], ["#FF6B9D", "Pink"], ["#5DADE2", "Blue"],
+  ];
+
+  const pickerClamp = (value, low, high) => Math.min(high, Math.max(low, value));
+  const hexPair = (value) => Math.round(pickerClamp(value, 0, 255)).toString(16).padStart(2, "0").toUpperCase();
+
+  /* Colour maths the picker needs, exposed because tools that own a text field
+     beside the swatch have to parse and format the same values. */
+  const color = {
+    parseHex(text) {
+      const match = String(text ?? "").trim().match(/^#([0-9a-f]{3,8})$/i);
+      if (!match) return null;
+      let digits = match[1];
+      if (digits.length === 3 || digits.length === 4) {
+        digits = [...digits].map((digit) => digit + digit).join("");
+      }
+      if (digits.length !== 6 && digits.length !== 8) return null;
+      const value = (index) => parseInt(digits.slice(index, index + 2), 16);
+      return { r: value(0), g: value(2), b: value(4), a: digits.length === 8 ? value(6) / 255 : 1 };
+    },
+
+    formatHex({ r, g, b, a = 1 }) {
+      const base = `#${hexPair(r)}${hexPair(g)}${hexPair(b)}`;
+      return a < 1 ? `${base}${hexPair(a * 255)}` : base;
+    },
+
+    rgbToHsv({ r, g, b }) {
+      const rr = r / 255;
+      const gg = g / 255;
+      const bb = b / 255;
+      const max = Math.max(rr, gg, bb);
+      const d = max - Math.min(rr, gg, bb);
+
+      let h = 0;
+      if (d !== 0) {
+        if (max === rr) h = ((gg - bb) / d) % 6;
+        else if (max === gg) h = (bb - rr) / d + 2;
+        else h = (rr - gg) / d + 4;
+        h *= 60;
+        if (h < 0) h += 360;
+      }
+      return { h, s: max === 0 ? 0 : d / max, v: max };
+    },
+
+    hsvToRgb(h, s, v) {
+      const c = v * s;
+      const hp = (((h % 360) + 360) % 360) / 60;
+      const x = c * (1 - Math.abs((hp % 2) - 1));
+      const [r1, g1, b1] = hp < 1 ? [c, x, 0]
+        : hp < 2 ? [x, c, 0]
+        : hp < 3 ? [0, c, x]
+        : hp < 4 ? [0, x, c]
+        : hp < 5 ? [x, 0, c]
+        : [c, 0, x];
+      const m = v - c;
+      return { r: (r1 + m) * 255, g: (g1 + m) * 255, b: (b1 + m) * 255 };
+    },
+  };
+
+  root.color = root.color || color;
+
+  const openPickers = new Set();
+
+  root.closeAllColorPickers = root.closeAllColorPickers || function closeAllColorPickers(except = null) {
+    openPickers.forEach((picker) => {
+      if (picker.root !== except) picker.close();
+    });
+  };
+
+  root.createColorPicker = root.createColorPicker || function createColorPicker(node, options = {}) {
+    const pickerRoot = typeof node === "string" ? document.querySelector(node) : node;
+    if (!pickerRoot) return null;
+    if (pickerRoot._colorPicker) return pickerRoot._colorPicker;
+
+    const withAlpha = options.alpha !== undefined
+      ? options.alpha !== false
+      : pickerRoot.dataset.alpha !== "false";
+    const label = options.label || pickerRoot.dataset.label || "colour";
+    const presets = options.presets || PICKER_PRESETS;
+
+    // The markup is built here rather than repeated in every tool's HTML; a
+    // tool that already shipped it (and its ids) keeps what it has.
+    let trigger = pickerRoot.querySelector(".swatch");
+    if (!trigger) {
+      trigger = document.createElement("button");
+      trigger.type = "button";
+      trigger.className = "swatch";
+      trigger.innerHTML = '<span class="swatch__fill"></span>';
+      pickerRoot.appendChild(trigger);
+    }
+    trigger.setAttribute("aria-haspopup", "dialog");
+    trigger.setAttribute("aria-expanded", "false");
+    if (!trigger.getAttribute("aria-label")) trigger.setAttribute("aria-label", `Choose a ${label}`);
+
+    let panel = pickerRoot.querySelector(".picker__panel");
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.className = "picker__panel";
+      panel.setAttribute("role", "dialog");
+      panel.setAttribute("aria-label", `${label[0].toUpperCase()}${label.slice(1)} picker`);
+      panel.innerHTML = `
+        <div class="sv" tabindex="0" role="group" aria-label="Saturation and brightness — use the arrow keys"></div>
+        <input class="slider slider--hue" type="range" min="0" max="360" step="1" aria-label="Hue">
+        ${withAlpha ? '<input class="slider slider--alpha" type="range" min="0" max="100" step="1" aria-label="Opacity">' : ""}
+        <div class="picker__presets" role="group" aria-label="Preset colours"></div>`;
+      pickerRoot.appendChild(panel);
+    }
+
+    const fill = pickerRoot.querySelector(".swatch__fill");
+    const pad = pickerRoot.querySelector(".sv");
+    const hue = pickerRoot.querySelector(".slider--hue");
+    const alpha = pickerRoot.querySelector(".slider--alpha");
+    const presetHost = pickerRoot.querySelector(".picker__presets");
+
+    // The pad is the only place hue survives at s=0 or v=0, where it cannot be
+    // recovered from RGB. Holding it here is what stops a drag to black from
+    // resetting the rail to red.
+    const hsv = { h: 0, s: 0, v: 1, a: 1 };
+    let dragging = false;
+
+    presets.forEach(([hex, name]) => {
+      const preset = document.createElement("button");
+      preset.className = "preset";
+      preset.type = "button";
+      preset.dataset.value = hex;
+      preset.style.setProperty("--preset", hex);
+      preset.setAttribute("aria-label", name);
+      preset.addEventListener("click", () => {
+        const picked = color.parseHex(hex);
+        if (!picked) return;
+        api.setColor({ ...picked, a: withAlpha ? hsv.a : 1 });
+        commit();
+      });
+      presetHost.appendChild(preset);
+    });
+
+    function paint() {
+      const rgb = color.hsvToRgb(hsv.h, hsv.s, hsv.v);
+      const opaque = color.formatHex({ ...rgb, a: 1 });
+      fill.style.background = color.formatHex({ ...rgb, a: hsv.a });
+      pad.style.setProperty("--hue", `hsl(${hsv.h} 100% 50%)`);
+      pad.style.setProperty("--x", `${hsv.s * 100}%`);
+      pad.style.setProperty("--y", `${(1 - hsv.v) * 100}%`);
+      pad.style.setProperty("--thumb", opaque);
+      hue.value = String(Math.round(hsv.h));
+      if (alpha) {
+        alpha.style.setProperty("--to", opaque);
+        alpha.value = String(Math.round(hsv.a * 100));
+      }
+    }
+
+    function current() {
+      return { ...color.hsvToRgb(hsv.h, hsv.s, hsv.v), a: hsv.a };
+    }
+
+    function commit() {
+      const rgba = current();
+      const hex = color.formatHex(rgba);
+      pickerRoot.dataset.value = hex;
+      options.onChange?.({ hex, rgba });
+      pickerRoot.dispatchEvent(new CustomEvent("picker:change", {
+        bubbles: true,
+        detail: { hex, rgba },
+      }));
+    }
+
+    function padTo(event) {
+      const box = pad.getBoundingClientRect();
+      hsv.s = pickerClamp((event.clientX - box.left) / box.width, 0, 1);
+      hsv.v = 1 - pickerClamp((event.clientY - box.top) / box.height, 0, 1);
+      paint();
+      commit();
+    }
+
+    // Pointer events cover mouse, touch and pen in one path, and capture keeps
+    // the drag alive when it leaves the pad — no document-level listener runs
+    // while idle.
+    pad.addEventListener("pointerdown", (event) => {
+      dragging = true;
+      pad.setPointerCapture(event.pointerId);
+      pad.focus();
+      event.preventDefault();
+      padTo(event);
+    });
+    pad.addEventListener("pointermove", (event) => { if (dragging) padTo(event); });
+    pad.addEventListener("pointerup", (event) => {
+      dragging = false;
+      pad.releasePointerCapture(event.pointerId);
+    });
+    pad.addEventListener("pointercancel", () => { dragging = false; });
+
+    const PAD_KEYS = {
+      ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowDown: [0, -1], ArrowUp: [0, 1],
+    };
+    pad.addEventListener("keydown", (event) => {
+      const step = PAD_KEYS[event.key];
+      if (step) {
+        const size = event.shiftKey ? 0.1 : 0.01;
+        hsv.s = pickerClamp(hsv.s + step[0] * size, 0, 1);
+        hsv.v = pickerClamp(hsv.v + step[1] * size, 0, 1);
+      } else if (event.key === "Home") hsv.s = 0;
+      else if (event.key === "End") hsv.s = 1;
+      else return;
+
+      event.preventDefault();
+      paint();
+      commit();
+    });
+
+    hue.addEventListener("input", () => { hsv.h = Number(hue.value); paint(); commit(); });
+    alpha?.addEventListener("input", () => { hsv.a = Number(alpha.value) / 100; paint(); commit(); });
+
+    function open() {
+      if (pickerRoot.classList.contains("is-open")) return;
+      root.closeAllColorPickers(pickerRoot);
+      pickerRoot.classList.add("is-open");
+      trigger.setAttribute("aria-expanded", "true");
+      openPickers.add(api);
+      // A swatch near the right edge would push the panel out of its scroll
+      // container; measure once it is laid out and flip the anchor if so.
+      pickerRoot.classList.remove("picker--end");
+      requestAnimationFrame(() => {
+        const box = panel.getBoundingClientRect();
+        if (box.right > document.documentElement.clientWidth - 8) {
+          pickerRoot.classList.add("picker--end");
+        }
+        pad.focus();
+      });
+    }
+
+    function close({ restoreFocus = false } = {}) {
+      openPickers.delete(api);
+      if (!pickerRoot.classList.contains("is-open")) return;
+      pickerRoot.classList.remove("is-open");
+      trigger.setAttribute("aria-expanded", "false");
+      if (restoreFocus) trigger.focus();
+    }
+
+    trigger.addEventListener("click", () => {
+      if (pickerRoot.classList.contains("is-open")) close({ restoreFocus: true });
+      else open();
+    });
+
+    panel.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      event.stopPropagation();
+      close({ restoreFocus: true });
+    });
+
+    // Leaving the popover by Tab is a dismissal; clicking outside is handled
+    // once for every picker below.
+    pickerRoot.addEventListener("focusout", (event) => {
+      if (!pickerRoot.contains(event.relatedTarget)) close();
+    });
+
+    const api = {
+      root: pickerRoot,
+      open,
+      close,
+      paint,
+      getColor: () => color.formatHex(current()),
+
+      /* Re-derive the pad from a colour the tool supplied. Hue is only taken
+         from the new colour when it has one: converting grey back to HSV
+         reports hue 0, which would silently swing the rail to red. */
+      setColor(value) {
+        const next = typeof value === "string" ? color.parseHex(value) : value;
+        if (!next) return false;
+        const converted = color.rgbToHsv(next);
+        hsv.h = converted.s < 1e-6 || converted.v < 1e-6 ? hsv.h : converted.h;
+        hsv.s = converted.s;
+        hsv.v = converted.v;
+        hsv.a = withAlpha ? (next.a ?? 1) : 1;
+        paint();
+        return true;
+      },
+    };
+
+    pickerRoot._colorPicker = api;
+    api.setColor(pickerRoot.dataset.value || options.value || "#FFFFFF");
+    return api;
+  };
+
+  root.initColorPickers = root.initColorPickers || function initColorPickers(scope = document) {
+    const roots = [
+      ...(scope.matches?.("[data-color-picker]") ? [scope] : []),
+      ...(scope.querySelectorAll?.("[data-color-picker]") || []),
+    ];
+    roots.forEach((pickerRoot) => root.createColorPicker(pickerRoot));
+  };
+
+  if (!root._pickerGlobalBound) {
+    root._pickerGlobalBound = true;
+    document.addEventListener("pointerdown", (event) => {
+      if (!event.target.closest?.(".picker")) root.closeAllColorPickers();
+    });
+  }
+
   /* --- Icons ---------------------------------------------------------------
      One sprite for every repeated icon, injected once per page. Tools keep
      their <svg class="..."> wrapper (93 CSS rules size icons that way) and
@@ -678,6 +998,7 @@
   root.initDropdowns();
   root.initResizers();
   root.initModals();
+  root.initColorPickers();
   new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
@@ -686,6 +1007,7 @@
           root.initDropdowns(node);
           root.initResizers(node);
           root.initModals(node);
+          root.initColorPickers(node);
         }
       });
     });

@@ -95,7 +95,7 @@
   --text-lg: 1rem;        /* 16px — inputs, emphasis        */
   --text-xl: 1.25rem;     /* 20px — panel / modal titles    */
   --text-2xl: 1.75rem;    /* 28px — section titles          */
-  /* px, not rem: file-compressor and image-converter set
+  /* px, not rem: file-compressor and image-toolkit set
      html { font-size: 15px }, which would shrink a rem-based title.
      Clamped so it still steps down on narrow screens — each tool used to
      carry its own mobile override. */
@@ -1230,6 +1230,210 @@ select[size]:not([size='1']) {
   /* Command menus have nothing selected, so they never reserve tick space. */
   .dd--menu .dd__option {
     justify-content: flex-start;
+  }
+
+  /* --- Colour picker (shared component) -----------------------------------
+     `<input type="color">` opens the operating system's dialog: it ignores the
+     page theme, has no alpha, and on Linux is a full modal. This is the same
+     popover built from the design tokens. Markup contract:
+
+       <div class="picker" data-color-picker data-value="#6739B7"></div>
+
+     DevToolsMain.initColorPickers() fills in the swatch trigger and the panel
+     (saturation/brightness pad, hue and opacity rails, presets) and owns every
+     interaction — open/close, outside click, Escape, drag, arrow keys. A tool
+     listens for `picker:change` (detail { hex, rgba }) and never rebuilds any
+     of this locally.
+
+     data-alpha="false" drops the opacity rail for the cases — canvas fills,
+     icon backgrounds — where a translucent colour has no meaning.
+     ------------------------------------------------------------------------ */
+
+  .picker {
+    position: relative;
+    flex: 0 0 auto;
+  }
+
+  /* The trigger is a plain swatch so it reads as part of the field rather than
+     a button beside it. Alpha shows against a checkerboard, as it must. */
+  .swatch {
+    display: block;
+    width: var(--control-h);
+    height: var(--control-h);
+    padding: 3px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-control);
+    background: none;
+    cursor: pointer;
+    transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+  }
+
+  .swatch:hover,
+  .picker.is-open .swatch {
+    border-color: var(--accent-purple-light);
+    box-shadow: var(--shadow-purple);
+  }
+
+  .swatch__fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--radius-control) - 4px);
+    background: currentColor;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
+  }
+
+  /* One checkerboard definition, used behind both the swatch and the opacity
+     rail, so a translucent colour reads the same in each. */
+  .swatch,
+  .slider--alpha {
+    --checker:
+      linear-gradient(45deg, rgba(255, 255, 255, 0.16) 25%, transparent 25% 75%, rgba(255, 255, 255, 0.16) 75%),
+      linear-gradient(45deg, rgba(255, 255, 255, 0.16) 25%, transparent 25% 75%, rgba(255, 255, 255, 0.16) 75%);
+    --checker-size: 8px 8px;
+    --checker-position: 0 0, 4px 4px;
+    background-image: var(--checker);
+    background-size: var(--checker-size);
+    background-position: var(--checker-position);
+  }
+
+  .picker__panel {
+    position: absolute;
+    top: calc(100% + var(--space-2));
+    left: 0;
+    z-index: var(--z-dropdown);
+    display: none;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 232px;
+    padding: var(--space-3);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg-elevated);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .picker.is-open .picker__panel {
+    display: flex;
+  }
+
+  /* Flipped when the swatch sits close enough to the right edge that a
+     left-aligned panel would overflow its scroll container. */
+  .picker--end .picker__panel {
+    left: auto;
+    right: 0;
+  }
+
+  /* Saturation left-to-right over the hue, brightness top-to-bottom over black.
+     The thumb is positioned from the same --x/--y the script sets. */
+  .sv {
+    position: relative;
+    height: 132px;
+    border-radius: var(--radius-control);
+    background:
+      linear-gradient(to top, #000, rgba(0, 0, 0, 0)),
+      linear-gradient(to right, #fff, rgba(255, 255, 255, 0)),
+      var(--hue, #f00);
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  .sv::after {
+    content: "";
+    position: absolute;
+    left: var(--x, 0%);
+    top: var(--y, 0%);
+    width: 14px;
+    height: 14px;
+    transform: translate(-50%, -50%);
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--thumb, transparent);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+  }
+
+  .sv:focus-visible {
+    outline: 2px solid var(--focus-border);
+    outline-offset: 2px;
+  }
+
+  .slider {
+    width: 100%;
+    height: 14px;
+    padding: 0;
+    border: 1px solid var(--border-light);
+    border-radius: 999px;
+    cursor: pointer;
+    appearance: none;
+    touch-action: none;
+  }
+
+  .slider--hue {
+    background: linear-gradient(to right,
+      #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+  }
+
+  /* The checkerboard is the background-image; the colour ramp rides on top as a
+     gradient layer so both stay visible. */
+  .slider--alpha {
+    background-image:
+      linear-gradient(to right, rgba(0, 0, 0, 0), var(--to, #fff)),
+      var(--checker);
+    background-size: 100% 100%, var(--checker-size);
+    background-position: 0 0, var(--checker-position);
+  }
+
+  .slider::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--panel-bg-elevated);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--panel-bg-elevated);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+  }
+
+  .slider:focus-visible {
+    outline: 2px solid var(--focus-border);
+    outline-offset: 2px;
+  }
+
+  .picker__presets {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: var(--space-1);
+  }
+
+  .preset {
+    aspect-ratio: 1;
+    padding: 0;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    background: var(--preset);
+    cursor: pointer;
+    transition: transform var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
+  }
+
+  .preset:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-purple-light);
+  }
+
+  .preset:focus-visible {
+    outline: 2px solid var(--focus-border);
+    outline-offset: 2px;
   }
 
   /* --- Menus & popovers -------------------------------------------------- */

@@ -71,7 +71,7 @@ for (const [tool, [trigger, modal]] of Object.entries(MODALS)) {
 
 test('every modal root is wired to the shared component', async ({ page }) => {
   const TOOLS = ['base-converter', 'crypto-generator','encoder-decoder', 'fake-data-generator', 'file-compressor',
-    'image-converter', 'json-diff', 'json-toon-converter', 'jwt-debugger', 'markdown-editor',
+    'image-toolkit', 'json-diff', 'json-toon-converter', 'jwt-debugger', 'markdown-editor',
     'qr-generator', 'regex-tester', 'sql-formatter', 'text-diff'];
   for (const tool of TOOLS) {
     await openTool(page, tool);
@@ -132,7 +132,7 @@ test('a closed modal is never visible in any tool', async ({ page }) => {
   // A tool that ships no overlay layout rendered its dialog inline, on the
   // page, permanently — the shared layer now hides closed dialogs regardless.
   const TOOLS = ['base-converter','chmod-calculator','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator',
-    'file-compressor','http-status-codes','image-converter','json-diff','json-toon-converter','json-xml-converter',
+    'file-compressor','http-status-codes','image-toolkit','json-diff','json-toon-converter','json-xml-converter',
     'jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester','sql-formatter','text-diff','text-utilities',
     'timestamp-converter'];
 

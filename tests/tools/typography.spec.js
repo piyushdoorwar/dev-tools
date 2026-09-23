@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { openTool } from '../helpers.js';
 
 const TOOLS = ['base-converter','chmod-calculator','color-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator','file-compressor',
- 'html-preview','http-status-codes','id-generator','image-converter','json-diff','json-toon-converter',
+ 'html-preview','http-status-codes','id-generator','image-toolkit','json-diff','json-toon-converter',
  'json-xml-converter','jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester',
  'sql-formatter','text-diff','text-utilities','timestamp-converter','unit-converter'];
 
@@ -76,7 +76,7 @@ test('the tool name is the h1, with the tagline as a subtitle', async ({ page })
 });
 
 test('no tool decorates its header with a logo or eyebrow', async ({ page }) => {
-  // image-converter was the only tool with a brand mark and a
+  // image-toolkit was the only tool with a brand mark and a
   // "Private browser utility" eyebrow above its title.
   for (const tool of TOOLS) {
     await openTool(page, tool);

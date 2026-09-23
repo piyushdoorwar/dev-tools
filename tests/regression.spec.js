@@ -41,7 +41,7 @@ const TOOL_ROUTES = [
   'html-preview',
   'http-status-codes',
   'id-generator',
-  'image-converter',
+  'image-toolkit',
   'json-diff',
   'json-toon-converter',
   'json-xml-converter',
@@ -75,15 +75,15 @@ test('dashboard uses clean routes and migrates legacy or direct-load URLs', asyn
   await expect(page).toHaveURL(/\/toon-to-json-converter\/$/);
   await expect(page.locator('iframe[data-tool-id="toon-json-converter"]')).toHaveClass(/is-visible/);
 
-  await page.goto('/?route=image-converter');
-  await expect(page).toHaveURL(/\/image-converter\/$/);
-  await expect(page.locator('iframe[data-tool-id="image-converter"]')).toHaveClass(/is-visible/);
+  await page.goto('/?route=image-toolkit');
+  await expect(page).toHaveURL(/\/image-toolkit\/$/);
+  await expect(page.locator('iframe[data-tool-id="image-toolkit"]')).toHaveClass(/is-visible/);
 
   await page.locator('[data-tool-id="markdown-editor"].menu__item').click();
   await expect(page).toHaveURL(/\/markdown-editor\/$/);
   await page.goBack();
-  await expect(page).toHaveURL(/\/image-converter\/$/);
-  await expect(page.locator('iframe[data-tool-id="image-converter"]')).toHaveClass(/is-visible/);
+  await expect(page).toHaveURL(/\/image-toolkit\/$/);
+  await expect(page.locator('iframe[data-tool-id="image-toolkit"]')).toHaveClass(/is-visible/);
 });
 
 test('clean tool routes are indexable pages with crawlable navigation and route metadata', async ({ page }) => {
@@ -117,12 +117,12 @@ test('info modal keeps the basic content and appends details for the active tool
   await expect(page.locator('#toolAbout')).toBeHidden();
   await page.locator('#modalClose').click();
 
-  await page.locator('#toolList .menu__item[data-tool-id="image-converter"]').click();
+  await page.locator('#toolList .menu__item[data-tool-id="image-toolkit"]').click();
   await page.locator('#supportBtn').click();
   await expect(page.locator('#toolAbout')).toBeVisible();
-  await expect(page.locator('#toolAboutLabel')).toHaveText('Image Converter');
+  await expect(page.locator('#toolAboutLabel')).toHaveText('Image Toolkit');
   await expect(page.locator('#toolAboutDescription')).toContainText('Convert PNG, JPEG, WebP, SVG, and BMP');
-  await expect(page.locator('#toolAboutCapabilities li')).toHaveCount(3);
+  await expect(page.locator('#toolAboutCapabilities li')).toHaveCount(5);
   await page.locator('#modalClose').click();
 
   await page.locator('#toolList .menu__item[data-tool-id="jwt-debugger"]').click();
@@ -207,9 +207,9 @@ test('dashboard creates an iframe only for the selected tool', async ({ page }) 
   await page.waitForTimeout(250);
   await expect(page.locator('#frameHost iframe')).toHaveCount(0);
 
-  await page.locator('#toolList .menu__item[data-tool-id="image-converter"]').click();
+  await page.locator('#toolList .menu__item[data-tool-id="image-toolkit"]').click();
   await expect(page.locator('#frameHost iframe')).toHaveCount(1);
-  await expect(page.locator('iframe[data-tool-id="image-converter"]')).toHaveClass(/is-visible/);
+  await expect(page.locator('iframe[data-tool-id="image-toolkit"]')).toHaveClass(/is-visible/);
 });
 
 test('pinned cards use an icon without visible pinned text', async ({ page }) => {
@@ -228,7 +228,7 @@ test('dashboard search filters tools without an external utility library', async
   await page.goto('/');
   await page.locator('#toolSearch').fill('image');
   await expect(page.locator('#toolList .menu__item')).toHaveCount(1);
-  await expect(page.locator('#toolList .menu__item')).toContainText('Image Converter');
+  await expect(page.locator('#toolList .menu__item')).toContainText('Image Toolkit');
   await page.locator('#toolSearch').fill('no-such-tool');
   await expect(page.locator('#toolList')).toContainText('No matching tools.');
 });
@@ -436,7 +436,7 @@ test('HTML Preview loads HTML mode and exports connected assets', async ({ page 
 });
 
 test('Image Converter detects formats, converts locally, and honors metadata cleanup', async ({ page }) => {
-  await page.goto('/tools/image-converter/');
+  await page.goto('/tools/image-toolkit/');
   await page.evaluate(async () => {
     const canvas = document.createElement('canvas');
     canvas.width = 3;
@@ -514,7 +514,7 @@ test('Image Converter detects formats, converts locally, and honors metadata cle
 });
 
 test('Image Converter rejects animated GIFs instead of flattening them', async ({ page }) => {
-  await page.goto('/tools/image-converter/');
+  await page.goto('/tools/image-toolkit/');
   await page.evaluate(() => {
     const transfer = new DataTransfer();
     transfer.items.add(new File([new TextEncoder().encode('GIF89a')], 'animation.gif', { type: 'image/gif' }));

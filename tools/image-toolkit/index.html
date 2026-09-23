@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Toolkit - Private Browser Image Conversion, Icons, and SVG Cleanup</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../main.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-mode="convert">
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1 class="app-title">Image Toolkit</h1>
+      </div>
+      <button class="info-btn" id="infoBtn" type="button" aria-label="Open conversion and privacy information" title="Conversion and privacy information">
+        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#i-info"></use></svg>
+      </button>
+    </header>
+
+    <nav class="mode-bar" role="tablist" aria-label="Image tools">
+      <button class="mode-tab is-active" id="modeConvert" type="button" role="tab" aria-selected="true" data-mode="convert">
+        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 7h11l-3-3"></path><path d="M18 7l-3 3"></path>
+          <path d="M17 17H6l3 3"></path><path d="M6 17l3-3"></path>
+        </svg>
+        <span>Convert</span>
+      </button>
+      <button class="mode-tab" id="modeIcons" type="button" role="tab" aria-selected="false" data-mode="icons">
+        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="3" y="3" width="8" height="8" rx="2"></rect>
+          <rect x="14" y="3" width="7" height="7" rx="2"></rect>
+          <rect x="3" y="14" width="7" height="7" rx="2"></rect>
+          <rect x="14" y="14" width="7" height="7" rx="2"></rect>
+        </svg>
+        <span>Favicons &amp; app icons</span>
+      </button>
+      <button class="mode-tab" id="modeSvg" type="button" role="tab" aria-selected="false" data-mode="svg">
+        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 16c4-1 4-9 8-9s4 8 8 7"></path>
+          <circle cx="4" cy="16" r="1.6"></circle>
+          <circle cx="20" cy="14" r="1.6"></circle>
+        </svg>
+        <span>Optimize SVG</span>
+      </button>
+    </nav>
+
+    <main class="workspace" id="workspace">
+      <section class="panel source-panel" id="sourcePanel" aria-labelledby="sourceTitle">
+        <div class="panel-header">
+          <div>
+            <p class="step-label">Step 01</p>
+            <h2 id="sourceTitle">Choose an image</h2>
+          </div>
+          <span class="status-pill" id="sourceStatus" data-state="idle">Waiting</span>
+        </div>
+
+        <button class="drop-zone" id="dropZone" type="button" aria-describedby="dropHint">
+          <span class="drop-icon" aria-hidden="true">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="16" rx="3"></rect>
+              <circle cx="9" cy="10" r="2"></circle>
+              <path d="M5.5 17l4-4 3 3 2-2 4 3"></path>
+              <path d="M12 3v6"></path>
+              <path d="M9.5 5.5L12 3l2.5 2.5"></path>
+            </svg>
+          </span>
+          <span class="drop-title">Drop an image here</span>
+          <span class="drop-copy">or click to browse</span>
+          <span class="drop-formats" id="dropHint">PNG, JPEG, WebP, SVG, or BMP · up to 50 MB</span>
+        </button>
+        <input id="fileInput" type="file" accept=".png,.jpg,.jpeg,.webp,.svg,.bmp,image/png,image/jpeg,image/webp,image/svg+xml,image/bmp" hidden>
+
+        <div class="source-preview hidden" id="sourcePreview">
+          <div class="preview-frame checkerboard">
+            <img id="sourceImage" alt="Selected source preview">
+          </div>
+          <div class="file-summary">
+            <div class="file-heading">
+              <div class="file-name-wrap">
+                <p class="file-name" id="fileName"></p>
+                <p class="file-note" id="fileNote"></p>
+              </div>
+              <button class="clear-btn" id="clearBtn" type="button" aria-label="Remove selected image" title="Remove selected image">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#i-trash"></use></svg>
+              </button>
+            </div>
+            <dl class="facts" aria-label="Source image details">
+              <div><dt>Detected</dt><dd id="sourceFormat">—</dd></div>
+              <div><dt>Dimensions</dt><dd id="sourceDimensions">—</dd></div>
+              <div><dt>Size</dt><dd id="sourceSize">—</dd></div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel settings-panel" id="convertPanel" aria-labelledby="settingsTitle">
+        <div class="panel-header">
+          <div>
+            <p class="step-label">Step 02</p>
+            <h2 id="settingsTitle">Choose the output</h2>
+          </div>
+          <span class="status-pill" id="outputStatus" data-state="idle">Not ready</span>
+        </div>
+
+        <fieldset class="settings" id="settings" disabled>
+          <div class="field-group">
+            <label class="field-label" for="outputFormat">Convert to</label>
+            <div class="select-wrap">
+              <select id="outputFormat"></select>
+              <svg class="select-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 10l5 5 5-5"></path></svg>
+            </div>
+            <p class="field-help" id="formatHelp">Available formats depend on the source image.</p>
+          </div>
+
+          <div class="field-group" id="scaleGroup">
+            <label class="field-label" for="outputScale">Output size</label>
+            <div class="select-wrap">
+              <select id="outputScale"></select>
+            </div>
+            <div class="custom-size hidden" id="customSizeRow">
+              <label class="sr-only" for="customWidth">Output width in pixels</label>
+              <input class="text-field" id="customWidth" type="number" min="1" max="16384" step="1" value="512">
+              <span class="custom-size__times" aria-hidden="true">×</span>
+              <output class="custom-size__height" id="customHeight" for="customWidth">512</output>
+            </div>
+            <p class="field-help" id="sizeHelp">Vector sources rasterize at the chosen size, so larger costs nothing in quality.</p>
+          </div>
+
+          <div class="field-group" id="qualityGroup">
+            <div class="field-row">
+              <label class="field-label" for="quality">Quality</label>
+              <output class="quality-value" id="qualityValue" for="quality">92%</output>
+            </div>
+            <input class="range" id="quality" type="range" min="10" max="100" value="92" step="1">
+            <div class="range-labels"><span>Smaller file</span><span>Sharper image</span></div>
+          </div>
+
+          <div class="field-group hidden" id="backgroundGroup">
+            <label class="field-label" for="backgroundText">Transparency background</label>
+            <div class="color-control">
+              <div class="picker" id="backgroundPicker" data-color-picker data-alpha="false"
+                   data-value="#FFFFFF" data-label="JPEG background colour"></div>
+              <input id="backgroundText" type="text" value="#FFFFFF" maxlength="7" spellcheck="false" aria-label="JPEG background hex color">
+            </div>
+            <p class="field-help">JPEG has no transparency, so transparent pixels use this color.</p>
+          </div>
+
+          <div class="privacy-card">
+            <div class="privacy-copy">
+              <label class="privacy-label" for="stripMetadata">Strip metadata</label>
+              <p id="privacyHelp">Re-encode pixels without embedded EXIF, GPS, XMP, IPTC, or comments.</p>
+            </div>
+            <label class="switch">
+              <input id="stripMetadata" type="checkbox" checked aria-describedby="privacyHelp">
+              <span class="switch-track" aria-hidden="true"><span class="switch-thumb"></span></span>
+            </label>
+          </div>
+
+          <div class="notice" id="metadataNotice" role="note">
+            Metadata cleanup removes embedded fields, but cannot guarantee that an image's origin is undetectable.
+          </div>
+
+          <button class="convert-btn" id="convertBtn" type="button">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M7 7h11l-3-3"></path><path d="M18 7l-3 3"></path>
+              <path d="M17 17H6l3 3"></path><path d="M6 17l3-3"></path>
+            </svg>
+            <span>Convert image</span>
+          </button>
+        </fieldset>
+
+        <div class="empty-settings" id="emptySettings">
+          <div class="status-orb" aria-hidden="true"></div>
+          <p>Add an image to unlock compatible output formats.</p>
+        </div>
+      </section>
+
+      <section class="panel settings-panel hidden" id="iconPanel" aria-labelledby="iconTitle">
+        <div class="panel-header">
+          <div>
+            <p class="step-label">Step 02</p>
+            <h2 id="iconTitle">Build the icon pack</h2>
+          </div>
+          <span class="status-pill" id="iconStatus" data-state="idle">Not ready</span>
+        </div>
+
+        <fieldset class="settings" id="iconSettings" disabled>
+          <div class="field-group">
+            <span class="field-label" id="iconSizesLabel">Sizes</span>
+            <div class="size-grid" role="group" aria-labelledby="iconSizesLabel" id="iconSizes"></div>
+            <p class="field-help">Every selected size is rendered from the original image, never upscaled from a smaller icon.</p>
+          </div>
+
+          <div class="field-group">
+            <div class="field-row">
+              <label class="field-label" for="iconBackgroundText">Background</label>
+              <label class="inline-toggle" for="iconTransparent">
+                <input id="iconTransparent" type="checkbox" checked>
+                <span>Transparent</span>
+              </label>
+            </div>
+            <div class="color-control">
+              <div class="picker" id="iconBackgroundPicker" data-color-picker data-alpha="false"
+                   data-value="#6739B7" data-label="icon background colour"></div>
+              <input id="iconBackgroundText" type="text" value="#6739B7" maxlength="7" spellcheck="false" aria-label="Icon background hex color">
+            </div>
+            <p class="field-help" id="iconBackgroundHelp">iOS ignores transparency and composites an apple-touch-icon onto black, so that one size always gets this color.</p>
+          </div>
+
+          <div class="field-group">
+            <div class="field-row">
+              <label class="field-label" for="iconPadding">Padding</label>
+              <output class="quality-value" id="iconPaddingValue" for="iconPadding">0%</output>
+            </div>
+            <input class="range" id="iconPadding" type="range" min="0" max="30" value="0" step="1">
+            <div class="range-labels"><span>Edge to edge</span><span>Inset</span></div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="iconAppName">App name</label>
+            <input class="text-field" id="iconAppName" type="text" value="My App" maxlength="60" spellcheck="false">
+            <p class="field-help">Written into <code>site.webmanifest</code> as <code>name</code> and <code>short_name</code>.</p>
+          </div>
+
+          <div class="notice" role="note">
+            A maskable icon keeps its artwork inside the middle 80% so Android can crop it to any shape. It is generated with that safe area applied on top of the padding above.
+          </div>
+
+          <button class="convert-btn" id="iconBtn" type="button">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="3" y="3" width="8" height="8" rx="2"></rect>
+              <rect x="14" y="3" width="7" height="7" rx="2"></rect>
+              <rect x="3" y="14" width="7" height="7" rx="2"></rect>
+              <rect x="14" y="14" width="7" height="7" rx="2"></rect>
+            </svg>
+            <span>Generate icon pack</span>
+          </button>
+        </fieldset>
+
+        <div class="empty-settings" id="iconEmpty">
+          <div class="status-orb" aria-hidden="true"></div>
+          <p>Add a square image — 512 px or larger — to generate a full icon set.</p>
+        </div>
+      </section>
+
+      <section class="panel result-panel hidden" id="resultPanel" aria-labelledby="resultTitle">
+        <div class="panel-header">
+          <div>
+            <p class="step-label">Step 03</p>
+            <h2 id="resultTitle">Download the result</h2>
+          </div>
+          <span class="status-pill" data-state="ready">Ready</span>
+        </div>
+        <div class="result-layout">
+          <div class="preview-frame result-frame checkerboard"><img id="resultImage" alt="Converted image preview"></div>
+          <div class="result-details">
+            <p class="result-name" id="resultName"></p>
+            <dl class="facts result-facts" aria-label="Converted image details">
+              <div><dt>Format</dt><dd id="resultFormat">—</dd></div>
+              <div><dt>Dimensions</dt><dd id="resultDimensions">—</dd></div>
+              <div><dt>Size</dt><dd id="resultSize">—</dd></div>
+            </dl>
+            <p class="result-message" id="resultMessage"></p>
+            <button class="download-btn" id="downloadBtn" type="button">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 4v11"></path><path d="M8 11l4 4 4-4"></path><path d="M4 19h16"></path>
+              </svg>
+              <span>Download image</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel result-panel hidden" id="iconResultPanel" aria-labelledby="iconResultTitle">
+        <div class="panel-header">
+          <div>
+            <p class="step-label">Step 03</p>
+            <h2 id="iconResultTitle">Take the pack</h2>
+          </div>
+          <span class="status-pill" data-state="ready">Ready</span>
+        </div>
+        <div class="icon-result-layout">
+          <div>
+            <ul class="icon-grid" id="iconGrid" aria-label="Generated icons"></ul>
+            <p class="result-message" id="iconMessage"></p>
+          </div>
+          <div class="result-details">
+            <label class="field-label" for="iconSnippet">Paste into &lt;head&gt;</label>
+            <textarea class="code-out" id="iconSnippet" rows="8" readonly spellcheck="false"></textarea>
+            <div class="button-row">
+              <button class="download-btn" id="iconDownloadBtn" type="button">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#i-download"></use></svg>
+                <span>Download ZIP</span>
+              </button>
+              <button class="ghost-btn" id="iconCopyBtn" type="button">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#i-copy"></use></svg>
+                <span>Copy snippet</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel svg-panel hidden" id="svgPanel" aria-labelledby="svgTitle">
+        <div class="panel-header">
+          <div>
+            <p class="step-label">Step 01</p>
+            <h2 id="svgTitle">Paste or open an SVG</h2>
+          </div>
+          <span class="status-pill" id="svgStatus" data-state="idle">Waiting</span>
+        </div>
+
+        <div class="svg-io">
+          <div class="svg-column">
+            <div class="column-head">
+              <label class="field-label" for="svgInput">Source</label>
+              <button class="ghost-btn" id="svgOpenBtn" type="button">
+                <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#i-upload"></use></svg>
+                <span>Open file</span>
+              </button>
+            </div>
+            <textarea class="code-in" id="svgInput" spellcheck="false" placeholder="&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; viewBox=&quot;0 0 24 24&quot;&gt;…&lt;/svg&gt;"></textarea>
+            <input id="svgFileInput" type="file" accept=".svg,image/svg+xml" hidden>
+            <div class="svg-preview checkerboard" id="svgSourcePreview">
+              <img id="svgSourceImage" alt="Source SVG rendered">
+              <p class="preview-empty" id="svgSourceEmpty">Nothing to render yet</p>
+            </div>
+          </div>
+          <div class="svg-column">
+            <div class="column-head">
+              <label class="field-label" for="svgOutput">Optimized</label>
+              <span class="savings" id="svgSavings" aria-live="polite"></span>
+            </div>
+            <textarea class="code-out" id="svgOutput" spellcheck="false" readonly placeholder="The optimized SVG appears here."></textarea>
+            <div class="svg-preview checkerboard" id="svgOutputPreview">
+              <img id="svgOutputImage" alt="Optimized SVG rendered">
+              <p class="preview-empty" id="svgOutputEmpty">Nothing to render yet</p>
+            </div>
+          </div>
+        </div>
+
+        <dl class="facts svg-facts" aria-label="Optimization details">
+          <div><dt>Before</dt><dd id="svgBefore">—</dd></div>
+          <div><dt>After</dt><dd id="svgAfter">—</dd></div>
+          <div><dt>Removed</dt><dd id="svgRemoved">—</dd></div>
+        </dl>
+
+        <div class="svg-options">
+          <div class="field-group">
+            <div class="field-row">
+              <label class="field-label" for="svgPrecision">Decimal places</label>
+              <output class="quality-value" id="svgPrecisionValue" for="svgPrecision">2</output>
+            </div>
+            <input class="range" id="svgPrecision" type="range" min="0" max="5" value="2" step="1">
+            <div class="range-labels"><span>Smaller</span><span>More exact</span></div>
+          </div>
+          <div class="field-group option-list">
+            <label class="inline-toggle" for="svgStripScripts">
+              <input id="svgStripScripts" type="checkbox" checked>
+              <span>Remove scripts and event handlers</span>
+            </label>
+            <label class="inline-toggle" for="svgStripTitles">
+              <input id="svgStripTitles" type="checkbox">
+              <span>Remove &lt;title&gt; and &lt;desc&gt;</span>
+            </label>
+            <label class="inline-toggle" for="svgPreferViewBox">
+              <input id="svgPreferViewBox" type="checkbox">
+              <span>Drop width/height, keep viewBox</span>
+            </label>
+            <p class="field-help">Comments, editor metadata (Inkscape, Illustrator, Figma) and empty groups always go.</p>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="convert-btn" id="svgCopyBtn" type="button">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#i-copy"></use></svg>
+            <span>Copy optimized SVG</span>
+          </button>
+          <button class="ghost-btn" id="svgDownloadBtn" type="button">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#i-download"></use></svg>
+            <span>Download</span>
+          </button>
+          <button class="ghost-btn" id="svgClearBtn" type="button">
+            <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="#i-trash"></use></svg>
+            <span>Clear</span>
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="infoModal" aria-hidden="true" data-modal>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+      <div class="modal-header">
+        <h2 id="infoModalTitle">How this toolkit works</h2>
+        <button class="modal-close" id="closeInfoBtn" type="button" aria-label="Close conversion and privacy information">
+          <svg class="ui-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12"></path><path d="M18 6L6 18"></path></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <section class="modal-card">
+          <h3>Everything stays local</h3>
+          <p>Detection, decoding, conversion, icon rendering, SVG optimization, previewing, and download all happen inside your browser. Nothing is uploaded by this tool.</p>
+        </section>
+        <section class="modal-card">
+          <h3>What metadata cleanup means</h3>
+          <p>With stripping enabled, the tool draws decoded pixels into a fresh image and omits standard embedded metadata. It does not remove information visible in the pixels, external provenance records, or every possible watermark.</p>
+        </section>
+        <section class="modal-card">
+          <h3>Format boundaries</h3>
+          <p>SVG and BMP can be rendered to PNG, JPEG, or WebP. Raster-to-SVG is not offered because wrapping pixels in an SVG is not true vector conversion. Animated GIFs are rejected rather than silently losing animation.</p>
+        </section>
+        <section class="modal-card">
+          <h3>Icon packs</h3>
+          <p>Each size is drawn from the source image rather than resampled from a smaller icon, so nothing is upscaled twice. The ZIP carries the PNGs, a multi-resolution <code>favicon.ico</code>, <code>site.webmanifest</code>, and the markup to paste into your head.</p>
+        </section>
+        <section class="modal-card">
+          <h3>SVG optimization</h3>
+          <p>The document is parsed, not regex-edited: editor metadata, comments, empty groups and redundant precision are dropped, and the result is re-serialized. Rendering is compared by eye — check the preview before shipping a heavily rounded path.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script src="../main.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -70,11 +70,17 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["Searchable 1xx-5xx reference", "When to use and what to avoid", "RFC references and related codes"],
   },
   {
-    id: "image-converter",
-    name: "Image Converter",
-    route: "image-converter",
-    description: "Convert PNG, JPEG, WebP, SVG, and BMP images locally, control output quality, and optionally remove standard metadata.",
-    capabilities: ["Automatic source-format detection", "PNG, JPEG, and WebP output", "Optional metadata stripping"],
+    id: "image-toolkit",
+    name: "Image Toolkit",
+    route: "image-toolkit",
+    description: "Convert PNG, JPEG, WebP, SVG, and BMP images locally, generate a full favicon and app-icon pack with its manifest, and optimize SVG markup — all in the browser.",
+    capabilities: [
+      "Automatic source-format detection",
+      "PNG, JPEG, and WebP output",
+      "Optional metadata stripping",
+      "Favicon and app-icon pack with manifest",
+      "SVG optimization with size report",
+    ],
   },
   {
     id: "id-generator",

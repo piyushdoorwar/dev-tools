@@ -84,7 +84,7 @@ test('fake-data-generator actually reports its actions now', async ({ page }) =>
 // Every tool that notifies must route through the one implementation.
 for (const tool of ['base-converter', 'text-diff', 'json-diff', 'qr-generator',
                     'regex-tester', 'html-preview', 'id-generator',
-                    'image-converter', 'fake-data-generator', 'jwt-debugger']) {
+                    'image-toolkit', 'fake-data-generator', 'jwt-debugger']) {
   test(`${tool}: toast routes through the shared component`, async ({ page }) => {
     const { errors } = await openTool(page, tool);
     await page.evaluate(() => DevToolsMain.showToast('probe', 'info'));

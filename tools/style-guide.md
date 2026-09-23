@@ -293,6 +293,47 @@ includes `visibility`, so for a frame or more after opening the panel is still
 `visibility: hidden` and `focus()` is silently refused. The component retries
 across frames until focus lands rather than assuming a fixed delay.
 
+### Colour picker (`data-color-picker`) — done
+
+```html
+<div class="picker" data-color-picker data-value="#6739B7"
+     data-alpha="false" data-label="icon background colour"></div>
+```
+
+```js
+const picker = DevToolsMain.createColorPicker('#myPicker');
+picker.setColor('#00D09C');       // drive it from a text field
+picker.getColor();                // "#00D09C"
+node.addEventListener('picker:change', ({ detail }) => detail.hex);
+```
+
+`<input type="color">` opens the operating system's dialog: it ignores the page
+theme, has no alpha, and on Linux is a full modal. This is the same popover the
+colour converter has always used, built from the design tokens and now owned by
+the shared layer — a tool supplies one empty element and gets the swatch
+trigger, the saturation/brightness pad, the hue and opacity rails and the
+presets built for it.
+
+The component provides:
+
+- **Real range inputs** for hue and opacity, so those are keyboard and screen
+  reader operable for free. Only the two-dimensional pad needs its own key
+  handling (arrows step 1%, Shift 10%, Home/End for saturation).
+- **Pointer events with capture** on the pad, so mouse, touch and pen share one
+  path and a drag survives leaving the pad without a document listener running
+  while idle.
+- **Hue memory.** The pad holds `h` itself, because at `s=0` or `v=0` hue cannot
+  be recovered from RGB — without it, dragging to black would snap the rail to
+  red. `setColor()` keeps the current hue when the incoming colour is grey.
+- **Dismissal** on outside click, Escape, or tabbing out, with focus restored
+  to the trigger; one document-level listener covers every picker on the page.
+- **Edge flipping**: a panel that would overflow the viewport anchors right.
+
+`data-alpha="false"` drops the opacity rail for the cases — canvas fills, icon
+backgrounds — where a translucent colour has no meaning. A tool that wants an
+exact-value control keeps its own text field beside the swatch and mirrors the
+two; the picker never owns text input.
+
 ### Type scale — done
 
 | Role | Token / class | Treatment |
@@ -308,7 +349,7 @@ Measured before consolidating, the page title rendered in **two faces**
 own mobile override.
 
 **`--text-page-title` is a px clamp, not rem.** `file-compressor` and
-`image-converter` set `html { font-size: 15px }`, so a rem-based title silently
+`image-toolkit` set `html { font-size: 15px }`, so a rem-based title silently
 rendered 2px smaller in those two. The clamp — `clamp(24px, 4vw, 32px)` —
 also replaces the per-tool mobile overrides.
 
