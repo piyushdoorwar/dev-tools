@@ -293,6 +293,33 @@ includes `visibility`, so for a frame or more after opening the panel is still
 `visibility: hidden` and `focus()` is silently refused. The component retries
 across frames until focus lands rather than assuming a fixed delay.
 
+### Hash state (`DevToolsMain.writeHashState`) — done
+
+```js
+DevToolsMain.writeHashState('icons');              // -> …/#icons
+DevToolsMain.readHashState();                      // -> 'icons'
+DevToolsMain.onHashState((value) => show(value));  // deep links, back/forward
+```
+
+A tool with more than one view (tabs, modes) puts the view in the hash, so the
+view is linkable and survives a reload. Three rules make it work:
+
+- **`replaceState`, never `pushState`.** A tab switch is not a navigation, and
+  inside the dashboard's iframe pushing history entries hijacks the shell's own
+  back button.
+- **The shell mirrors it.** A tool page runs in an iframe whose URL is
+  invisible, so `writeHashState` also posts `devtools:hash-change` to the
+  parent; `app.js` replays it into the address bar (`/image-toolkit/#icons`)
+  and hands the hash back to the frame on the next load. Without this, a reload
+  of the dashboard route lands on the tool's default view.
+- **Unknown values fall back.** `#nonsense` selects the default view rather
+  than rendering nothing, and a hash that names a tool (`/#jwt-debugger`) is
+  still treated by the shell as the legacy route form, not as view state.
+
+Handle both the first load and `hashchange`: the shell reassigns the frame's
+`src` with a new hash, which is a same-document navigation, so an already-built
+frame is not reloaded.
+
 ### Colour picker (`data-color-picker`) — done
 
 ```html

@@ -36,6 +36,39 @@
     window.location.href = `../${path}/${hash}`;
   };
 
+  /* --- Hash state ----------------------------------------------------------
+   * A tool with more than one view (tabs, modes) should be linkable and should
+   * survive a reload, so the view goes in the hash.
+   *
+   *   DevToolsMain.writeHashState('icons');            // -> …/#icons
+   *   DevToolsMain.readHashState();                    // -> 'icons'
+   *   DevToolsMain.onHashState((value) => show(value));
+   *
+   * replaceState, not pushState: a tab switch is not a navigation, and inside
+   * the dashboard's iframe pushing entries would hijack the shell's own back
+   * button. The message tells the shell to mirror the hash into the address
+   * bar, which is what makes a reload land on the same tab.
+   */
+
+  root.readHashState = root.readHashState || function readHashState() {
+    return decodeURIComponent(window.location.hash.replace(/^#/, ""));
+  };
+
+  root.writeHashState = root.writeHashState || function writeHashState(value) {
+    const next = value ? `#${value}` : "";
+    if (window.location.hash !== next) {
+      const { pathname, search } = window.location;
+      window.history.replaceState(null, "", `${pathname}${search}${next}`);
+    }
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: "devtools:hash-change", hash: next }, window.location.origin);
+    }
+  };
+
+  root.onHashState = root.onHashState || function onHashState(handler) {
+    window.addEventListener("hashchange", () => handler(root.readHashState()));
+  };
+
   root.copyText = root.copyText || async function copyText(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(text);

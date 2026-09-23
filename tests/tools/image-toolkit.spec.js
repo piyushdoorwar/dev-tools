@@ -541,3 +541,47 @@ test('a viewBox-only SVG still fits inside both preview frames', async ({ page }
     expect(fits, `${id} overflows its preview frame`).toBe(true);
   }
 });
+
+/* --- Deep-linkable tabs --------------------------------------------------- */
+
+test('each mode has its own hash and switching tabs updates it', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+
+  // No hash until a tab is chosen, so the default URL stays clean.
+  expect(new URL(page.url()).hash).toBe('');
+
+  await page.locator('#modeIcons').click();
+  await expect(page).toHaveURL(/#icons$/);
+
+  await page.locator('#modeSvg').click();
+  await expect(page).toHaveURL(/#svg$/);
+
+  await page.locator('#modeConvert').click();
+  await expect(page).toHaveURL(/#convert$/);
+});
+
+test('opening a mode hash directly starts on that tab', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+  await page.goto('/tools/image-toolkit/#svg');
+
+  await expect(page.locator('#svgPanel')).toBeVisible();
+  await expect(page.locator('#convertPanel')).toBeHidden();
+  await expect(page.locator('#modeSvg')).toHaveAttribute('aria-selected', 'true');
+});
+
+test('a reload returns to the tab the hash names', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+  await page.locator('#modeIcons').click();
+
+  await page.reload();
+  await expect(page.locator('#iconPanel')).toBeVisible();
+  await expect(page.locator('#modeIcons')).toHaveAttribute('aria-selected', 'true');
+});
+
+test('an unknown hash falls back to the default tab', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+  await page.goto('/tools/image-toolkit/#nonsense');
+
+  await expect(page.locator('#convertPanel')).toBeVisible();
+  await expect(page.locator('#modeConvert')).toHaveAttribute('aria-selected', 'true');
+});

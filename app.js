@@ -292,6 +292,13 @@ function getOrCreateFrame(tool, opts = {}) {
     if (desiredLoading === "eager") {
       frame.loading = "eager";
     }
+    // Back/forward can land on a different view of a tool that is already
+    // built. Changing only the hash is a same-document navigation, so the
+    // frame is not reloaded — the tool hears hashchange and re-renders.
+    if (typeof opts.hash === "string") {
+      const target = new URL(`${tool.url.split("#")[0]}${opts.hash}`, window.location.href).href;
+      if (frame.src && new URL(frame.src, window.location.href).href !== target) frame.src = target;
+    }
     return frame;
   }
 
@@ -313,7 +320,7 @@ function getOrCreateFrame(tool, opts = {}) {
       hideLoader();
     }
   });
-  frame.src = tool.url;
+  frame.src = opts.hash ? `${tool.url.split("#")[0]}${opts.hash}` : tool.url;
 
   framesById.set(tool.id, frame);
   els.frameHost.appendChild(frame);
@@ -446,8 +453,10 @@ function getCurrentRoute() {
   const queryRoute = new URLSearchParams(window.location.search).get("route");
   if (queryRoute) return queryRoute.replace(/^\/+|\/+$/g, "");
 
-  const legacyHash = window.location.hash.slice(1);
-  if (legacyHash) return legacyHash.replace(/^\/+|\/+$/g, "");
+  // `/#jwt-debugger` was the original route form, so a hash naming a tool is
+  // still a route. Anything else is a tool's own view state (see getToolHash).
+  const legacyHash = window.location.hash.slice(1).replace(/^\/+|\/+$/g, "");
+  if (legacyHash && routeToToolId(legacyHash)) return legacyHash;
 
   let pathname = window.location.pathname;
   if (pathname.startsWith(APP_ROOT_PATH)) pathname = pathname.slice(APP_ROOT_PATH.length);
@@ -455,9 +464,18 @@ function getCurrentRoute() {
   return route && route !== "index.html" ? route : null;
 }
 
+/* The hash a tool owns — a selected tab or mode, not a route. The shell mirrors
+ * it into the address bar so a reload restores the view the user was on, and
+ * hands it back to the frame on the next load. */
+function getToolHash() {
+  const hash = window.location.hash;
+  if (!hash || hash === "#") return "";
+  return routeToToolId(hash.slice(1).replace(/^\/+|\/+$/g, "")) ? "" : hash;
+}
+
 // Update URL without triggering navigation
-function updateURL(route, replaceState = false) {
-  const newURL = route ? `${APP_ROOT_PATH}${route}/` : APP_ROOT_PATH;
+function updateURL(route, replaceState = false, hash = "") {
+  const newURL = `${route ? `${APP_ROOT_PATH}${route}/` : APP_ROOT_PATH}${route ? hash : ""}`;
   if (replaceState) {
     window.history.replaceState(null, "", newURL);
   } else {
@@ -1066,10 +1084,14 @@ function loadFromURL() {
     const toolId = routeToToolId(route);
     const tool = TOOLS.find(t => t.id === toolId);
     if (tool) {
+      const toolHash = getToolHash();
+      // Built before setActive so the frame's first load already carries the
+      // view; a tool only sees hashchange on later switches.
+      getOrCreateFrame(tool, { loading: "eager", hash: toolHash });
       setActive(tool, false); // Don't update history on initial load
       const expectedPath = `${APP_ROOT_PATH}${tool.route}/`;
-      if (window.location.pathname !== expectedPath || window.location.search || window.location.hash) {
-        updateURL(tool.route, true);
+      if (window.location.pathname !== expectedPath || window.location.search) {
+        updateURL(tool.route, true, toolHash);
       }
       return;
     }
@@ -1192,8 +1214,22 @@ loadDeployedVersion();
 window.addEventListener("message", (event) => {
   if (event.origin !== window.location.origin) return;
   const { type, toolId, hash } = event.data || {};
+  const fromOwnFrame = [...framesById.values()].some((frame) => frame.contentWindow === event.source);
+  if (!fromOwnFrame) return;
+
+  /* A tool reporting its own view state (DevToolsMain.writeHashState).
+   *
+   * The iframe's URL is invisible, so without mirroring it here a reload would
+   * drop the user back on the tool's default tab. Only the visible tool may
+   * write, and only by replacement — switching tabs is not a navigation. */
+  if (type === "devtools:hash-change" && typeof hash === "string") {
+    const active = TOOLS.find((item) => item.id === activeToolId);
+    if (!active || framesById.get(active.id)?.contentWindow !== event.source) return;
+    updateURL(active.route, true, hash);
+    return;
+  }
+
   if (type !== "devtools:open-tool" || typeof toolId !== "string") return;
-  if (![...framesById.values()].some((frame) => frame.contentWindow === event.source)) return;
 
   const tool = TOOLS.find((item) => item.id === toolId);
   if (!tool) return;

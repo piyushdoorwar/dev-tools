@@ -179,10 +179,23 @@
   /* --- Mode switching ------------------------------------------------------
      Convert and icons share one loaded image, so switching between them keeps
      the source panel and everything in it; only the step-two panel and its
-     results swap. SVG optimization is a text workflow and hides the rest. */
+     results swap. SVG optimization is a text workflow and hides the rest.
 
-  function setMode(mode) {
+     The mode lives in the hash (#convert, #icons, #svg) so a tab is linkable
+     and a reload lands where the user left off. The dashboard mirrors it into
+     the address bar — see DevToolsMain.writeHashState. */
+
+  const MODES = ['convert', 'icons', 'svg'];
+
+  function modeFromHash() {
+    const hash = window.DevToolsMain.readHashState();
+    return MODES.includes(hash) ? hash : null;
+  }
+
+  function setMode(mode, { updateHash = true } = {}) {
+    if (!MODES.includes(mode)) mode = 'convert';
     state.mode = mode;
+    if (updateHash) window.DevToolsMain.writeHashState(mode);
     el.body.dataset.mode = mode;
     el.modeTabs.forEach((tab) => {
       const active = tab.dataset.mode === mode;
@@ -1275,6 +1288,8 @@
   }
 
   el.modeTabs.forEach((tab) => tab.addEventListener('click', () => setMode(tab.dataset.mode)));
+  // Deep links and back/forward arrive as a hash change, not a reload.
+  window.DevToolsMain.onHashState(() => setMode(modeFromHash() || 'convert', { updateHash: false }));
   el.dropZone.addEventListener('click', () => el.fileInput.click());
   el.fileInput.addEventListener('change', () => selectFile(el.fileInput.files[0]));
   el.clearBtn.addEventListener('click', clearAll);
@@ -1364,5 +1379,5 @@
 
   buildSizeControls();
   clearAll();
-  setMode('convert');
+  setMode(modeFromHash() || 'convert', { updateHash: Boolean(modeFromHash()) });
 })();

@@ -1094,3 +1094,32 @@ test('the shared badge component does not claim generic component names', async 
       .filter((el) => getComputedStyle(el).textTransform === 'uppercase').length);
   expect(claimed).toBe(0);
 });
+
+test('the shell mirrors a tool tab into the address bar and restores it on reload', async ({ page }) => {
+  await page.goto('/image-toolkit/');
+  const frame = page.frameLocator('iframe[data-tool-id="image-toolkit"]');
+
+  await frame.locator('#modeIcons').click();
+  await expect(page).toHaveURL(/\/image-toolkit\/#icons$/);
+
+  // The iframe's own URL is invisible, so without mirroring a reload would
+  // drop the user back on the tool's default tab.
+  await page.reload();
+  await expect(page).toHaveURL(/\/image-toolkit\/#icons$/);
+  await expect(frame.locator('#iconPanel')).toBeVisible();
+  await expect(frame.locator('#convertPanel')).toBeHidden();
+});
+
+test('switching tools drops the previous tool tab hash', async ({ page }) => {
+  await page.goto('/image-toolkit/#svg');
+  await expect(page.frameLocator('iframe[data-tool-id="image-toolkit"]').locator('#svgPanel')).toBeVisible();
+
+  await page.locator('#toolList .menu__item[data-tool-id="jwt-debugger"]').click();
+  await expect(page).toHaveURL(/\/jwt-debugger\/$/);
+});
+
+test('a hash naming a tool is still treated as a route, not as tab state', async ({ page }) => {
+  await page.goto('/#jwt-debugger');
+  await expect(page).toHaveURL(/\/jwt-debugger\/$/);
+  await expect(page.locator('iframe[data-tool-id="jwt-debugger"]')).toHaveClass(/is-visible/);
+});
