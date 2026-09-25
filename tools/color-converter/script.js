@@ -213,7 +213,9 @@ function parseFunctional(text) {
   if (!match) return null;
   const name = match[1].toLowerCase();
   const parts = args(match[2]);
-  if (parts.length < 3) return null;
+  // Three channels plus an optional alpha; `rgb(1 2 3 4 5)` is not a colour,
+  // so extra components must fail rather than be silently dropped.
+  if (parts.length < 3 || parts.length > 4) return null;
 
   const alpha = alphaOf(parts[3]);
   if (alpha === null) return null;
@@ -227,8 +229,14 @@ function parseFunctional(text) {
 
   if (name === "hsl" || name === "hsla") {
     const h = angle(parts[0]);
-    const s = component(parts[1], { percentOf: 1 });
-    const l = component(parts[2], { percentOf: 1 });
+    // CSS Color 4 lets saturation and lightness drop the `%`: `hsl(120 50 50)`
+    // means 50%, not 50 clamped to 100%. Either way the value is a percentage.
+    const percent = (token) => {
+      const value = component(token.endsWith("%") ? token.slice(0, -1) : token);
+      return value === null ? null : value / 100;
+    };
+    const s = percent(parts[1]);
+    const l = percent(parts[2]);
     if (h === null || s === null || l === null) return null;
     return { ...hslToRgb(h, clamp(s, 0, 1), clamp(l, 0, 1)), a: alpha };
   }
@@ -278,7 +286,10 @@ function parseViaEngine(text) {
 function parseColor(raw) {
   const text = raw.trim();
   if (!text) return { ok: false, empty: true };
-  const parsed = parseHex(text) || parseFunctional(text) || parseViaEngine(text);
+  // Keywords are tried before bare hex, so a word like `bisque` keeps its
+  // meaning; only then is `6739B7` (hex copied without its `#`) accepted.
+  const parsed = parseHex(text) || parseFunctional(text) || parseViaEngine(text)
+    || (/^[0-9a-f]{3,8}$/i.test(text) ? parseHex(`#${text}`) : null);
   if (!parsed) return { ok: false, error: "Not a colour this browser recognises." };
   return { ok: true, color: { inGamut: true, ...parsed } };
 }

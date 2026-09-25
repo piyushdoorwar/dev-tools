@@ -134,12 +134,10 @@ test('the payload copy button exports the payload', async ({ page }) => {
   await expect.poll(async () => JSON.parse(await lastCopied(page))).toMatchObject({ sub: '1234567890' });
 });
 
-// KNOWN BUG: updateSecretSections() retargets the *first* [data-copy-target] in
-// the document, which is the Header button, so "Copy Header" puts the signing
-// secret (or private key) on the clipboard and "Copy Secret" never retargets to
-// the private key. Fix: select by value, e.g.
-//   document.querySelector('[data-copy-target="secretTextarea"], [data-copy-target="privateKeyTextarea"]')
-test.fixme('the header copy button exports the header, not the secret', async ({ page }) => {
+// updateSecretSections() used to retarget the *first* [data-copy-target] in the
+// document (the Header button), so "Copy Header" put the signing secret on the
+// clipboard. It now looks up #copyKeyBtn by id.
+test('the header copy button exports the header, not the secret', async ({ page }) => {
   await openTool(page, 'jwt-debugger');
   await page.locator('#sampleBtn').click();
   await page.locator('#secretTextarea').fill('super-secret-value');
@@ -175,4 +173,70 @@ test('the timestamp editor is seeded from the token claims', async ({ page }) =>
   await expect(page.locator('#expUnixInput')).toHaveValue('2000000000');
   await expect(page.locator('#iatUtcInput')).not.toHaveValue('');
   await expect(page.locator('#expRelativeSpan')).not.toBeEmpty();
+});
+
+test('a token whose header or payload is JSON null is rejected, not a crash', async ({ page }) => {
+  // parseJwt() accepted any JSON, and updateStatus() then read .exp off null.
+  const { errors } = await openTool(page, 'jwt-debugger');
+  const nullPart = Buffer.from('null').toString('base64url');
+  const header = Buffer.from('{"alg":"HS256"}').toString('base64url');
+
+  await typeInto(page, '#jwtInput', `${header}.${nullPart}.c2ln`);
+  await expect(page.locator('#statusMessage')).toHaveClass(/invalid/);
+  await expect(page.locator('.status-label')).toHaveText(/complete JWT/);
+  await typeInto(page, '#jwtInput', `${nullPart}.${header}.c2ln`);
+  await expect(page.locator('#statusMessage')).toHaveClass(/invalid/);
+  expect(errors).toEqual([]);
+});
+
+test('a token with an algorithm the tool cannot sign keeps a usable algorithm selected', async ({ page }) => {
+  // Assigning "HS512" to a <select> without that option blanked it, which
+  // hid the secret field as if an asymmetric key were needed.
+  await openTool(page, 'jwt-debugger');
+  const token = await makeToken(page, { sub: '1' }, { alg: 'HS512', typ: 'JWT' });
+  await typeInto(page, '#jwtInput', token);
+
+  await expect(page.locator('#algoSelect')).toHaveValue('HS256');
+  await expect(page.locator('#secretSection')).toBeVisible();
+  await expect(page.locator('#sigAlgo')).toHaveText('HS512');
+
+  // Verify says it cannot, rather than calling the signature invalid.
+  await page.locator('#secretTextarea').fill('k');
+  await page.locator('#verifyBtn').click();
+  await expect(page.locator('#toast-container .toast')).toContainText(/not supported/);
+
+  // Apply signs with the selected algorithm and says so in the header.
+  await page.locator('#applyBtn').click();
+  await expect.poll(async () => JSON.parse(await headerText(page)).alg).toBe('HS256');
+  await page.locator('#verifyBtn').click();
+  await expect(page.locator('.status-label')).toHaveText('Signature verified');
+});
+
+test('applying an invalid private key reports it instead of silently unsigning', async ({ page }) => {
+  // computeSignature() swallowed the import error with console.error and
+  // returned "", so Apply produced an unsigned token with no feedback.
+  const { errors } = await openTool(page, 'jwt-debugger');
+  await page.locator('#algoSelect').selectOption('RS256');
+  await page.locator('#privateKeyTextarea').fill('-----BEGIN PRIVATE KEY-----\nnot-a-key\n-----END PRIVATE KEY-----');
+  await page.locator('#applyBtn').click();
+
+  await expect(page.locator('#toast-container .toast')).toContainText('Invalid RSA private key');
+  expect(errors).toEqual([]);
+});
+
+test('verify with no token explains why nothing happened', async ({ page }) => {
+  await openTool(page, 'jwt-debugger');
+  await page.locator('#clearBtn').click();
+  await page.locator('#verifyBtn').click();
+  await expect(page.locator('#toast-container .toast', { hasText: 'Paste a complete JWT' })).toBeVisible();
+});
+
+test('messages use the shared toast component', async ({ page }) => {
+  // The tool had its own showToast() that appended a bare div: no icon, no
+  // live-region role, no click-to-dismiss, fixed 2.5 s timing.
+  await openTool(page, 'jwt-debugger');
+  await page.locator('#sampleBtn').click();
+  const toast = page.locator('#toast-container .toast').last();
+  await expect(toast).toHaveAttribute('role', 'status');
+  await expect(toast).toContainText('Sample JWT loaded');
 });

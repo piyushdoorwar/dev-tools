@@ -214,7 +214,11 @@ function setLang(lang, { query, writeHash = true } = {}) {
 function loadText(text, message) {
     input.value = text;
     render();
-    if (message && !parsed.error) setStatus(inputStatus, `${message} · ${inputStatus.textContent.replace(/^✓ /, '')}`, 'success');
+    // Only a clean parse gets the success prefix: a duplicate-key warning must
+    // keep its warning styling, not be repainted green.
+    if (message && !parsed.error && !parsed.duplicates.length) {
+        setStatus(inputStatus, `${message} · ${inputStatus.textContent.replace(/^✓ /, '')}`, 'success');
+    }
 }
 
 function jumpToError() {

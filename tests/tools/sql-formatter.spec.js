@@ -96,6 +96,91 @@ test('the dialect is detected from the syntax used', async ({ page }) => {
   });
 });
 
+test('a PostgreSQL cast is formatted instead of failing as PL/SQL', async ({ page }) => {
+  await openTool(page, 'sql-formatter');
+
+  expect(await page.evaluate(() => detectDialect('SELECT id::text FROM users'))).toBe('postgresql');
+  const result = await format(page, 'select id::text, name from users');
+  expect(result).not.toMatch(/Formatting error/);
+  expect(result).toContain('id::text');
+  // A real Oracle bind variable is still recognised.
+  expect(await page.evaluate(() => detectDialect('SELECT a FROM t WHERE x = :id'))).toBe('plsql');
+});
+
+test('sigils inside strings and comments do not pick the dialect', async ({ page }) => {
+  await openTool(page, 'sql-formatter');
+
+  const detected = await page.evaluate(() => ({
+    email: detectDialect("SELECT * FROM users WHERE email = 'bob@example.com'"),
+    time: detectDialect("SELECT * FROM t WHERE note = 'at:noon'"),
+    comment: detectDialect('SELECT a FROM t -- ping @ops'),
+  }));
+  expect(detected).toEqual({ email: 'sql', time: 'sql', comment: 'sql' });
+});
+
+test('copying or downloading an empty editor says so instead of doing nothing', async ({ page }) => {
+  await openTool(page, 'sql-formatter');
+
+  await page.locator('[data-tooltip="Copy formatted SQL"]').click();
+  await expect(page.locator('#toast-container .toast-message')).toContainText(/nothing to copy/i);
+  expect(await lastCopied(page)).toBeNull();
+
+  await page.locator('[data-tooltip="Download formatted SQL"]').click();
+  await expect(page.locator('#toast-container .toast-message').last()).toContainText(/nothing to download/i);
+});
+
+test('a successful copy is acknowledged', async ({ page }) => {
+  await openTool(page, 'sql-formatter');
+  await format(page, 'select id from users');
+
+  await page.locator('[data-tooltip="Copy formatted SQL"]').click();
+  await expect(page.locator('#toast-container .toast-message')).toContainText(/copied/i);
+});
+
+test('long input lines scroll instead of wrapping, so the gutter stays aligned', async ({ page }) => {
+  await openTool(page, 'sql-formatter');
+  await typeInto(page, '#editor', `SELECT ${'column_name_that_is_long, '.repeat(20)}x FROM t`);
+
+  const editor = await page.locator('#editor').evaluate((node) => ({
+    whiteSpace: getComputedStyle(node).whiteSpace,
+    scrolls: node.scrollWidth > node.clientWidth,
+  }));
+  expect(editor.whiteSpace).toBe('pre');
+  expect(editor.scrolls).toBe(true);
+});
+
+test('stacked editors keep a fixed height and scroll on their own at phone width', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'sql-formatter');
+  await page.locator('[data-tooltip="Load sample SQL"]').click();
+  await expect(output(page)).not.toHaveValue('');
+
+  const layout = await page.evaluate(() => {
+    const panels = [...document.querySelectorAll('.workspace .panel')].map((panel) => panel.getBoundingClientRect().height);
+    const input = document.getElementById('editor');
+    input.scrollTop = 200;
+    input.dispatchEvent(new Event('scroll'));
+    return {
+      panels,
+      inputScrolls: input.scrollHeight > input.clientHeight,
+      gutterSynced: Math.abs(document.getElementById('line-numbers').scrollTop - input.scrollTop) <= 1,
+      overflow: document.documentElement.scrollWidth > window.innerWidth,
+    };
+  });
+  layout.panels.forEach((height) => expect(height).toBeLessThan(812));
+  expect(layout.inputScrolls).toBe(true);
+  expect(layout.gutterSynced).toBe(true);
+  expect(layout.overflow).toBe(false);
+});
+
+test('toolbar buttons have accessible names', async ({ page }) => {
+  await openTool(page, 'sql-formatter');
+  const unnamed = await page.locator('.toolbar-btn').evaluateAll((buttons) => buttons
+    .filter((button) => !button.getAttribute('aria-label')).length);
+  expect(unnamed).toBe(0);
+  await expect(page.locator('#settingsModal .modal-close')).toHaveAttribute('aria-label', /close/i);
+});
+
 test('the detected dialect is shown in the toolbar', async ({ page }) => {
   await openTool(page, 'sql-formatter');
 

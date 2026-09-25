@@ -156,12 +156,20 @@ function escapeHtml(value) {
 }
 
 function syncScroll() {
+  // The overlay hides its scrollbar but the textarea shows one, so without
+  // this the overlay is wider, wraps long lines later, and the marks drift
+  // off the text they belong to once the text scrolls.
+  const scrollbar = textInput.offsetWidth - textInput.clientWidth;
+  textHighlight.style.right = `${Math.max(0, scrollbar)}px`;
   textHighlight.scrollTop = textInput.scrollTop;
   textHighlight.scrollLeft = textInput.scrollLeft;
 }
 
 function renderHighlight(text) {
-  const safeText = escapeHtml(text);
+  // A trailing newline makes a new line in the textarea but not in a div, so
+  // the overlay came up one line short and scrolled out of step at the end.
+  const tail = text.endsWith('\n') ? ' ' : '';
+  const safeText = escapeHtml(text) + tail;
 
   if (!highlightToggle.checked || matches.length === 0) {
     textHighlight.innerHTML = safeText;
@@ -182,7 +190,7 @@ function renderHighlight(text) {
     lastIndex = match.end;
   });
 
-  output += escapeHtml(text.slice(lastIndex));
+  output += escapeHtml(text.slice(lastIndex)) + tail;
   textHighlight.innerHTML = output;
   syncScroll();
 }
@@ -332,19 +340,28 @@ function collectMatchesSafely(pattern, flags, text) {
 
   return new Promise((resolve, reject) => {
     const worker = activeRegexWorker;
-    const timeout = window.setTimeout(() => {
+    const stop = (message) => {
       worker.terminate();
       if (activeRegexWorker === worker) activeRegexWorker = null;
-      reject(new Error('Pattern evaluation exceeded 300 ms and was stopped.'));
-    }, 300);
+      reject(new Error(message));
+    };
+    // The 300 ms budget starts when the worker reports it has begun matching.
+    // Timing from construction counted worker start-up too, so a burst of
+    // input events (fast typing, a multi-line fill) queued enough workers that
+    // a trivial pattern was reported as "exceeded 300 ms" with no matches.
+    let timeout = window.setTimeout(() => stop('Pattern evaluation could not start.'), 5000);
 
     worker.addEventListener('message', (event) => {
       window.clearTimeout(timeout);
+      if (event.data.started) {
+        timeout = window.setTimeout(() => stop('Pattern evaluation exceeded 300 ms and was stopped.'), 300);
+        return;
+      }
       worker.terminate();
       if (activeRegexWorker === worker) activeRegexWorker = null;
       if (event.data.error) reject(new Error(event.data.error));
       else resolve(event.data);
-    }, { once: true });
+    });
 
     worker.addEventListener('error', () => {
       window.clearTimeout(timeout);
@@ -473,6 +490,10 @@ function pasteFromClipboard(target) {
   }
 
   return navigator.clipboard.readText().then((text) => {
+    if (!text) {
+      showToast('Clipboard is empty', 'error');
+      return;
+    }
     target.value = text;
     updateAll();
     showToast('Pasted from clipboard');
@@ -491,8 +512,16 @@ function loadSample() {
   updateAll();
 }
 
-regexInput.addEventListener('input', updateAll);
-textInput.addEventListener('input', updateAll);
+// Coalesce bursts of input events into one evaluation, so typing does not
+// spin up and tear down a worker per keystroke.
+let updateTimer = 0;
+function scheduleUpdate() {
+  window.clearTimeout(updateTimer);
+  updateTimer = window.setTimeout(updateAll, 16);
+}
+
+regexInput.addEventListener('input', scheduleUpdate);
+textInput.addEventListener('input', scheduleUpdate);
 textInput.addEventListener('scroll', syncScroll);
 outputTemplate.addEventListener('input', updateOutput);
 matchSearch.addEventListener('input', renderMatchList);
@@ -549,7 +578,11 @@ clearBtn.addEventListener('click', () => {
 });
 
 copyOutputBtn.addEventListener('click', () => {
-  copyText(outputList.textContent || '')
+  if (!outputList.textContent) {
+    showToast('Nothing to copy', 'error');
+    return;
+  }
+  copyText(outputList.textContent)
     .then(() => {
       showToast('Copied');
     })

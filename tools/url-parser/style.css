@@ -134,6 +134,9 @@ body {
     justify-content: space-between;
     gap: var(--space-3);
     flex-wrap: wrap;
+    /* The height a header with a row of icon buttons has, so a title-only
+       header (Components) lines up with its neighbour (Query Parameters). */
+    min-height: 71px;
     padding: var(--space-4);
     border-bottom: 1px solid var(--border);
 }
@@ -475,12 +478,19 @@ body {
     }
 }
 
+/* Phone: scheme on its own row, username and password paired, host and port
+   paired. The old 3+3 split left password alone next to an empty half. */
 @media (max-width: 520px) {
-    .part-scheme,
+    .part-scheme { grid-column: span 6; }
     .part-user,
-    .part-pass,
-    .part-host,
-    .part-port { grid-column: span 3; }
-    .part-host { grid-column: span 6; }
+    .part-pass { grid-column: span 3; }
+    .part-host { grid-column: span 4; }
+    .part-port { grid-column: span 2; }
+
+    /* Two 120px inputs plus the toggle and remove columns are wider than a
+       phone panel, which pushed the remove buttons out of view. */
+    .params-table td input[type='text'] {
+        min-width: 0;
+    }
 }
 }

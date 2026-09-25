@@ -413,4 +413,21 @@ th[aria-sort="descending"] .sort-arrow {
         width: 140px;
     }
 }
+
+/* On a phone the actions wrap under the view switch; let the filter take the
+   rest of that row instead of leaving a fixed 140px box and a gap. */
+@media (max-width: 480px) {
+    .output-panel .action-group {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    /* Basis 0: an input's intrinsic width would otherwise push the
+       buttons past the panel edge. */
+    .filter-input {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+    }
+}
 }

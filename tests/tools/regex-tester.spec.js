@@ -145,3 +145,71 @@ test('the cheat sheet modal opens and closes', async ({ page }) => {
   await page.locator('#closeCheatSheetBtn').click();
   await expect(page.locator('#cheatSheetModal')).toBeHidden();
 });
+
+test('a burst of input events is not mistaken for a runaway pattern', async ({ page }) => {
+  await openTool(page, 'regex-tester');
+  await typeInto(page, '#regexInput', 'row \\d+');
+  // fill() of a multi-line textarea fires one input event per line; each used
+  // to start a fresh worker, and the last one timed out while queued.
+  await page.locator('#textInput').fill(Array.from({ length: 150 }, (_, index) => `row ${index}`).join('\n'));
+
+  await expect(page.locator('#matchCount')).toHaveText(/150 matches/);
+  await expect(page.locator('#regexError')).toHaveText('');
+});
+
+test('a non-global match is not reported as truncated', async ({ page }) => {
+  await openTool(page, 'regex-tester');
+  await page.locator('[data-flag="g"]').click();
+  await run(page, 'a', 'aaa');
+
+  await expect(page.locator('#matchCount')).toHaveText('1 match');
+  await expect(page.locator('#regexError')).toHaveText('');
+  await expect(page.locator('#regexInputWrap')).not.toHaveClass(/has-error/);
+});
+
+test('the highlight overlay stays aligned when the text scrolls or ends in a newline', async ({ page }) => {
+  await openTool(page, 'regex-tester');
+  const long = Array.from({ length: 80 }, (_, index) => `line ${index} ${'word '.repeat(30)}`).join('\n');
+  await run(page, 'line \\d+', `${long}\n`);
+  await expect(page.locator('#matchCount')).toHaveText(/80 matches/);
+
+  const geometry = await page.evaluate(() => {
+    const textarea = document.getElementById('textInput');
+    const overlay = document.getElementById('textHighlight');
+    textarea.scrollTop = textarea.scrollHeight;
+    textarea.dispatchEvent(new Event('scroll'));
+    return {
+      textareaWidth: textarea.clientWidth,
+      overlayWidth: overlay.clientWidth,
+      textareaScroll: textarea.scrollTop,
+      overlayScroll: overlay.scrollTop,
+    };
+  });
+  expect(geometry.overlayWidth).toBe(geometry.textareaWidth);
+  expect(Math.abs(geometry.overlayScroll - geometry.textareaScroll)).toBeLessThanOrEqual(1);
+});
+
+test('copying an empty output warns instead of copying nothing', async ({ page }) => {
+  await openTool(page, 'regex-tester');
+  await page.locator('#copyOutputBtn').click();
+  await expect(page.locator('.toast')).toContainText('Nothing to copy');
+  expect(await lastCopied(page)).toBeNull();
+});
+
+test('on a phone the flags and results panels fit and stay readable', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'regex-tester');
+
+  const layout = await page.evaluate(() => {
+    const options = document.getElementById('regexOptions').getBoundingClientRect();
+    const lastFlag = document.querySelector('.flag-btn[data-flag="y"]').getBoundingClientRect();
+    return {
+      scrollWidth: document.documentElement.scrollWidth,
+      flagInside: lastFlag.right <= options.right,
+      matchListHeight: document.getElementById('matchList').getBoundingClientRect().height,
+    };
+  });
+  expect(layout.scrollWidth).toBeLessThanOrEqual(375);
+  expect(layout.flagInside).toBe(true);
+  expect(layout.matchListHeight).toBeGreaterThan(100);
+});

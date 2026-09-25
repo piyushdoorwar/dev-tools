@@ -31,7 +31,9 @@ body {
 .app-container {
     display: flex;
     flex-direction: column;
-    width: 100vw;
+    /* 100%, not 100vw: vw includes a classic scrollbar, so the stacked
+       (scrolling) layout was a scrollbar's width too wide. */
+    width: 100%;
     height: 100vh;
     position: relative;
     z-index: 1;
@@ -232,10 +234,28 @@ body {
     box-shadow: var(--shadow-md);
 }
 
-.action-btn[data-tooltip]:hover::after {
+.action-btn[data-tooltip]:hover::after,
+.action-btn[data-tooltip]:focus-visible::after {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
+}
+
+/* Buttons at the right edge of the page or a panel anchor their bubble to
+   their own right edge. Centred, the help button's (hidden) tooltip reached
+   ~30px past the viewport and gave phones a horizontal scroll. */
+.header-right .action-btn[data-tooltip]::after,
+.action-bar .action-btn[data-tooltip]:last-child::after {
+    left: auto;
+    right: 0;
+    transform: translateY(4px);
+}
+
+.header-right .action-btn[data-tooltip]:hover::after,
+.header-right .action-btn[data-tooltip]:focus-visible::after,
+.action-bar .action-btn[data-tooltip]:last-child:hover::after,
+.action-bar .action-btn[data-tooltip]:last-child:focus-visible::after {
+    transform: translateY(0);
 }
 
 /* Modal */

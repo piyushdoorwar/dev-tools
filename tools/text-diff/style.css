@@ -525,6 +525,51 @@ body {
     .header-right {
         width: 100%;
         justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    /* The stats pill plus the legend button were wider than a phone and the
+       button hung off the right edge. */
+    .diff-stats {
+        gap: 0.625rem;
+        padding: 0.5rem 0.75rem;
+        min-width: 0;
+    }
+
+    .stat-count {
+        min-width: 0;
+    }
+
+    .info-btn {
+        flex-shrink: 0;
+    }
+
+    /* Stacked panes each got a sliver of the locked 100vh; let the page
+       scroll instead so each editor keeps a usable height. */
+    body,
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .main-content {
+        overflow: visible;
+    }
+
+    .editor-panel {
+        flex: none;
+        height: 70vh;
+        min-height: 360px;
+    }
+
+    .panel-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .action-bar {
+        flex-wrap: nowrap;
     }
 }
 
@@ -742,7 +787,8 @@ body {
     background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(37, 37, 37, 0.95) 100%);
     border: 1px solid rgba(139, 92, 246, 0.3);
     border-radius: 20px;
-    min-width: 480px;
+    /* A fixed 480px floor pushed the dialog off a 375px phone screen. */
+    max-width: calc(100vw - 2rem);
     max-height: 90vh;
     overflow: hidden;
     box-shadow: 

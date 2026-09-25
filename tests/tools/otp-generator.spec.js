@@ -291,3 +291,24 @@ test('arrives with a sample and copy actions work', async ({ page }) => {
   await expect(code(page)).toHaveAttribute('data-code', current);
   expect(errors).toEqual([]);
 });
+
+test('typing an otpauth URI by hand imports once, not once per keystroke', async ({ page }) => {
+  // Every character after "secret=" matched the "looks complete" check, so
+  // each keystroke re-imported the URI and raised another toast.
+  const { errors } = await openAt(page, 59);
+  await page.locator('#uri-input').pressSequentially('otpauth://totp/A:b?secret=JBSWY3DPEHPK3PXP', { delay: 10 });
+
+  await expect(page.locator('#secret-input')).toHaveValue('JBSWY3DPEHPK3PXP');
+  await expect(page.locator('#account-input')).toHaveValue('b');
+  await page.waitForTimeout(600);
+  await expect(page.locator('#toast-container .toast')).toHaveCount(1);
+  await expect(page.locator('#toast-container .toast')).toContainText('Imported TOTP');
+  expect(errors).toEqual([]);
+});
+
+test('the empty-code placeholder has one dash per digit', async ({ page }) => {
+  await openAt(page, 59);
+  await page.locator('[data-option="digits"] [data-value="8"]').click();
+  await typeInto(page, '#secret-input', '');
+  await expect(page.locator('#code .code-empty')).toHaveText('—'.repeat(8));
+});

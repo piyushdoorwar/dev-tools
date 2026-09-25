@@ -302,6 +302,13 @@ body {
     word-break: break-all;
 }
 
+/* A copyable value is a button whose 2px padding and 1px border push its
+   text 3px down; plain values get the same offset so each row shares a
+   baseline with its term. */
+.details dd:not(:has(> .copy-value)) {
+    padding-top: 3px;
+}
+
 .details dd.is-note {
     padding-top: 3px;
     color: var(--accent-orange);
@@ -334,11 +341,14 @@ body {
 
 /* --- Tools -------------------------------------------------------------- */
 
+/* Two fields and a trailing icon button. A grid keeps the button on the
+   inputs' row at phone widths (flex-wrap pushed it onto a line of its own),
+   and end alignment keeps the inputs level when one label wraps. */
 .field-row {
-    display: flex;
-    align-items: flex-end;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    align-items: end;
     gap: var(--space-3);
-    flex-wrap: wrap;
 }
 
 .field {
@@ -346,7 +356,7 @@ body {
     flex: 1;
     flex-direction: column;
     gap: var(--space-1);
-    min-width: 140px;
+    min-width: 0;
 }
 
 .field input {

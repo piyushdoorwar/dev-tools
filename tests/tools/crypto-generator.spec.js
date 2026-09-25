@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { expect, test } from '@playwright/test';
 import { captureDownload, downloadText, lastCopied, openTool } from '../helpers.js';
 
@@ -413,4 +414,71 @@ test('analysis stays fast on long input', async ({ page }) => {
     return performance.now() - start;
   });
   expect(elapsed).toBeLessThan(1000);
+});
+
+test('a slower earlier hash run cannot overwrite a newer one', async ({ page }) => {
+  // Switching "All" then a single algorithm started two runs; the four-digest
+  // one finished last and replaced the single SHA256 row the user asked for.
+  await openTool(page, 'crypto-generator');
+  await page.locator('.mode-tab[data-mode="hashes"]').click();
+  await page.evaluate(() => {
+    const input = document.getElementById('hashInput');
+    const select = document.getElementById('algoSelect');
+    input.value = 'abc';
+    select.value = 'all';
+    select.dispatchEvent(new Event('change'));
+    select.value = 'sha256';
+    select.dispatchEvent(new Event('change'));
+  });
+
+  await page.waitForTimeout(300);
+  await expect(page.locator('#hashList .hash-row')).toHaveCount(1);
+  await expect(page.locator('#hashList .hash-label')).toHaveText('SHA256');
+});
+
+test('MD5 of text with a lone surrogate hashes instead of throwing', async ({ page }) => {
+  // unescape(encodeURIComponent()) threw URIError, an uncaught rejection that
+  // left the result list stale.
+  const { errors } = await openTool(page, 'crypto-generator');
+  await page.locator('.mode-tab[data-mode="hashes"]').click();
+  await page.locator('#algoSelect').selectOption('md5');
+  await page.evaluate(() => {
+    const input = document.getElementById('hashInput');
+    input.value = 'a\uD800';
+    input.dispatchEvent(new Event('input'));
+  });
+
+  const expected = createHash('md5').update(Buffer.from('a\uFFFD', 'utf8')).digest('hex');
+  await expect(page.locator('#hashList .hash-value')).toHaveText(expected);
+  expect(errors).toEqual([]);
+});
+
+test('bulk download with impossible settings explains itself', async ({ page }) => {
+  await openTool(page, 'crypto-generator');
+  await page.locator('#lengthSlider').fill('8');
+  await page.locator('#lengthSlider').dispatchEvent('input');
+  await page.locator('#alphaMin').fill('20');
+  await page.locator('#alphaMin').dispatchEvent('input');
+  await page.locator('#bulkToggle').evaluate((toggle) => {
+    toggle.checked = true;
+    toggle.dispatchEvent(new Event('change'));
+  });
+
+  await page.locator('#bulkDownloadBtn').click();
+  await expect(page.locator('#toast-container .toast')).toContainText('Increase length or lower minimums.');
+});
+
+test('on a phone the options and mode tabs fit without squeezing labels', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'crypto-generator');
+
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  // Each alphabet pill stays on one line.
+  for (const pill of await page.locator('.radio-pill').all()) {
+    const box = await pill.boundingBox();
+    expect(box.height).toBeLessThan(44);
+  }
+  // The three mode tabs share a single row.
+  const tops = await page.locator('.mode-tab').evaluateAll((tabs) => tabs.map((tab) => Math.round(tab.getBoundingClientRect().top)));
+  expect(new Set(tops).size).toBe(1);
 });

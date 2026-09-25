@@ -161,3 +161,72 @@ test('the diff legend modal opens and closes', async ({ page }) => {
   await page.locator('#diffLegendCloseBtn').click();
   await expect(page.locator('#diffLegendModal')).toBeHidden();
 });
+
+const markedLines = (page, side) => page.locator(`#${side}-highlights .highlight-line`).evaluateAll((lines) =>
+  lines.flatMap((line, index) => (/line-diff-/.test(line.className) ? [index] : [])));
+
+test('highlights land on the changed path, not the first line naming the key', async ({ page }) => {
+  await openTool(page, 'json-diff');
+  const left = JSON.stringify({ a: { id: 1 }, b: { id: 1 }, list: [{ id: 1 }, { id: 1 }] }, null, 2);
+  const right = JSON.stringify({ a: { id: 1 }, b: { id: 2 }, list: [{ id: 1 }, { id: 3 }] }, null, 2);
+  await compare(page, left, right);
+  await expect.poll(async () => (await stats(page)).modified).toBe('2');
+
+  const expected = right.split('\n').flatMap((line, index) => (/"id": [23]/.test(line) ? [index] : []));
+  expect(expected).toHaveLength(2);
+  await expect.poll(() => markedLines(page, 'right')).toEqual(expected);
+  await expect.poll(() => markedLines(page, 'left')).toEqual(expected);
+});
+
+test('keys that also appear as values or in siblings map to their own line', async ({ page }) => {
+  await openTool(page, 'json-diff');
+  const left = '{\n  "name": "x",\n  "user": {\n    "name": "y"\n  },\n  "tags": ["name", "a"]\n}';
+  const right = '{\n  "name": "x",\n  "user": {\n    "name": "z"\n  },\n  "tags": ["name",\n    "b"]\n}';
+  await compare(page, left, right);
+  await expect.poll(async () => (await stats(page)).modified).toBe('2');
+  await expect.poll(() => markedLines(page, 'right')).toEqual([3, 6]);
+});
+
+test('Tab indents through the undo stack and refreshes the diff', async ({ page }) => {
+  await openTool(page, 'json-diff');
+  await page.locator('#left-editor').click();
+  await page.keyboard.type('{"a":1');
+  await page.keyboard.press('Tab');
+  await page.keyboard.type('}');
+
+  await expect(page.locator('#left-editor')).toHaveValue('{"a":1  }');
+  await expect(page.locator('#left-status .char-count')).toHaveText('9 characters');
+  await expect(page.locator('#left-status .status-text')).toHaveText('Valid JSON');
+
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('#left-editor')).not.toHaveValue('{"a":1  }');
+});
+
+for (const width of [375, 800]) {
+  test(`fits a ${width}px viewport without clipping the toolbar`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 812 });
+    await openTool(page, 'json-diff');
+    await page.locator('[data-action="sample"]').first().click();
+
+    // Polled: the confirmation toast slides in from off-screen right.
+    await expect.poll(() => page.evaluate(() =>
+      document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+
+    for (const side of ['left', 'right']) {
+      const panel = await page.locator(`.${side}-panel`).boundingBox();
+      const last = await page.locator(`.${side}-panel [data-action="clear"]`).boundingBox();
+      expect(last.x + last.width).toBeLessThanOrEqual(panel.x + panel.width);
+      const editor = await page.locator(`#${side}-editor`).boundingBox();
+      expect(editor.height).toBeGreaterThan(250);
+    }
+
+    const info = await page.locator('#diffLegendBtn').boundingBox();
+    expect(info.x + info.width).toBeLessThanOrEqual(width);
+
+    await page.locator('#diffLegendBtn').click();
+    await expect(page.locator('#diffLegendModal')).toBeVisible();
+    const dialog = await page.locator('#diffLegendModal .modal-content').boundingBox();
+    expect(dialog.x).toBeGreaterThanOrEqual(0);
+    expect(dialog.x + dialog.width).toBeLessThanOrEqual(width);
+  });
+}

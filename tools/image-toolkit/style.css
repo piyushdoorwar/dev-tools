@@ -651,6 +651,12 @@ body {
   html { font-size: 14px; }
   .app-shell { padding: 1rem 0.75rem 1.5rem; }
   .app-header { align-items: center; }
+  /* The bar scrolls with a hidden scrollbar, so at phone width the third tab
+     was cut to "Optimize S" with nothing hinting there was more. Dropping the
+     glyphs and some padding lets all three labels fit on one row. */
+  .mode-bar { gap: 0.2rem; }
+  .mode-tab { gap: 0; padding: 0.5rem 0.55rem; }
+  .mode-tab .ui-icon { display: none; }
   .panel { padding: 0.9rem; border-radius: 1rem; }
   .facts { grid-template-columns: 1fr; }
   .drop-zone { min-height: 15rem; padding: 1.2rem; }

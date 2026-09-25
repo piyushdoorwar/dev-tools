@@ -626,6 +626,10 @@ async function run() {
 
   const iterations = encrypting ? state.iterations : state.envelope.iterations;
   const slow = secret.type === "password";
+  // PBKDF2 can take a second or more; edits made meanwhile are not in the
+  // result, and markStale() ignores them while busy, so compare afterwards.
+  const snapshot = runSnapshot();
+  let succeeded = false;
   setBusy(true, encrypting ? "Encrypting…" : "Decrypting…");
   setStatus(els.outputStatus, slow ? `Deriving key — ${iterations.toLocaleString("en-US")} PBKDF2 iterations…` : "Working…", "warning");
   const started = performance.now();
@@ -643,6 +647,7 @@ async function run() {
     els.output.classList.remove("is-invalid");
     const ms = Math.round(performance.now() - started);
     setStatus(els.outputStatus, `${encrypting ? "Encrypted" : "Decrypted"} in ${ms.toLocaleString("en-US")} ms`, "success");
+    succeeded = true;
   } catch (error) {
     if (!(error instanceof EnvelopeError)) {
       setOutput("");
@@ -656,6 +661,11 @@ async function run() {
     setBusy(false);
     renderEnvelope();
   }
+  if (succeeded && runSnapshot() !== snapshot) markStale();
+}
+
+function runSnapshot() {
+  return JSON.stringify([els.input.value, state.keyMode, els.password.value, els.rawKey.value, state.iterations]);
 }
 
 function setDirection(direction) {

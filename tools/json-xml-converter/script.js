@@ -148,9 +148,12 @@ function updateMode() {
         rightEditor.placeholder = 'Formatted XML will appear here...';
     }
     
-    // Clear editors when switching
+    // Clear editors when switching. History restarts too: undo must not
+    // bring the other mode's JSON back into an XML pane.
     leftEditor.value = '';
     rightEditor.value = '';
+    leftHistory = [''];
+    rightHistory = [''];
     updateStatus('left', 'Ready', false);
     updateStatus('right', 'Ready', false);
     updateCharCounts();
@@ -326,6 +329,7 @@ function beautifyEditor(side) {
         updateStatus(side, 'Beautified', true);
         updateCharCount(side);
         updateLineNumbers(side);
+        saveToHistory(side);
     } catch (error) {
         updateStatus(side, '✗ ' + error.message, false, true);
     }
@@ -348,6 +352,7 @@ function sortJsonKeys() {
         updateStatus('left', 'Keys sorted', true);
         updateCharCount('left');
         updateLineNumbers('left');
+        saveToHistory('left');
         handleConvert(); // Live conversion after sorting
     } catch (error) {
         updateStatus('left', '✗ ' + error.message, false, true);
@@ -382,6 +387,7 @@ function changeCasing(caseType) {
         updateStatus('left', `Converted to ${caseType}`, true);
         updateCharCount('left');
         updateLineNumbers('left');
+        saveToHistory('left');
         handleConvert(); // Live conversion after casing change
     } catch (error) {
         updateStatus('left', '✗ ' + error.message, false, true);
@@ -424,7 +430,13 @@ function handleConvert() {
     const input = leftEditor.value.trim();
     
     if (!input) {
-        updateStatus('left', 'No input to convert', false);
+        // Emptying the input must empty the output too, not leave the last
+        // conversion sitting there as if it described nothing.
+        rightEditor.value = '';
+        updateStatus('left', 'Ready', false);
+        updateStatus('right', 'Ready', false);
+        updateCharCount('right');
+        updateLineNumbers('right');
         return;
     }
     
@@ -494,9 +506,19 @@ function jsonToXML(obj, rootName = 'root') {
             result += `${indent}</${tagName}>\n`;
             return result;
         } else if (Array.isArray(obj)) {
+            // An empty array still names its key rather than vanishing.
+            if (obj.length === 0) return `${indent}<${tagName}${keyAttribute} />\n`;
             let result = '';
             obj.forEach(item => {
-                result += convert(item, name, level);
+                // A nested array is wrapped in its own element; repeating the
+                // name for its items too flattened [[1,2],[3]] into [1,2,3].
+                if (Array.isArray(item)) {
+                    result += `${indent}<${tagName}${keyAttribute}>\n`;
+                    item.forEach(inner => { result += convert(inner, 'item', level + 1); });
+                    result += `${indent}</${tagName}>\n`;
+                } else {
+                    result += convert(item, name, level);
+                }
             });
             return result;
         } else {
@@ -546,16 +568,25 @@ function xmlToJSON(xmlString) {
             }
         }
         
-        // Handle child nodes
-        if (node.childNodes.length === 1 && node.childNodes[0].nodeType === 3) {
-            // Only text content
-            const text = node.childNodes[0].textContent.trim();
+        // Text and CDATA sections both carry text; comments and processing
+        // instructions do not. Checking only for a lone text node dropped
+        // <a><![CDATA[x]]></a> and <a>x<!-- note --></a> to an empty {}.
+        const childNodes = Array.from(node.childNodes);
+        const hasElements = childNodes.some(child => child.nodeType === 1);
+        const text = childNodes
+            .filter(child => child.nodeType === 3 || child.nodeType === 4)
+            .map(child => child.textContent)
+            .join('')
+            .trim();
+
+        if (!hasElements && childNodes.length > 0) {
             if (attributes.length > 0) {
                 obj['#text'] = text;
                 return obj;
             }
             return text;
         }
+        if (hasElements && text) obj['#text'] = text;
         
         const children = {};
         for (let i = 0; i < node.childNodes.length; i++) {
@@ -844,8 +875,7 @@ async function copyToClipboard(text, side) {
     
     try {
         await navigator.clipboard.writeText(text);
-        updateStatus(side, '✓ Copied to clipboard', true);
-        setTimeout(() => updateStatus(side, 'Ready', false), 2000);
+        flashStatus(side, '✓ Copied to clipboard');
     } catch (error) {
         updateStatus(side, '✗ Failed to copy', false, true);
     }
@@ -857,14 +887,13 @@ async function pasteFromClipboard(side) {
         const text = await navigator.clipboard.readText();
         const editor = side === 'left' ? leftEditor : rightEditor;
         editor.value = text;
-        updateStatus(side, '✓ Pasted from clipboard', true);
+        flashStatus(side, '✓ Pasted from clipboard');
         updateCharCount(side);
         updateLineNumbers(side);
         saveToHistory(side);
         if (side === 'left') {
-            handleConvert(); // Live conversion after paste
+            handleConvert(); // Live conversion after paste; its verdict replaces the flash
         }
-        setTimeout(() => updateStatus(side, 'Ready', false), 2000);
     } catch (error) {
         updateStatus(side, '✗ Failed to paste', false, true);
     }
@@ -897,8 +926,7 @@ function downloadContent(side) {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    updateStatus(side, `✓ Downloaded ${filename}`, true);
-    setTimeout(() => updateStatus(side, 'Ready', false), 2000);
+    flashStatus(side, `✓ Downloaded ${filename}`);
 }
 
 // Save to History
@@ -944,14 +972,26 @@ function undoEdit(side) {
     const previousContent = history[history.length - 1];
     editor.value = previousContent;
     
-    updateStatus(side, '✓ Undo successful', true);
+    flashStatus(side, '✓ Undo successful');
     updateCharCount(side);
     updateLineNumbers(side);
-    setTimeout(() => updateStatus(side, 'Ready', false), 2000);
+    // The output follows the input, so undoing the input re-converts it.
+    if (side === 'left') handleConvert();
+}
+
+// A transient confirmation that reverts to "Ready". Any later status wins:
+// a bare setTimeout used to wipe an error that arrived in the meantime
+// (paste invalid JSON and the error vanished two seconds later).
+const statusTimers = {};
+
+function flashStatus(side, message) {
+    updateStatus(side, message, true);
+    statusTimers[side] = setTimeout(() => updateStatus(side, 'Ready', false), 2000);
 }
 
 // Update Status
 function updateStatus(side, message, isSuccess = false, isError = false) {
+    clearTimeout(statusTimers[side]);
     const statusBar = side === 'left' ? leftStatus : rightStatus;
     const statusText = statusBar.querySelector('.status-text');
     statusText.textContent = message;

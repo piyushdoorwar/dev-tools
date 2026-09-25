@@ -609,11 +609,34 @@ textarea::selection {
   .app-shell {
     height: auto;
     min-height: 100vh;
+    padding: 1rem;
+    /* The centred, nowrap tooltips of the right-most toolbar buttons stuck
+       out past the viewport and gave the page a sideways scroll. */
+    overflow-x: clip;
   }
 
   .workspace {
     flex-direction: column;
     min-height: 70vh;
+    /* The resizer is hidden when stacked, so the panels touched. */
+    gap: 1rem;
+  }
+
+  /* Stacked, each pane got a sliver of the 70vh; give both a usable height. */
+  .workspace > .panel {
+    flex: none;
+    height: 60vh;
+    min-height: 320px;
+  }
+
+  .toolbar {
+    padding: 0.75rem;
+  }
+
+  /* The vertical dividers only make sense between groups on one row; once
+     the groups wrap they became stray stubs on lines of their own. */
+  .toolbar-divider {
+    display: none;
   }
 
   .toolbar-group {

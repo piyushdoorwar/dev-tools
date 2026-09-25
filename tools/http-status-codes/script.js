@@ -244,9 +244,10 @@ function select(code, { pushHash = true, scroll = true } = {}) {
 
   renderDetail(entry);
   document.title = `${code} ${entry.name} — HTTP Status Code`;
-  if (pushHash && window.location.hash.slice(1) !== String(code)) {
-    window.location.hash = String(code);
-  }
+  // replaceState via the shared helper: assigning location.hash pushed one
+  // history entry per click, so Back stepped through every code browsed (and,
+  // inside the dashboard iframe, hijacked the shell's Back button).
+  if (pushHash) window.DevToolsMain.writeHashState(String(code));
 }
 
 function detailText(entry) {
@@ -265,7 +266,7 @@ function refresh() {
   // Keep the detail on the selected code while it is still in the list; when a
   // filter hides it, show the first result instead of an empty panel.
   if (entries.length && !entries.some((entry) => entry.code === state.selected)) {
-    select(entries[0].code, { pushHash: false, scroll: false });
+    select(entries[0].code, { scroll: false });
   } else {
     renderDetail(byCode.get(state.selected));
   }
@@ -339,8 +340,8 @@ document.querySelectorAll("[data-action]").forEach((button) => {
   button.addEventListener("click", () => ACTIONS[button.dataset.action]?.());
 });
 
-window.addEventListener("hashchange", () => {
-  const code = Number(window.location.hash.slice(1));
+window.DevToolsMain.onHashState((value) => {
+  const code = Number(value);
   if (byCode.has(code) && code !== state.selected) select(code, { pushHash: false });
 });
 

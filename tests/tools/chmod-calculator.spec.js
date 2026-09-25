@@ -283,3 +283,37 @@ test('copying a command yields exactly what the row shows', async ({ page }) => 
   await page.locator('#commands .command', { hasText: 'Symbolic' }).locator('button').click();
   expect(await lastCopied(page)).toBe('chmod u=rwx,g=rx,o=rx bin/deploy.sh');
 });
+
+test('common-mode cards are compact rows, not squares', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openTool(page, 'chmod-calculator');
+
+  // main.css's colour-picker `.preset` (aspect-ratio: 1, padding: 0) used to
+  // match these cards and blow each one up to a ~210px square.
+  const preset = page.locator('#preset-grid [data-preset="644"]');
+  const card = await preset.boundingBox();
+  expect(card.height).toBeLessThan(card.width / 2);
+  expect(card.height).toBeLessThan(110);
+  expect(parseFloat(await preset.evaluate((el) => getComputedStyle(el).paddingLeft))).toBeGreaterThan(0);
+});
+
+test('editing the mode replaces the hash instead of stacking history entries', async ({ page }) => {
+  await openTool(page, 'chmod-calculator');
+  const before = await page.evaluate(() => history.length);
+
+  await cell(page, 'owner', 'x').check();
+  await page.click('[data-preset="700"]');
+  await page.fill('#octal', '750');
+  await expect(page).toHaveURL(/#750$/);
+  expect(await page.evaluate(() => history.length)).toBe(before);
+});
+
+test('ls -l output with an SELinux or ACL marker is accepted', async ({ page }) => {
+  await openTool(page, 'chmod-calculator');
+
+  await page.fill('#symbolic', '-rwxr-x---.');
+  await expect(page.locator('#out-octal')).toHaveText('0750');
+  await page.fill('#symbolic', 'drwxrwxr-t+');
+  await expect(page.locator('#out-octal')).toHaveText('1775');
+  await expect(page.locator('#entry-error')).toBeHidden();
+});

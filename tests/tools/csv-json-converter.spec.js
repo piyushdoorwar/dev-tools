@@ -257,3 +257,28 @@ test('every icon button shows its tooltip on hover and keyboard focus, inside th
   const box = await help.boundingBox();
   expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize().width);
 });
+
+test('a failed clipboard write is reported as a failure, not as copied', async ({ page }) => {
+  await openTool(page, 'csv-json-converter');
+  await page.fill('#input', 'a\n1');
+  await page.evaluate(() => {
+    navigator.clipboard.writeText = () => Promise.reject(new Error('denied'));
+  });
+  await page.locator('[data-action="copy"]').click();
+  await expect(page.locator('.toast').last()).toContainText('Copy failed');
+  await expect(page.locator('.toast', { hasText: 'copied' })).toHaveCount(0);
+});
+
+test('on a phone the filter fills the row beside the copy and download buttons', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'csv-json-converter');
+  await page.locator('[data-action="sample"]').click();
+
+  const filter = await page.locator('#filter').boundingBox();
+  const download = await page.locator('[data-action="download"]').boundingBox();
+  const panel = await page.locator('.output-panel').boundingBox();
+  expect(filter.width).toBeGreaterThan(200);
+  expect(download.x + download.width).toBeLessThanOrEqual(panel.x + panel.width);
+  await expect.poll(() => page.evaluate(() =>
+    document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+});

@@ -153,3 +153,53 @@ test('the schema help modal opens and closes', async ({ page }) => {
   await page.locator('#schemaHelpCloseBtn').click();
   await expect(page.locator('#schemaHelpModal')).toBeHidden();
 });
+
+test('renaming a field regenerates the output with the new key', async ({ page }) => {
+  await openTool(page, 'fake-data-generator');
+
+  const name = page.locator('.field-name-input').first();
+  await name.fill('identifier');
+  // Only the name changed, so nothing else would trigger a regenerate.
+  await expect.poll(async () => {
+    const records = JSON.parse(await page.locator('#output-editor').inputValue());
+    return Object.keys(records[0])[0];
+  }).toBe('identifier');
+});
+
+test('dates stay inside the chosen range west of Greenwich', async ({ browser }) => {
+  const context = await browser.newContext({ timezoneId: 'America/Los_Angeles' });
+  const page = await context.newPage();
+  await openTool(page, 'fake-data-generator');
+
+  const values = await page.evaluate(() => Array.from({ length: 200 }, () => generateValue({
+    type: 'date', options: { start: '2024-03-10', end: '2024-03-11' },
+  })));
+  // UTC-midnight bounds read back in local time came out as 2024-03-09.
+  for (const value of values) expect(['2024-03-10', '2024-03-11']).toContain(value);
+  await context.close();
+});
+
+test('on a phone the panels stack, scroll, and keep every action on screen', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'fake-data-generator');
+
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  for (const action of ['load-sample', 'clear-fields', 'clear-output']) {
+    const box = await page.locator(`[data-action="${action}"]`).boundingBox();
+    expect(box.x + box.width, action).toBeLessThanOrEqual(375);
+  }
+
+  // The schema used to be a half-screen box clipping its first row.
+  const last = page.locator('.field-row').last();
+  await last.scrollIntoViewIfNeeded();
+  await expect(last).toBeInViewport();
+  const output = await page.locator('.right-panel .panel-body').evaluate((el) => el.getBoundingClientRect().height);
+  expect(output).toBeGreaterThanOrEqual(320);
+});
+
+test('field rows fit the schema panel just above the stack point', async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 800 });
+  await openTool(page, 'fake-data-generator');
+  const overflow = await page.locator('.field-row').first().evaluate((row) => row.scrollWidth > row.clientWidth + 1);
+  expect(overflow).toBe(false);
+});

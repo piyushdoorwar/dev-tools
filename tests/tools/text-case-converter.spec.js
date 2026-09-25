@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { lastCopied, openTool } from '../helpers.js';
+import { lastCopied, openTool, setClipboardText } from '../helpers.js';
 
 test('converts a mixed identifier into all six cases with no console errors', async ({ page }) => {
   const { errors } = await openTool(page, 'text-case-converter');
@@ -96,4 +96,33 @@ test('sample and clear actions work', async ({ page }) => {
   await page.click('[data-action="clear"]');
   await expect(page.locator('#input')).toHaveValue('');
   await expect(page.locator('#out-camel')).toHaveValue('');
+});
+
+test('copy all keeps multi-line results grouped under their label', async ({ page }) => {
+  await openTool(page, 'text-case-converter');
+
+  await page.fill('#input', 'first phrase\nsecond phrase');
+  await page.click('[data-action="copy-all"]');
+  const copied = await lastCopied(page);
+  expect(copied).toContain('camelCase:\nfirstPhrase\nsecondPhrase\n');
+  expect(copied).toContain('Title Case:\nFirst Phrase\nSecond Phrase');
+});
+
+test('copy all refuses when the input has no convertible words', async ({ page }) => {
+  await openTool(page, 'text-case-converter');
+
+  await page.fill('#input', '!!! ---');
+  await page.click('[data-action="copy-all"]');
+  await expect(page.locator('.toast')).toContainText('Nothing to copy');
+  expect(await lastCopied(page)).toBeNull();
+});
+
+test('pasting an empty clipboard leaves the input untouched', async ({ page }) => {
+  await openTool(page, 'text-case-converter');
+  await page.fill('#input', 'keep this');
+
+  await setClipboardText(page, '');
+  await page.click('[data-action="paste"]');
+  await expect(page.locator('#input')).toHaveValue('keep this');
+  await expect(page.locator('#out-camel')).toHaveValue('keepThis');
 });

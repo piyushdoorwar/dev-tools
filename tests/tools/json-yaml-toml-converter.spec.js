@@ -266,3 +266,24 @@ test('TOML and JSON format in place', async ({ page }) => {
   await pickIndent(page, '4');
   await expect(page.locator('#right-editor')).toHaveValue('{\n    "z": {\n        "y": 1\n    },\n    "a": 2\n}');
 });
+
+for (const width of [375, 600, 900]) {
+  test(`fits a ${width}px viewport: usable editors, no clipped toolbar, no sideways scroll`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 812 });
+    await openTool(page, 'json-yaml-toml-converter');
+    await page.locator('[data-action="load-sample"]').click();
+
+    // Hidden tooltips on the right-most buttons used to widen the page.
+    await expect.poll(() => page.evaluate(() =>
+      document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+
+    for (const side of ['left', 'right']) {
+      const panel = await page.locator(`.${side}-panel`).boundingBox();
+      const rights = await page.locator(`#${side}-actions .action-btn`).evaluateAll((els) =>
+        els.map((el) => el.getBoundingClientRect().right));
+      for (const right of rights) expect(right).toBeLessThanOrEqual(panel.x + panel.width);
+      // At 375px the input editor used to be about 30px tall.
+      expect((await page.locator(`#${side}-editor`).boundingBox()).height).toBeGreaterThan(250);
+    }
+  });
+}

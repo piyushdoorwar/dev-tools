@@ -399,3 +399,25 @@ test('Ctrl+Enter runs, and copy, paste, clear and the view hash work', async ({ 
   await expect(page.locator('#input-editor')).toHaveValue('');
   await expect(page.locator(output)).toHaveValue('');
 });
+
+test('editing the input while the key is derived marks the finished result out of date', async ({ page }) => {
+  // markStale() skips while busy, so an edit made during a slow PBKDF2 run
+  // used to finish with a green "Encrypted in" status over ciphertext of the old text.
+  await open(page);
+  await page.click('[data-iterations="1000000"]');
+  await page.click('#run-btn');
+  await expect(page.locator('#run-btn')).toBeDisabled();
+  await typeInto(page, '#input-editor', 'typed while busy');
+
+  await expect(page.locator('#run-btn')).toBeEnabled({ timeout: 15000 });
+  await expect(outputStatus(page)).toContainText('Out of date');
+});
+
+test('the output header fits a phone screen without horizontal scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await open(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const panel = await page.locator('#output-panel').boundingBox();
+  const actions = await page.locator('#output-panel .action-bar').boundingBox();
+  expect(actions.x + actions.width).toBeLessThanOrEqual(panel.x + panel.width);
+});

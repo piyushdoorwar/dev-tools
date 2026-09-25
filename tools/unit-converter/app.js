@@ -10,10 +10,14 @@ const resultMetaNode = document.getElementById("result-meta");
 const allResultsNode = document.getElementById("all-results");
 const errorNode = document.getElementById("error");
 
-let selectedCategoryKey = (function () {
-  const hash = window.location.hash.slice(1);
-  return UNIT_CATEGORIES[hash] ? hash : DEFAULT_CATEGORY;
-})();
+// The category is view state, so it lives in the hash — but through the shared
+// helper: assigning location.hash pushed a history entry per chip click, which
+// inside the dashboard iframe hijacked the shell's back button.
+function categoryFromHash(value) {
+  return UNIT_CATEGORIES[value] ? value : DEFAULT_CATEGORY;
+}
+
+let selectedCategoryKey = categoryFromHash(window.DevToolsMain.readHashState());
 let selectedFromUnit = "";
 let selectedToUnit = "";
 let selectedPrecision = 4;
@@ -54,11 +58,8 @@ function renderCategoryChips() {
         category.label,
         () => {
           if (selectedCategoryKey === key) return;
-          selectedCategoryKey = key;
-          window.location.hash = key;
-          renderCategoryChips();
-          populateUnits(true);
-          convertAndRender();
+          window.DevToolsMain.writeHashState(key);
+          selectCategory(key);
         },
         className
       );
@@ -68,6 +69,13 @@ function renderCategoryChips() {
     row.append(chips);
     categoryList.append(row);
   });
+}
+
+function selectCategory(key) {
+  selectedCategoryKey = key;
+  renderCategoryChips();
+  populateUnits(true);
+  convertAndRender();
 }
 
 function renderUnitButtons(container, activeUnit, onSelect) {
@@ -170,6 +178,16 @@ function convertAndRender() {
 
   showError("");
 
+  // Offset scales have a floor; below it every other reading is nonsense
+  // (-300 °C used to convert to a negative kelvin value).
+  if (categoryKey === "temperature" && convertValue(categoryKey, validation.value, fromUnit, "K") < 0) {
+    showError("That is below absolute zero (0 K).");
+    resultNode.textContent = "-";
+    resultMetaNode.textContent = "";
+    allResultsNode.innerHTML = '<p class="empty-state">Enter a temperature at or above absolute zero.</p>';
+    return;
+  }
+
   const result = convertValue(categoryKey, validation.value, fromUnit, toUnit);
   resultNode.textContent = roundToPrecision(result, precision);
   resultMetaNode.textContent = `${validation.value} ${fromUnit} = ${roundToPrecision(result, precision)} ${toUnit}`;
@@ -187,16 +205,21 @@ function swapUnits() {
 }
 
 async function copyResult() {
+  // Both outcomes used to be silent: nothing to copy did nothing at all, and a
+  // refused clipboard only removed a class that was never added.
   if (resultNode.textContent === "-") {
+    window.DevToolsMain.showToast("Nothing to copy", "error");
     return;
   }
 
   try {
-    await navigator.clipboard.writeText(resultMetaNode.textContent || resultNode.textContent);
+    await window.DevToolsMain.copyText(resultMetaNode.textContent || resultNode.textContent);
     copyButton.classList.add("copied");
     setTimeout(() => copyButton.classList.remove("copied"), 1200);
+    window.DevToolsMain.showToast("Result copied", "success");
   } catch (error) {
     copyButton.classList.remove("copied");
+    window.DevToolsMain.showToast("Copy failed", "error");
   }
 }
 
@@ -206,6 +229,11 @@ function bindEvents() {
   valueInput.addEventListener("input", convertAndRender);
   swapButton.addEventListener("click", swapUnits);
   copyButton.addEventListener("click", copyResult);
+  // Deep links and back/forward in the shell re-assign the frame's hash.
+  window.DevToolsMain.onHashState((value) => {
+    const key = categoryFromHash(value);
+    if (key !== selectedCategoryKey) selectCategory(key);
+  });
 }
 
 function init() {

@@ -248,7 +248,7 @@ function nowSeconds() {
 function showCode(code) {
   codeEl.dataset.code = code || "";
   if (!code) {
-    codeEl.replaceChildren(Object.assign(document.createElement("span"), { className: "code-empty", textContent: "——————".slice(0, state.digits) }));
+    codeEl.replaceChildren(Object.assign(document.createElement("span"), { className: "code-empty", textContent: "—".repeat(state.digits) }));
     return;
   }
   // Split into two visual groups; textContent stays the bare digits so a
@@ -572,7 +572,13 @@ document.addEventListener("click", (event) => {
   if (value) copy(value.dataset.copy, "Code");
 });
 
-uriInput.addEventListener("input", () => {
+// Typing a URI by hand passes "looks complete" on every keystroke after
+// secret=, which imported (and toasted) once per character; wait for a pause.
+const URI_IMPORT_DELAY_MS = 400;
+let uriImportTimer = 0;
+
+uriInput.addEventListener("input", (event) => {
+  window.clearTimeout(uriImportTimer);
   const text = uriInput.value.trim();
   if (!text) {
     uriInput.classList.remove("is-invalid");
@@ -581,7 +587,13 @@ uriInput.addEventListener("input", () => {
   // Only import once the text looks complete, so typing does not toast an
   // error on every keystroke.
   if (/^otpauth:\/\/(totp|hotp)\/.*secret=/i.test(text)) {
-    if (importUri(text)) refresh();
+    // A paste lands whole, so it imports at once.
+    const pasted = event.inputType === "insertFromPaste";
+    const doImport = () => {
+      if (importUri(uriInput.value.trim())) refresh();
+    };
+    if (pasted) doImport();
+    else uriImportTimer = window.setTimeout(doImport, URI_IMPORT_DELAY_MS);
   } else {
     const lower = text.toLowerCase();
     uriInput.classList.toggle("is-invalid", !("otpauth://".startsWith(lower) || lower.startsWith("otpauth://")));

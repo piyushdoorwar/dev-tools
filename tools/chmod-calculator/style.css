@@ -155,6 +155,8 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
+    /* Match a header that holds icon buttons, so the two panel titles line up. */
+    min-height: 71px;
     padding: var(--space-4);
     border-bottom: 1px solid var(--border);
 }
@@ -416,9 +418,15 @@ body {
     gap: var(--space-2);
 }
 
-.preset {
+/* Not `.preset`: main.css declares an unscoped `.preset` for the colour
+   picker's swatches (aspect-ratio: 1, padding: 0) in the winning shared
+   layer, which squared every card here into a ~210px box. */
+.mode-preset {
     display: grid;
     grid-template-columns: auto 1fr;
+    /* Cards in a row share the tallest one's height; keep the title and note
+       at the top instead of spreading the spare height between them. */
+    align-content: start;
     gap: 2px var(--space-2);
     padding: var(--space-2) var(--space-3);
     border: 1px solid var(--border);
@@ -429,12 +437,12 @@ body {
     transition: var(--transition-control);
 }
 
-.preset:hover {
+.mode-preset:hover {
     border-color: var(--accent-purple-light);
     background: var(--surface-soft);
 }
 
-.preset.is-active {
+.mode-preset.is-active {
     border-color: rgba(var(--accent-purple-light-rgb), 0.6);
     background: rgba(var(--accent-purple-light-rgb), 0.14);
 }

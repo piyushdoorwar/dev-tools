@@ -369,3 +369,35 @@ test('the mode is kept in the URL hash and restored on reload', async ({ page })
   await expect(page.locator('[data-pane="text"]')).toBeVisible();
   await expect(page.locator('[data-view="text"]')).toHaveAttribute('aria-selected', 'true');
 });
+
+test('every row is reachable on a phone-sized viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'base-converter');
+
+  // The content area used to clip (overflow: hidden) under a 100vh body, so the
+  // hex and octal rows could not be scrolled to at all.
+  const octal = page.locator('#octal-input');
+  await octal.scrollIntoViewIfNeeded();
+  await expect(octal).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('on a wide screen the editors fill the height instead of leaving a gap', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openTool(page, 'base-converter');
+
+  const bottom = await page.locator('[data-row="octal"]').evaluate((el) => el.getBoundingClientRect().bottom);
+  expect(900 - bottom).toBeLessThan(60);
+});
+
+test('the tips dialog fits a phone screen', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'base-converter');
+
+  await page.locator('#schemaHelpBtn').click();
+  await expect(page.locator('#schemaHelpModal')).toBeVisible();
+  const box = await page.locator('#schemaHelpModal .modal-content').boundingBox();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(375);
+  await expect(page.locator('#schemaHelpCloseBtn')).toBeInViewport();
+});

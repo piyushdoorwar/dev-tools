@@ -410,14 +410,26 @@ body {
         flex-wrap: wrap;
     }
 
+    /* Once the header and toolbar wrap they eat most of a locked 100vh, and
+       the two stacked editors were squeezed to a single clipped line. Let the
+       page scroll and give each editor a real height instead. */
+    body,
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
     .main-content {
         flex-direction: column;
         padding: 1rem;
+        overflow: visible;
     }
 
     .editor-panel {
-        flex: 1;
-        min-height: 0;
+        flex: none;
+        height: 60vh;
+        min-height: 320px;
     }
 
     .mode-btn,

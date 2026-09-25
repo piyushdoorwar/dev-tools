@@ -321,7 +321,9 @@ function renderAlgo() {
   }));
 
   commentInput.disabled = state.algo === "x25519";
-  document.querySelector('[data-output="ssh"]').hidden = state.algo === "x25519";
+  // The outputs still show the last generated key until Generate is pressed,
+  // so the SSH line follows that key, not the algorithm just picked.
+  document.querySelector('[data-output="ssh"]').hidden = state.key ? !state.key.sshLine : state.algo === "x25519";
 }
 
 function renderSupportNote() {

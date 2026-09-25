@@ -133,3 +133,20 @@ test('Enter in the password field generates a hash', async ({ page }) => {
   await page.locator('#hash-password').press('Enter');
   await expect(page.locator('#hash-output')).toHaveValue(/^\$2b\$04\$/);
 });
+
+test('switching the prefix while a hash is running labels the result with the new prefix', async ({ page }) => {
+  // The callback wrote bcryptjs' result verbatim, so a $2a$ picked mid-hash
+  // was ignored: the switch showed $2a$ over a $2b$ hash.
+  await openTool(page, 'bcrypt-generator');
+  await typeInto(page, '#hash-password', 'secret');
+  await page.locator('#cost').fill('12');
+  // Click both in one task, so the switch lands while the rounds are running.
+  await page.evaluate(() => {
+    document.getElementById('generate-btn').click();
+    document.querySelector('#version-switch [data-version="2a"]').click();
+  });
+  await expect(page.locator('#version-switch [data-version="2a"]')).toHaveClass(/active/);
+
+  await expect(page.locator('#generate-btn')).toBeEnabled({ timeout: 20_000 });
+  await expect(page.locator('#hash-output')).toHaveValue(/^\$2a\$12\$/);
+});

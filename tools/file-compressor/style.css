@@ -465,7 +465,10 @@ button {
   gap: 0.9rem;
   flex: 1;
   min-height: 0;
-  align-items: start;
+  /* Stretch, not start: both panels run to the bottom of the viewport and
+     the queued-files card (flex: 1) takes up the slack instead of leaving a
+     dead band under the shorter column. */
+  align-items: stretch;
 }
 
 .panel {
@@ -1141,14 +1144,10 @@ button {
 }
 
 @media (max-width: 720px) {
+  /* The header holds one title and one icon button; stacking them left the
+     info button stranded on a row of its own. */
   .app-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
+    align-items: center;
   }
 
   .toolbar-group {
@@ -1200,6 +1199,25 @@ button {
   .files-table th,
   .files-table td {
     padding-inline: 0.75rem;
+  }
+
+  /* Percentage columns left "Remove" clipped and sizes wrapping onto two
+     lines at phone width; fixed narrow columns give the path the rest. */
+  .th-path {
+    width: auto;
+  }
+
+  .th-size {
+    width: 5.6rem;
+  }
+
+  .th-actions {
+    width: 4.9rem;
+    letter-spacing: 0.04em;
+  }
+
+  .file-size-cell {
+    white-space: nowrap;
   }
 
   .modal-header,

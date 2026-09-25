@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { inflateRawSync, zstdDecompressSync } from 'node:zlib';
+import { openTool } from './helpers.js';
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -1148,4 +1149,42 @@ test('a hash naming a tool is still treated as a route, not as tab state', async
   await page.goto('/#jwt-debugger');
   await expect(page).toHaveURL(/\/jwt-debugger\/$/);
   await expect(page.locator('iframe[data-tool-id="jwt-debugger"]')).toHaveClass(/is-visible/);
+});
+
+test('a malformed percent-encoded hash does not crash tools that read their tab from it', async ({ page }) => {
+  const { errors } = await openTool(page, 'text-utilities');
+  await page.goto('/tools/text-utilities/#%E0%A4%A');
+  await page.waitForLoadState('load');
+  await expect(page.locator('body')).toBeVisible();
+  expect(await page.evaluate(() => window.DevToolsMain.readHashState())).toBe('%E0%A4%A');
+  expect(errors).toEqual([]);
+});
+
+test('Escape on a dropdown inside a modal closes only the dropdown', async ({ page }) => {
+  await openTool(page, 'timestamp-converter');
+  await page.click('#helpBtn');
+  const modal = page.locator('#helpModal');
+  await expect(modal).toBeVisible();
+
+  await page.evaluate(() => {
+    const host = document.querySelector('#helpModal .modal-content, #helpModal .modal-panel') || document.querySelector('#helpModal');
+    host.insertAdjacentHTML('beforeend', `
+      <div class="dd" data-dd id="probe-dd">
+        <button class="dd__trigger" type="button"><span class="dd__value">One</span></button>
+        <div class="dd__menu" role="listbox">
+          <button class="dd__option" type="button" role="option" data-value="1">One</button>
+          <button class="dd__option" type="button" role="option" data-value="2">Two</button>
+        </div>
+      </div>`);
+  });
+
+  const dd = page.locator('#probe-dd');
+  await dd.locator('.dd__trigger').click();
+  await expect(dd).toHaveClass(/is-open/);
+  await page.keyboard.press('Escape');
+  await expect(dd).not.toHaveClass(/is-open/);
+  await expect(modal).toBeVisible();
+
+  await page.keyboard.press('Escape');
+  await expect(modal).toBeHidden();
 });

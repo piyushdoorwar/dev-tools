@@ -287,8 +287,11 @@ function renderBreakdown() {
     });
   }
   if (parts.fragment !== null) nodes.push(span("#", "seg seg-punct"), span(parts.fragment, "seg seg-fragment"));
-  breakdown.append(...nodes.filter((n) => n.textContent));
-  breakdown.hidden = !nodes.length;
+  // An empty input still yields an (empty) path node, so hide on what is
+  // actually shown — otherwise a blank dashed box sat under an empty field.
+  const shown = nodes.filter((n) => n.textContent);
+  breakdown.append(...shown);
+  breakdown.hidden = !shown.length;
 }
 
 // `skip` is the field being typed into: normalising it mid-keystroke (say,

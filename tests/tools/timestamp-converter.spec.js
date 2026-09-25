@@ -201,3 +201,35 @@ test('the date picker button is legible on a dark field', async ({ page }) => {
   expect(rule, 'the UA invert must be neutralised').toContain('filter: none');
   expect(rule, 'the indicator should use our own glyph').toContain('--date-picker-icon');
 });
+
+test('fractional seconds and microseconds give whole milliseconds', async ({ page }) => {
+  await openTool(page, 'timestamp-converter');
+
+  // 1789689600.123 * 1000 is 1789689600123.0002 in floating point.
+  await enter(page, `${EPOCH_S}.123`);
+  expect((await rows(page))['Unix milliseconds']).toBe(`${EPOCH_S}123`);
+
+  await enter(page, `${EPOCH_S}123456`);
+  expect((await rows(page))['Unix milliseconds']).toBe(`${EPOCH_S}123`);
+
+  await enter(page, `${EPOCH_S}000000000`);
+  expect((await rows(page))['Unix milliseconds']).toBe(`${EPOCH_S}000`);
+});
+
+test('the two panel headers line up', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openTool(page, 'timestamp-converter');
+  const heights = await page.locator('.panel-header').evaluateAll((els) => els.map((el) => el.getBoundingClientRect().height));
+  expect(Math.abs(heights[0] - heights[1])).toBeLessThan(1);
+});
+
+test('stacked panels sit together rather than splitting the spare height', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 1400 });
+  await openTool(page, 'timestamp-converter');
+  const gap = await page.evaluate(() => {
+    const a = document.querySelector('.input-panel').getBoundingClientRect();
+    const b = document.querySelector('.output-panel').getBoundingClientRect();
+    return b.top - a.bottom;
+  });
+  expect(gap).toBeLessThan(40);
+});

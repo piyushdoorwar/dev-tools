@@ -102,7 +102,9 @@ body {
   display: grid;
   width: 100%;
   min-width: 0;
-  grid-template-columns: minmax(500px, 1.5fr) minmax(500px, 1fr);
+  /* Two 500px floors plus the page gutters need ~1140px, so between 900px
+     (where the panels stack) and that width the page scrolled sideways. */
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   gap: 28px;
   position: relative;
 }
@@ -269,6 +271,11 @@ textarea:focus {
 
 .input-field::placeholder {
   color: var(--text-muted);
+}
+
+.input-field.is-invalid {
+  border-color: rgba(255, 107, 157, 0.6);
+  box-shadow: 0 0 0 1px rgba(255, 107, 157, 0.25);
 }
 
 .input-with-button {
@@ -548,8 +555,9 @@ select:hover,
   border: 1px solid var(--border);
   background: var(--bg);
   overflow: visible;
-  height: 400px;
-  max-height: 400px;
+  /* Fill what is left of the viewport under the controls instead of a fixed
+     400px box that left a band of empty page below it on tall screens. */
+  height: max(280px, calc(100vh - 410px));
   transition: all 0.2s ease;
 }
 
@@ -851,6 +859,12 @@ textarea:hover {
     grid-template-columns: 1fr;
   }
 
+  /* Stacked, the decoder sits below, so the output must not claim a whole
+     screen of height of its own. */
+  .editor-wrapper {
+    height: 320px;
+  }
+
   .app-shell {
     padding: 32px 20px;
   }
@@ -861,17 +875,19 @@ textarea:hover {
 }
 
 @media (max-width: 640px) {
+  /* body and .app-shell both pad the page; stacked they left a 32px gutter
+     plus the panel's own padding, squeezing the panels to ~280px. */
   body {
-    padding: 16px;
+    padding: 8px 0;
   }
 
   .app-shell {
     padding: 24px 16px;
-    gap: 28px;
+    gap: 24px;
   }
 
   .panel {
-    padding: 20px;
+    padding: 16px;
   }
 
   .generate-controls-all,

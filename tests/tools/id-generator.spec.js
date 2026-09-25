@@ -166,3 +166,77 @@ test('the sample button fills the decoder', async ({ page }) => {
   await page.locator('#clear-decode-btn').click();
   await expect(page.locator('#decode-input')).toHaveValue('');
 });
+
+async function decode(page, value) {
+  await page.locator('#decode-input').fill(value);
+  await page.locator('#decode-input').dispatchEvent('input');
+  return page.evaluate(() => Object.fromEntries(
+    [...document.querySelectorAll('.decoded-field')].map((f) => [f.dataset.field, f.querySelector('input').value]),
+  ));
+}
+
+test('the decoder accepts nil, max, v8 and wrapped UUIDs', async ({ page }) => {
+  await openTool(page, 'id-generator');
+
+  // These all used to fall through to a row of dashes.
+  expect((await decode(page, '00000000-0000-0000-0000-000000000000')).version).toBe('Nil UUID');
+  expect((await decode(page, 'ffffffff-ffff-ffff-ffff-ffffffffffff')).version).toBe('Max UUID');
+  expect((await decode(page, '320c3d4d-cc00-875b-8ec9-32d5f69181c0')).version).toBe('8 (custom)');
+
+  const wrapped = await decode(page, '{6BA7B810-9DAD-11D1-80B4-00C04FD430C8}');
+  expect(wrapped.standard).toBe('6ba7b810-9dad-11d1-80b4-00c04fd430c8');
+
+  const bare = await decode(page, '6ba7b8109dad11d180b400c04fd430c8');
+  expect(bare.standard).toBe('6ba7b810-9dad-11d1-80b4-00c04fd430c8');
+  expect(bare.version).toMatch(/^1 /);
+});
+
+test('a non-RFC variant is named and no timestamp is invented for it', async ({ page }) => {
+  await openTool(page, 'id-generator');
+  const fields = await decode(page, '6ba7b810-9dad-11d1-c0b4-00c04fd430c8');
+  expect(fields.variant).toBe('Reserved (Microsoft GUID)');
+  expect(fields.time).toBe('—');
+});
+
+test('invalid decoder input is marked, and an overflowing ULID is rejected', async ({ page }) => {
+  await openTool(page, 'id-generator');
+
+  await decode(page, 'not-an-id');
+  await expect(page.locator('#decode-input')).toHaveClass(/is-invalid/);
+
+  // 26 Crockford characters starting above 7 exceed 128 bits.
+  await decode(page, '8ZZZZZZZZZZZZZZZZZZZZZZZZZ');
+  await expect(page.locator('#decode-input')).toHaveClass(/is-invalid/);
+
+  await decode(page, '01ARZ3NDEKTSV4RRFFQ69G5FAV');
+  await expect(page.locator('#decode-input')).not.toHaveClass(/is-invalid/);
+
+  await page.locator('#clear-decode-btn').click();
+  await expect(page.locator('#decode-input')).not.toHaveClass(/is-invalid/);
+});
+
+test('copy and download report when there is no output', async ({ page }) => {
+  await openTool(page, 'id-generator');
+  await page.locator('#clear-output-btn').click();
+
+  await page.locator('#copy-output-btn').click();
+  await expect(page.locator('.toast', { hasText: 'Nothing to copy' })).toBeVisible();
+  await page.locator('#download-btn').click();
+  await expect(page.locator('.toast', { hasText: 'Nothing to download' })).toBeVisible();
+});
+
+test('no horizontal scroll between the stack point and wide desktop', async ({ page }) => {
+  for (const width of [960, 1024, 1100]) {
+    await page.setViewportSize({ width, height: 800 });
+    await openTool(page, 'id-generator');
+    // Two 500px column floors used to force ~1140px of width.
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `at ${width}px`).toBe(true);
+  }
+});
+
+test('the output editor grows with a tall viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1200 });
+  await openTool(page, 'id-generator');
+  const height = await page.locator('.editor-wrapper').evaluate((el) => el.getBoundingClientRect().height);
+  expect(height).toBeGreaterThan(600);
+});

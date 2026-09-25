@@ -2014,4 +2014,71 @@ input[type="number"] {
         margin-left: 0;
     }
 }
+
+/* ==================== Fitment ====================
+   The text pane scrolls (see .view-pane above); on wide screens let the
+   three grid rows share the spare height so the editors fill the page
+   rather than leaving a band of empty background under them. */
+.view-pane[data-pane="text"]:not([hidden]) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.converter-grid {
+    flex: 1 0 auto;
+    grid-auto-rows: minmax(auto, 1fr);
+}
+
+.converter-row {
+    align-items: stretch;
+}
+
+.converter-row .field-cell {
+    height: 100%;
+}
+
+.converter-row .converter-input {
+    flex: 1 1 auto;
+}
+
+@media (max-width: 980px) {
+    .converter-grid {
+        flex: 0 0 auto;
+        grid-auto-rows: auto;
+    }
+}
+
+@media (max-width: 680px) {
+    /* Label and the two icon buttons fit on one line even at 320px; stacking
+       them cost a whole row of height per field. */
+    .converter-row-header {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .converter-row-actions {
+        align-self: auto;
+        margin-left: auto;
+    }
+}
+
+/* The dialog kept a 560px floor, wider than a phone, so its right edge and
+   the close button were pushed off-screen. */
+.modal-content {
+    min-width: 0;
+    max-width: calc(100vw - 2rem);
+}
+
+@media (max-width: 600px) {
+    .modal-header {
+        padding: 1.25rem 1.25rem 1rem;
+    }
+
+    .modal-body {
+        padding: 1.25rem;
+    }
+}
 }

@@ -168,9 +168,14 @@ body {
     background-color: rgba(37, 37, 37, 0.55);
     border-bottom: 1px solid var(--border);
     overflow: visible;
+    /* The toolbar drops under the title when the pane is too narrow for
+       both, instead of being clipped by the panel's overflow. */
+    flex-wrap: wrap;
+    gap: 0.625rem;
 }
 
 .panel-title {
+    white-space: nowrap;
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-muted);
@@ -435,6 +440,18 @@ body {
     transform: translateX(-50%) translateY(0);
 }
 
+/* Tooltips on the right-most buttons hang off the edge when centred: even
+   while hidden they widened the page into a horizontal scroll on phones. */
+.action-bar .action-btn[data-tooltip]:nth-last-child(-n+2)::after {
+    left: auto;
+    right: 0;
+    transform: translateY(4px);
+}
+
+.action-bar .action-btn[data-tooltip]:nth-last-child(-n+2):hover::after {
+    transform: translateY(0);
+}
+
 .action-btn[data-tooltip]:disabled::after,
 .action-btn[data-tooltip]:disabled::before {
     display: none;
@@ -501,30 +518,61 @@ body {
     }
 }
 
-@media (max-width: 480px) {
+/* Two side-by-side panes each need room for a title and eight buttons, so
+   below tablet width they stack and the page scrolls instead. Squeezed into
+   one 100vh screen, each editor was left under 100px tall on a phone. */
+@media (max-width: 768px) {
+    /* overflow-x stays hidden: shared toasts slide in from off-screen right. */
+    body {
+        height: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .app-container {
+        width: 100%;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
     .main-content {
         flex-direction: column;
+        overflow: visible;
+        padding: 0.75rem;
+        gap: 0.75rem;
     }
-    
+
     .editor-panel {
-        flex: 1;
-        min-height: 0;
+        flex: none;
+        height: 75vh;
+        min-height: 22rem;
     }
-    
+
+    /* Full-width row under the title; the buttons spread rather than
+       leaving a gap at the end, and wrap on touch screens where they grow. */
     .action-bar {
-        overflow-x: auto;
-        scrollbar-width: thin;
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        column-gap: 0;
+        row-gap: 0.25rem;
+        padding: 0.25rem;
+        border-radius: 14px;
     }
-    
+}
+
+@media (max-width: 480px) {
     .header {
         flex-direction: column;
         gap: 1rem;
         align-items: flex-start;
     }
-    
+
     .header-right {
         width: 100%;
         justify-content: space-between;
+        gap: 0.5rem;
     }
 }
 
@@ -584,6 +632,17 @@ body {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
+}
+
+/* The info button sits at the right edge of the header. */
+.info-btn[data-tooltip]::after {
+    left: auto;
+    right: 0;
+    transform: translateY(4px);
+}
+
+.info-btn[data-tooltip]:hover::after {
+    transform: translateY(0);
 }
 
 .stat-item {
@@ -720,7 +779,6 @@ body {
     background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(37, 37, 37, 0.95) 100%);
     border: 1px solid rgba(139, 92, 246, 0.3);
     border-radius: 20px;
-    min-width: 480px;
     max-height: 90vh;
     overflow: hidden;
     box-shadow: 
@@ -937,5 +995,23 @@ body {
 .setting-input,
 .setting-select {
     font-family: var(--font-mono);
+}
+
+/* Kept after the base .diff-stats rules so it wins on source order: at phone
+   width the stats pill plus the info button overflowed the header. */
+@media (max-width: 480px) {
+    .diff-stats {
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        min-width: 0;
+    }
+
+    .stat-count {
+        min-width: 1rem;
+    }
+
+    .info-btn {
+        flex-shrink: 0;
+    }
 }
 }

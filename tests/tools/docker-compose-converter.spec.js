@@ -220,3 +220,27 @@ test('copies and downloads the compose file, and pastes and clears the input', a
   await page.locator('[data-action="sample"]').click();
   expect(Object.keys((await parsed(page)).services)).toEqual(['db', 'web']);
 });
+
+test('block-IO device limits map to blkio_config and do not swallow the image', async ({ page }) => {
+  await openTool(page, 'docker-compose-converter');
+
+  // These flags used to be "unknown", so their value was taken as the image.
+  await convert(page, 'docker run --device-read-bps /dev/sda:1mb --device-write-iops /dev/sda:1000 --blkio-weight-device /dev/sdb:200 nginx:1.27');
+  const svc = (await parsed(page)).services.nginx;
+  expect(svc.image).toBe('nginx:1.27');
+  expect(svc.command).toBeUndefined();
+  expect(svc.blkio_config).toEqual({
+    device_read_bps: [{ path: '/dev/sda', rate: '1mb' }],
+    device_write_iops: [{ path: '/dev/sda', rate: 1000 }],
+    weight_device: [{ path: '/dev/sdb', weight: 200 }],
+  });
+  await expect(notes(page).filter({ hasText: 'Unknown option' })).toHaveCount(0);
+});
+
+test('no horizontal scroll at phone width', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'docker-compose-converter');
+
+  // The help button's centred (hidden) tooltip used to reach past the edge.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+});

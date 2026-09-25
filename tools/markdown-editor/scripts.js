@@ -5,7 +5,6 @@ const markdownFileInput = document.getElementById('markdownFileInput');
 
 let history = [];
 let historyIndex = -1;
-let isUndoRedoAction = false;
 let currentFileName = 'markdown.md';
 
 const initialMarkdown = `# Markdown Editor Guide
@@ -89,11 +88,6 @@ Clear this content and start writing your own markdown! Use the toolbar above fo
 editor.value = '';
 
 const saveToHistory = () => {
-  if (isUndoRedoAction) {
-    isUndoRedoAction = false;
-    return;
-  }
-  
   const current = editor.value;
   if (historyIndex === -1 || history[historyIndex] !== current) {
     history = history.slice(0, historyIndex + 1);
@@ -116,19 +110,6 @@ const updateLineNumbers = () => {
 const render = () => {
   const markdown = editor.value;
   
-  // Configure marked to use highlight.js
-  marked.setOptions({
-    highlight: function(code, lang) {
-      if (lang && hljs.getLanguage(lang)) {
-        try {
-          return hljs.highlight(code, { language: lang }).value;
-        } catch (err) {}
-      }
-      return code;
-    },
-    langPrefix: 'hljs language-'
-  });
-  
   const renderedMarkdown = marked.parse(markdown);
   if (!window.DOMPurify) {
     preview.textContent = markdown;
@@ -138,10 +119,18 @@ const render = () => {
     USE_PROFILES: { html: true }
   });
   
-  // Add language labels to code blocks
+  // marked dropped its `highlight` option (v8+), so the setOptions hook this
+  // used to pass was silently ignored and code blocks were never coloured.
+  // Highlight the sanitised output directly instead.
   preview.querySelectorAll('pre code').forEach((block) => {
     const pre = block.parentElement;
-    const lang = block.className.match(/language-(\w+)/);
+    const lang = block.className.match(/language-([\w+#-]+)/);
+
+    if (lang && window.hljs && window.hljs.getLanguage(lang[1])) {
+      try {
+        window.hljs.highlightElement(block);
+      } catch (err) {}
+    }
     
     if (lang && lang[1]) {
       // Remove existing label if any
@@ -208,9 +197,9 @@ const insertAtCursor = (before, after = '', placeholder = '') => {
     editor.selectionStart = start;
     editor.selectionEnd = start + replacement.length;
   } else {
-    const cursorPos = start + before.length + text.length;
-    editor.selectionStart = cursorPos;
-    editor.selectionEnd = cursorPos - after.length;
+    // Select the inserted placeholder so typing replaces it. The old maths
+    // put selectionEnd before selectionStart, which collapses the selection.
+    editor.setSelectionRange(start + before.length, start + before.length + text.length);
   }
   
   editor.focus();
@@ -238,7 +227,6 @@ const actions = {
   },
   undo: () => {
     if (historyIndex > 0) {
-      isUndoRedoAction = true;
       historyIndex--;
       editor.value = history[historyIndex];
       updateLineNumbers();
@@ -248,7 +236,6 @@ const actions = {
   },
   redo: () => {
     if (historyIndex < history.length - 1) {
-      isUndoRedoAction = true;
       historyIndex++;
       editor.value = history[historyIndex];
       updateLineNumbers();
@@ -257,12 +244,17 @@ const actions = {
     }
   },
   copy: async () => {
+    if (!editor.value) {
+      window.DevToolsMain.showToast('Nothing to copy', 'error');
+      return;
+    }
     try {
       await navigator.clipboard.writeText(editor.value);
     } catch (err) {
       editor.select();
       document.execCommand('copy');
     }
+    window.DevToolsMain.showToast('Markdown copied', 'success');
   },
   paste: async () => {
     try {

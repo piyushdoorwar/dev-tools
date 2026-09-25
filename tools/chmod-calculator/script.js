@@ -81,7 +81,9 @@ function parseOctal(text) {
 /* Accepts `rwxr-xr-x` and the ten-character `ls -l` form, whose leading
    character is the file type rather than a permission. */
 function parseSymbolic(text) {
-  let value = text.trim();
+  // `ls -l` appends "." (SELinux context) or "+" (ACL) on many systems, and
+  // "@" (extended attributes) on macOS: `-rw-r--r--.` pasted as-is must work.
+  let value = text.trim().replace(/^([-a-zA-Z]{10})[.+@]$/, "$1");
   if (value.length === 10) value = value.slice(1);
   if (value.length !== 9) return null;
 
@@ -311,7 +313,7 @@ function buildPresets(target, presets, onPick) {
   for (const preset of presets) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = "preset";
+    button.className = "mode-preset";
     button.dataset.preset = preset.octal;
 
     const octal = document.createElement("span");
@@ -395,7 +397,7 @@ function renderMode() {
   if (document.activeElement !== octalInput) octalInput.value = octalOf(mode, { pad: false });
   if (document.activeElement !== symbolicInput) symbolicInput.value = symbolic;
 
-  for (const button of presetGrid.querySelectorAll(".preset")) {
+  for (const button of presetGrid.querySelectorAll(".mode-preset")) {
     button.classList.toggle("is-active", parseInt(button.dataset.preset, 8) === mode);
   }
 
@@ -471,7 +473,7 @@ function renderUmask() {
   }
   renderNotices(el("umask-notices"), notices);
 
-  for (const button of el("umask-preset-grid").querySelectorAll(".preset")) {
+  for (const button of el("umask-preset-grid").querySelectorAll(".mode-preset")) {
     button.classList.toggle("is-active", parseInt(button.dataset.preset, 8) === umask);
   }
 
@@ -530,11 +532,14 @@ function showError(message) {
 // /tools/chmod-calculator/#755 opens on that mode; #umask=022 opens the other
 // tab on that mask. Both are shareable, which is the point of putting them in
 // the hash rather than keeping the state in memory.
+// Through the shared helper, which uses replaceState: assigning
+// location.hash pushed a history entry for every keystroke and click, so Back
+// replayed each edit (and, in the dashboard iframe, hijacked the shell's Back).
 function writeHash() {
   const next = state.view === "umask"
-    ? `#umask=${state.umask.toString(8).padStart(3, "0")}`
-    : `#${octalOf(state.mode, { pad: false })}`;
-  if (window.location.hash !== next) window.location.hash = next;
+    ? `umask=${state.umask.toString(8).padStart(3, "0")}`
+    : octalOf(state.mode, { pad: false });
+  window.DevToolsMain.writeHashState(next);
 }
 
 function readHash() {
@@ -618,7 +623,7 @@ for (const button of document.querySelectorAll("[data-action]")) {
 
 el("helpBtn").addEventListener("click", () => window.DevToolsMain.openModal("#helpModal"));
 
-window.addEventListener("hashchange", () => {
+window.DevToolsMain.onHashState(() => {
   const view = readHash();
   if (!view) return;
   if (view !== state.view) setView(view);

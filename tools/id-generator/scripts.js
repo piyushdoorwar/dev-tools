@@ -112,21 +112,46 @@ sampleBtn?.addEventListener("click", () => {
 clearDecodeBtn?.addEventListener("click", () => {
   decodeInput.value = "";
   resetFields();
+  markDecodeInvalid(false);
 });
 
-const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-7][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
+// Any 128-bit UUID shape. Version and variant are read from the bits rather
+// than required by the pattern: the old pattern only admitted versions 1-7 with
+// the RFC variant, so the nil/max UUIDs, v8, and Microsoft GUIDs all fell
+// through to a silent row of dashes.
+const uuidRegex = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
+// 26 Crockford characters, and the first cannot exceed 7: 26 * 5 = 130 bits
+// for a 128-bit value, so anything above 7ZZZ... does not fit.
+const ulidRegex = /^[0-7][0-9A-HJKMNP-TV-Z]{25}$/i;
+
+// Strip the wrappers UUIDs are commonly copied with: {braces} and urn:uuid:.
+function unwrapUuid(value) {
+  return value.replace(/^urn:uuid:/i, "").replace(/^\{(.*)\}$/, "$1");
+}
+
+function variantLabel(nibble) {
+  if ((nibble & 0x8) === 0) return "Reserved (NCS backward compatibility)";
+  if ((nibble & 0xc) === 0x8) return "Standard (DCE 1.1, ISO/IEC 11578:1996)";
+  if ((nibble & 0xe) === 0xc) return "Reserved (Microsoft GUID)";
+  return "Reserved (future definition)";
+}
+
+function markDecodeInvalid(invalid) {
+  decodeInput?.classList.toggle("is-invalid", invalid);
+  decodeInput?.setAttribute("aria-invalid", String(invalid));
+}
 
 function decodeValue(value) {
-  const trimmed = value.trim();
+  const trimmed = unwrapUuid(value.trim());
+  markDecodeInvalid(false);
   if (!trimmed) {
     resetFields();
     return;
   }
 
   if (uuidRegex.test(trimmed)) {
-    const normalized = trimmed.toLowerCase();
-    const hex = normalized.replace(/-/g, "");
+    const hex = trimmed.toLowerCase().replace(/-/g, "");
+    const normalized = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
     const bytes = hexToBytes(hex);
     if (!bytes) {
       resetFields();
@@ -135,16 +160,25 @@ function decodeValue(value) {
     setField("standard", normalized);
     setField("raw", formatRaw(bytes));
     const version = parseInt(hex.charAt(12), 16);
-    const versionLabel = {
+    const variantNibble = parseInt(hex.charAt(16), 16);
+    const isRfc = (variantNibble & 0xc) === 0x8;
+    let versionLabel = {
       1: "1 (time and node based)",
+      2: "2 (DCE security)",
       3: "3 (name based, MD5)",
       4: "4 (random)",
       5: "5 (name based, SHA1)",
+      6: "6 (reordered time)",
       7: "7 (Unix timestamp)",
+      8: "8 (custom)",
     }[version] || `${version}`;
+    if (/^0+$/.test(hex)) versionLabel = "Nil UUID";
+    if (/^f+$/.test(hex)) versionLabel = "Max UUID";
     setField("version", versionLabel);
-    setField("variant", "Standard (DCE 1.1, ISO/IEC 11578:1996)");
-    if (version === 1) {
+    setField("variant", /^(0+|f+)$/.test(hex) ? "—" : variantLabel(variantNibble));
+    // The version field only means something under the RFC variant; decoding a
+    // timestamp out of a GUID's bits would report a made-up date.
+    if (isRfc && version === 1) {
       const timeLow = BigInt("0x" + hex.slice(0, 8));
       const timeMid = BigInt("0x" + hex.slice(8, 12));
       const timeHi = BigInt("0x" + hex.slice(12, 16)) & 0x0fffn;
@@ -158,7 +192,7 @@ function decodeValue(value) {
       setField("time", iso);
       setField("clock", clockSeq);
       setField("node", node);
-    } else if (version === 7) {
+    } else if (isRfc && version === 7) {
       const timestamp = BigInt("0x" + hex.slice(0, 12));
       const ms = Number(timestamp);
       const iso = new Date(ms).toISOString();
@@ -198,7 +232,10 @@ function decodeValue(value) {
     return;
   }
 
+  // Something was typed but it is neither shape: say so rather than leaving
+  // the same dashes an empty input shows.
   resetFields();
+  markDecodeInvalid(true);
 }
 
 function hexToBytes(hex) {
@@ -315,13 +352,19 @@ generateBtn.addEventListener("click", () => generateIds());
 
 copyOutputBtn.addEventListener("click", () => {
   const text = outputArea.textContent.trim();
-  if (!text) return;
+  if (!text) {
+    showToast("Nothing to copy", "error");
+    return;
+  }
   navigator.clipboard.writeText(text).then(() => showToast("Copied"));
 });
 
 downloadBtn.addEventListener("click", () => {
   const text = outputArea.textContent.trim();
-  if (!text) return;
+  if (!text) {
+    showToast("Nothing to download", "error");
+    return;
+  }
   const blob = new Blob([text], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

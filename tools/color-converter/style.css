@@ -396,4 +396,17 @@ body {
         opacity: 1;
     }
 }
+
+/* At phone width the Conversions header (title + two pills + copy) is wider
+   than the panel and pushed the copy button past the viewport edge. Let the
+   actions drop under the title instead. */
+@media (max-width: 480px) {
+    .panel-header {
+        flex-wrap: wrap;
+    }
+
+    .panel-actions {
+        margin-left: auto;
+    }
+}
 }

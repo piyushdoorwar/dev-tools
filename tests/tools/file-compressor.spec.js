@@ -117,3 +117,96 @@ test('the info modal opens and closes', async ({ page }) => {
   await page.locator('#closeInfoBtn').click();
   await expect(page.locator('#infoModal')).toBeHidden();
 });
+
+test('a single dotfile still downloads as archive.zip, not a hidden .zip', async ({ page }) => {
+  await openTool(page, 'file-compressor');
+  await queue(page, [{ name: '.env', mimeType: 'text/plain', buffer: TEXT }]);
+
+  await page.locator('#generateBtn').click();
+  await expect(page.locator('#doneState')).not.toHaveClass(/hidden/, { timeout: 40_000 });
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.locator('#downloadBtn').click(),
+  ]);
+  expect(download.suggestedFilename()).toBe('archive.zip');
+});
+
+test('a failed compression explains why in the visible panel', async ({ page }) => {
+  await openTool(page, 'file-compressor');
+  // Simulate the Zstandard runtime failing to load.
+  await page.evaluate(() => { globalThis.zstdCodec = undefined; });
+  await queue(page, [{ name: 'notes.txt', mimeType: 'text/plain', buffer: TEXT }]);
+
+  await page.locator('#algorithmTrigger').click();
+  await page.locator('.algo-option[data-value="zstd"]').click();
+  await page.locator('#generateBtn').click();
+
+  await expect(page.locator('#idleState')).toBeVisible();
+  await expect(page.locator('#idleState .idle-text')).toContainText(/Zstandard runtime/);
+  await expect(page.locator('#toast-container .toast-message')).toContainText(/compression failed/i);
+  await expect(page.locator('#statusBadge')).toHaveText('Failed');
+  await expect(page.locator('#generateBtn')).toBeEnabled();
+});
+
+test('dropped files are queued with their names', async ({ page }) => {
+  await openTool(page, 'file-compressor');
+
+  await page.evaluate(() => {
+    const transfer = new DataTransfer();
+    transfer.items.add(new File(['hello'], 'dropped.txt', { type: 'text/plain' }));
+    document.getElementById('dropZone').dispatchEvent(new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true }));
+  });
+
+  await expect(page.locator('#fileTableBody')).toContainText('dropped.txt');
+  await expect(page.locator('#fileCount')).toHaveText(/1/);
+});
+
+test('both panels fill the viewport height on desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openTool(page, 'file-compressor');
+  await queue(page, [{ name: 'notes.txt', mimeType: 'text/plain', buffer: TEXT }]);
+
+  const bottoms = await page.evaluate(() => ({
+    control: document.querySelector('.control-panel').getBoundingClientRect().bottom,
+    output: document.querySelector('.output-panel').getBoundingClientRect().bottom,
+    viewport: window.innerHeight,
+  }));
+  expect(Math.abs(bottoms.control - bottoms.output)).toBeLessThanOrEqual(1);
+  expect(bottoms.viewport - bottoms.output).toBeLessThan(40);
+});
+
+test('the queue table fits a phone-width viewport without clipping columns', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'file-compressor');
+  await queue(page, [{ name: 'notes.txt', mimeType: 'text/plain', buffer: TEXT }]);
+
+  const fit = await page.evaluate(() => {
+    const wrap = document.getElementById('filesTableWrap');
+    const header = document.querySelector('.th-actions');
+    const size = document.querySelector('.file-size-cell');
+    return {
+      scrolls: wrap.scrollWidth > wrap.clientWidth,
+      headerClipped: header.scrollWidth > header.clientWidth,
+      sizeWraps: size.scrollHeight > 0 && getComputedStyle(size).whiteSpace !== 'nowrap',
+      overflow: document.documentElement.scrollWidth > window.innerWidth,
+    };
+  });
+  expect(fit.scrolls).toBe(false);
+  expect(fit.headerClipped).toBe(false);
+  expect(fit.sizeWraps).toBe(false);
+  expect(fit.overflow).toBe(false);
+});
+
+test('the info button stays in the header row at phone width', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'file-compressor');
+
+  const rows = await page.evaluate(() => {
+    const title = document.querySelector('.app-header h1').getBoundingClientRect();
+    const button = document.getElementById('infoBtn').getBoundingClientRect();
+    return { titleMid: title.top + title.height / 2, buttonTop: button.top, buttonBottom: button.bottom };
+  });
+  expect(rows.titleMid).toBeGreaterThan(rows.buttonTop);
+  expect(rows.titleMid).toBeLessThan(rows.buttonBottom);
+});

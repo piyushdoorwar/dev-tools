@@ -368,3 +368,31 @@ test('the preview is painted with the chosen pair', async ({ page }) => {
   expect(painted.color).toBe('rgb(255, 99, 71)');
   expect(painted.background).toBe('rgb(0, 0, 0)');
 });
+
+test('hsl() saturation and lightness may omit the percent sign', async ({ page }) => {
+  await openTool(page, 'color-converter');
+  // CSS Color 4: bare numbers are percentages. 100 and 63.92 used to clamp to 100%.
+  await enter(page, 'fg', 'hsl(9.13 100 63.92)');
+  expect((await formats(page)).HEX).toBe('#FF6347');
+});
+
+test('a hex value pasted without its # is still accepted', async ({ page }) => {
+  await openTool(page, 'color-converter');
+  await enter(page, 'fg', 'ff6347');
+  await expect(page.locator('#fg-error')).toBeHidden();
+  expect((await formats(page)).HEX).toBe('#FF6347');
+});
+
+test('a functional colour with extra components is rejected', async ({ page }) => {
+  await openTool(page, 'color-converter');
+  await enter(page, 'fg', 'rgb(1 2 3 4 5)');
+  await expect(page.locator('#fg-error')).toBeVisible();
+});
+
+test('the conversions header stays inside a phone viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'color-converter');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const box = await page.locator('[data-action="copy-all"]').boundingBox();
+  expect(box.x + box.width).toBeLessThanOrEqual(375);
+});

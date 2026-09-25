@@ -247,3 +247,16 @@ test('copy, paste, clear, and download act on the right panel', async ({ page })
   await expect(page.locator(input)).toHaveValue('');
   await expect(page.locator(output)).toHaveValue('');
 });
+
+test('on a phone both editors keep a usable height and the status bars stay visible', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'string-escaper');
+
+  for (const id of ['#input-editor', '#output-editor']) {
+    const box = await page.locator(id).boundingBox();
+    expect(box.height).toBeGreaterThan(150);
+  }
+  await page.locator('#output-status').scrollIntoViewIfNeeded();
+  await expect(page.locator('#output-status')).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+});

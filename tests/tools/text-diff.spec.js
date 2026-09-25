@@ -122,3 +122,57 @@ test('the diff legend modal opens and closes', async ({ page }) => {
   await page.locator('#diffLegendCloseBtn').click();
   await expect(page.locator('#diffLegendModal')).toBeHidden();
 });
+
+test('a modified line is marked in the gutter as well as inline', async ({ page }) => {
+  await openTool(page, 'text-diff');
+  await compare(page, 'same\nthe quick fox', 'same\nthe slow fox');
+  await expect(page.locator('#left-line-numbers .line-number').nth(1)).toHaveClass(/line-diff-modified/);
+  await expect(page.locator('#right-line-numbers .line-number').nth(1)).toHaveClass(/line-diff-modified/);
+  await expect(page.locator('#left-line-numbers .line-number').nth(0)).not.toHaveClass(/line-diff/);
+});
+
+test('Tab inserts a tab, refreshes the diff and stays undoable', async ({ page }) => {
+  await openTool(page, 'text-diff');
+  await compare(page, 'abc', 'abc');
+  await expect.poll(() => stats(page)).toEqual({ added: '0', removed: '0', modified: '0' });
+
+  await page.locator('#left-editor').click();
+  await page.keyboard.press('End');
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#left-editor')).toHaveValue('abc\t');
+  await expect.poll(async () => (await stats(page)).modified).toBe('1');
+  await expect(page.locator('#left-status .char-count')).toHaveText('4 characters');
+
+  await page.locator('[data-action="undo"][data-editor="left"]').click();
+  await expect(page.locator('#left-editor')).toHaveValue('abc');
+});
+
+test('undo restores text removed by the clear button', async ({ page }) => {
+  await openTool(page, 'text-diff');
+  await compare(page, 'keep me', '');
+
+  await page.locator('[data-action="clear"][data-editor="left"]').click();
+  await expect(page.locator('#left-editor')).toHaveValue('');
+  await page.locator('[data-action="undo"][data-editor="left"]').click();
+  await expect(page.locator('#left-editor')).toHaveValue('keep me');
+});
+
+test('on a phone the header, legend and editors fit without horizontal scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'text-diff');
+
+  const layout = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    infoRight: document.getElementById('diffLegendBtn').getBoundingClientRect().right,
+    editorHeight: document.getElementById('left-editor').getBoundingClientRect().height,
+  }));
+  expect(layout.scrollWidth).toBeLessThanOrEqual(375);
+  expect(layout.infoRight).toBeLessThanOrEqual(375);
+  expect(layout.editorHeight).toBeGreaterThan(200);
+
+  await page.locator('#diffLegendBtn').click();
+  await expect(page.locator('#diffLegendModal')).toBeVisible();
+  const box = await page.locator('#diffLegendModal .modal-content').boundingBox();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(375);
+});

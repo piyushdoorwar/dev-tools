@@ -30,11 +30,14 @@ const state = {
 
 // Digit count is the only reliable signal for which unit a bare number is in:
 // seconds hit 10 digits in 2001 and stay there until 2286.
+// Sub-millisecond units divide rather than multiply by a fraction: 1/1000 is
+// not exact in binary, so `n * 0.001` can land a hair under the true value and
+// floor to the previous millisecond (or leave a fractional "Unix milliseconds").
 function unitForDigits(digits) {
-  if (digits <= 11) return { unit: "seconds", scale: 1000 };
-  if (digits <= 14) return { unit: "milliseconds", scale: 1 };
-  if (digits <= 17) return { unit: "microseconds", scale: 1 / 1000 };
-  return { unit: "nanoseconds", scale: 1 / 1e6 };
+  if (digits <= 11) return { unit: "seconds", toMs: (n) => n * 1000 };
+  if (digits <= 14) return { unit: "milliseconds", toMs: (n) => n };
+  if (digits <= 17) return { unit: "microseconds", toMs: (n) => Math.floor(n / 1000) };
+  return { unit: "nanoseconds", toMs: (n) => Math.floor(n / 1e6) };
 }
 
 function parseInput(raw) {
@@ -44,8 +47,8 @@ function parseInput(raw) {
   // A bare (optionally signed) integer is an epoch value.
   if (/^-?\d+$/.test(text)) {
     const digits = text.replace("-", "").length;
-    const { unit, scale } = unitForDigits(digits);
-    const ms = Number(text) * scale;
+    const { unit, toMs } = unitForDigits(digits);
+    const ms = toMs(Number(text));
     if (!Number.isFinite(ms)) return { ok: false, error: "Number is too large to be a timestamp." };
     if (Math.abs(ms) > MAX_TIME) {
       return { ok: false, error: `Out of range: ${unit} value is beyond the maximum representable date.` };
@@ -55,8 +58,10 @@ function parseInput(raw) {
 
   // Decimal epoch seconds, e.g. 1789689600.123
   if (/^-?\d+\.\d+$/.test(text)) {
-    const ms = Number(text) * 1000;
-    if (Math.abs(ms) > MAX_TIME) return { ok: false, error: "Out of range for a date." };
+    // Date holds whole milliseconds; `1789689600.123 * 1000` is
+    // 1789689600123.0002 in floating point, which leaked into the output.
+    const ms = Math.round(Number(text) * 1000);
+    if (!Number.isFinite(ms) || Math.abs(ms) > MAX_TIME) return { ok: false, error: "Out of range for a date." };
     return { ok: true, ms, label: "Unix seconds (fractional)" };
   }
 

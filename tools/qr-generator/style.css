@@ -168,7 +168,7 @@ body {
   gap: 10px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 26px; /* capsule on one row, rounded rect once wrapped */
   padding: 6px;
   box-shadow: var(--shadow-sm);
   margin-bottom: 16px;
@@ -263,7 +263,7 @@ body {
 
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -452,6 +452,7 @@ textarea {
 
 .tab-list {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 16px;
   border-bottom: 1px solid var(--border);
@@ -493,7 +494,7 @@ textarea {
 
 .option-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -621,6 +622,7 @@ textarea {
 
 .color-field input[type="text"] {
   flex: 1;
+  min-width: 0;
 }
 
 .upload-box {
@@ -681,6 +683,10 @@ textarea {
 
 .qr-frame {
   position: relative;
+  /* Let the frame shrink with a narrow preview column instead of spilling
+     out of its card; #qr-preview scales down with it. */
+  min-width: 0;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -716,7 +722,9 @@ textarea {
 
 #qr-preview {
   width: 260px;
-  height: 260px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  height: auto;
   display: grid;
   place-items: center;
 }
@@ -744,8 +752,12 @@ textarea {
   inset: 0;
   background: rgba(0, 0, 0, 0.75);
   border-radius: inherit;
-  display: grid;
-  place-items: center;
+  /* A column, not a grid: grid gave the heading and the hint a row each and
+     stretched them to opposite halves of the frame. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 20px;
 }
@@ -946,7 +958,7 @@ textarea {
 
 @media (max-width: 980px) {
   .workspace {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .panel-right {
@@ -955,18 +967,37 @@ textarea {
 }
 
 @media (max-width: 640px) {
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
+  /* Once the pills wrap, a 999px radius turns the group into a lozenge. */
+  .pill-group {
+    display: flex;
+    border-radius: 20px;
+    gap: 6px;
+  }
+
+  .pill {
+    padding: 8px 14px;
+  }
+
+  .modal-header,
+  .modal-body {
+    padding: 18px;
+  }
+
+  .tab-list {
+    gap: 6px;
+  }
+
+  .tab {
+    padding: 8px 12px;
+  }
+
+  .option-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .download-actions {
     flex-direction: column;
-  }
-
-  #qr-preview {
-    width: 220px;
-    height: 220px;
   }
 
   .page {

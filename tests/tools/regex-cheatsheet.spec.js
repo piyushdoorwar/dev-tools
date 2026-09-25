@@ -208,3 +208,30 @@ test('the dashboard opens the tester in place when a tool asks it to', async ({ 
   const tester = page.frameLocator('iframe[data-tool-id="regex-tester"]');
   await expect(tester.locator('#regexInput')).toHaveValue(/\(0\|\[1-9\]\\d\*\)/);
 });
+
+test('switching tabs replaces the history entry instead of pushing one', async ({ page }) => {
+  await openTool(page, 'regex-cheatsheet');
+  const before = await page.evaluate(() => history.length);
+
+  await page.click('#tab-patterns');
+  await page.click('#tab-syntax');
+  await page.click('#tab-patterns');
+  await expect(page).toHaveURL(/#patterns$/);
+  expect(await page.evaluate(() => history.length)).toBe(before);
+});
+
+test('on a wide screen pattern cards sit two to a row under full-width headings', async ({ page }) => {
+  await page.setViewportSize({ width: 1600, height: 1000 });
+  await openTool(page, 'regex-cheatsheet');
+  await page.click('#tab-patterns');
+
+  const cards = page.locator('.pattern-card');
+  const first = await cards.nth(0).boundingBox();
+  const second = await cards.nth(1).boundingBox();
+  expect(Math.abs(first.y - second.y)).toBeLessThan(2);
+  expect(second.x).toBeGreaterThan(first.x + first.width - 1);
+
+  const heading = await page.locator('#pattern-list > .section-title').first().boundingBox();
+  const list = await page.locator('#pattern-list').boundingBox();
+  expect(heading.width).toBeGreaterThan(list.width - 2);
+});

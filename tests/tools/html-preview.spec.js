@@ -147,3 +147,33 @@ test('the preview is sandboxed away from the host page', async ({ page }) => {
   expect(sandbox).toBeTruthy();
   expect(sandbox).not.toContain('allow-same-origin');
 });
+
+test('pasting an empty clipboard keeps the pane and copying an empty pane warns', async ({ page }) => {
+  await openTool(page, 'html-preview');
+  await setCode(page, 'html', '<p>keep</p>');
+
+  await setClipboardText(page, '');
+  await page.locator('#paste-btn').click();
+  await expect(page.locator('.toast').last()).toContainText('Clipboard is empty');
+  expect(await page.evaluate(() => htmlEditor.getValue())).toBe('<p>keep</p>');
+
+  await setCode(page, 'html', '');
+  await page.locator('#copy-btn').click();
+  await expect(page.locator('.toast').last()).toContainText('Nothing to copy');
+  expect(await lastCopied(page)).toBeNull();
+});
+
+test('on a phone the page scrolls to a full-height preview without sideways overflow', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'html-preview');
+
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+  const editorBox = await page.locator('.editor-panel .CodeMirror').first().boundingBox();
+  expect(editorBox.height).toBeGreaterThan(200);
+
+  const iframe = page.locator('#preview-iframe');
+  await iframe.scrollIntoViewIfNeeded();
+  await expect(iframe).toBeInViewport({ ratio: 0.9 });
+  const box = await iframe.boundingBox();
+  expect(box.height).toBeGreaterThan(200);
+});
