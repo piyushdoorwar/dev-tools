@@ -224,6 +224,12 @@ body {
     overflow-x: auto;
 }
 
+/* The placeholder is prose, not PEM: with `pre` its instructions ran off the
+   right edge of the field on phones and narrow panels. */
+.editor:placeholder-shown {
+    white-space: pre-wrap;
+}
+
 .output-empty {
     display: flex;
     flex: 1;
@@ -604,6 +610,13 @@ body {
     .field-row {
         grid-template-columns: 1fr;
         gap: 2px;
+    }
+
+    /* The validity dates keep label and value side by side (their own rule
+       out-specifies the stacked one above), so they need the normal column
+       gap back: at 2px "Not before" ran straight into the date. */
+    .validity-dates .field-row {
+        gap: var(--space-3);
     }
 }
 }

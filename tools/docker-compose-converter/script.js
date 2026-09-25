@@ -241,6 +241,20 @@ function addHealth(key, transform = (v) => v) {
   };
 }
 
+// `--device-read-bps /dev/sda:1mb` → blkio_config.device_read_bps: [{ path, rate }].
+// The value's last colon splits path from rate, so `C:` style paths survive.
+function blkioDevice(option, key, field) {
+  return (svc, value, ctx) => {
+    const at = value.lastIndexOf(":");
+    if (at <= 0) {
+      ctx.note("warning", `--${option} ${value} is not PATH:${field.toUpperCase()} and was dropped`);
+      return;
+    }
+    const entry = { path: value.slice(0, at), [field]: int(value.slice(at + 1)) };
+    ((svc.blkio_config ||= {})[key] ||= []).push(entry);
+  };
+}
+
 function addLogOption(svc, value) {
   const [name, entry] = splitPair(value);
   ((svc.logging ||= {}).options ||= {})[name] = entry ?? "";
@@ -280,6 +294,13 @@ const OPTIONS = {
   "annotation": [true, mapEntry("annotations")],
   "attach": [true, ignore("--attach only affects the terminal and was left out")],
   "blkio-weight": [true, (svc, v) => { (svc.blkio_config ||= {}).weight = int(v); }],
+  // Without these entries the flag was "unknown", so its value was then read
+  // as the image name and the real image became part of the command.
+  "blkio-weight-device": [true, blkioDevice("blkio-weight-device", "weight_device", "weight")],
+  "device-read-bps": [true, blkioDevice("device-read-bps", "device_read_bps", "rate")],
+  "device-read-iops": [true, blkioDevice("device-read-iops", "device_read_iops", "rate")],
+  "device-write-bps": [true, blkioDevice("device-write-bps", "device_write_bps", "rate")],
+  "device-write-iops": [true, blkioDevice("device-write-iops", "device_write_iops", "rate")],
   "cap-add": [true, list("cap_add")],
   "cap-drop": [true, list("cap_drop")],
   "cgroup-parent": [true, scalar("cgroup_parent")],
@@ -720,14 +741,7 @@ const ACTIONS = {
       toast("Nothing to download", "error");
       return;
     }
-    const url = URL.createObjectURL(new Blob([outputEditor.value], { type: "application/yaml" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "compose.yaml";
-    document.body.append(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    window.DevToolsMain.downloadText("compose.yaml", outputEditor.value, "application/yaml");
     toast("compose.yaml downloaded", "success");
   },
 };

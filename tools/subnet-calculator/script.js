@@ -695,12 +695,14 @@ function copy(value, label) {
 const ACTIONS = {
   sample() {
     cidrInput.value = SAMPLE;
+    splitHosts.value = "";
     state.splitPrefix = null;
     run();
     window.DevToolsMain.showToast("Sample inserted", "info");
   },
   clear() {
     cidrInput.value = "";
+    splitHosts.value = "";
     state.splitPrefix = null;
     run();
     cidrInput.focus();
@@ -731,6 +733,7 @@ document.addEventListener("click", (event) => {
   const chip = event.target.closest(".cidr-chip");
   if (chip) {
     cidrInput.value = chip.textContent;
+    splitHosts.value = "";
     state.splitPrefix = null;
     run();
     window.DevToolsMain.showToast(`Opened ${chip.textContent}`, "info");
@@ -740,6 +743,9 @@ document.addEventListener("click", (event) => {
 cidrInput.addEventListener("input", () => {
   state.splitPrefix = null;
   run();
+  // A hosts-per-subnet request still stands for the new block; without this
+  // the field kept showing e.g. "50" over a table split at the default /24.
+  applyHosts();
 });
 
 splitPrefix.addEventListener("input", () => {
@@ -751,7 +757,7 @@ splitPrefix.addEventListener("input", () => {
   renderSplit();
 });
 
-splitHosts.addEventListener("input", () => {
+function applyHosts() {
   if (!state.block || !/^\d+$/.test(splitHosts.value.trim())) return;
   const hosts = BigInt(splitHosts.value.trim());
   if (hosts < 1n) return;
@@ -759,12 +765,17 @@ splitHosts.addEventListener("input", () => {
   if (target <= state.block.prefix) {
     splitSummary.textContent = `${hosts.toLocaleString("en-US")} hosts do not fit in a smaller subnet of this block.`;
     splitBody.replaceChildren();
+    splitNote.hidden = true;
+    // Nothing is listed, so "Copy subnets" must not copy the previous split.
+    state.splitPrefix = null;
     return;
   }
   state.splitPrefix = target;
   splitPrefix.value = String(target);
   renderSplit();
-});
+}
+
+splitHosts.addEventListener("input", applyHosts);
 
 containsInput.addEventListener("input", renderContains);
 rangeStart.addEventListener("input", renderRange);

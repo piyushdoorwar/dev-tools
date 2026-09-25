@@ -208,3 +208,36 @@ test('the help modal opens and closes', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(page.locator('#helpModal')).not.toHaveClass(/is-open/);
 });
+
+test('an empty input shows no empty breakdown box', async ({ page }) => {
+  await openTool(page, 'url-parser');
+
+  await expect(page.locator('#breakdown')).toBeHidden();
+  await page.click('[data-action="sample"]');
+  await expect(page.locator('#breakdown')).toBeVisible();
+  await page.click('[data-action="clear"]');
+  await expect(page.locator('#breakdown')).toBeHidden();
+});
+
+test('the Components and Query Parameters headers line up side by side', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openTool(page, 'url-parser');
+
+  const parts = await page.locator('.parts-panel .panel-header').boundingBox();
+  const params = await page.locator('.params-panel .panel-header').boundingBox();
+  expect(Math.abs(parts.height - params.height)).toBeLessThan(1);
+});
+
+test('at phone width the parameter table fits, remove buttons included', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'url-parser');
+  await page.click('[data-action="sample"]');
+
+  const wrap = page.locator('.params-panel .table-wrap');
+  const { scroll, client } = await wrap.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+  expect(scroll).toBeLessThanOrEqual(client);
+  const panel = await page.locator('.params-panel').boundingBox();
+  const remove = await page.locator('[data-field="remove"]').first().boundingBox();
+  expect(remove.x + remove.width).toBeLessThanOrEqual(panel.x + panel.width);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+});

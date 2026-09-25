@@ -202,3 +202,27 @@ test('backticked header names render as code, not literal backticks', async ({ p
   await expect(page.locator('.detail-use .inline-code').first()).toHaveText('Allow');
   await expect(page.locator('.detail')).not.toContainText('`');
 });
+
+test('browsing codes replaces the hash instead of stacking history entries', async ({ page }) => {
+  await openTool(page, 'http-status-codes');
+  const before = await page.evaluate(() => history.length);
+
+  await item(page, 404).click();
+  await item(page, 418).click();
+  await item(page, 503).click();
+  await expect(page).toHaveURL(/#503$/);
+  expect(await page.evaluate(() => history.length)).toBe(before);
+});
+
+test('side by side, the page fits the viewport and the list scrolls inside its panel', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openTool(page, 'http-status-codes');
+
+  expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(900);
+  const body = page.locator('.list-panel .panel-body');
+  const { scroll, client } = await body.evaluate((el) => ({ scroll: el.scrollHeight, client: el.clientHeight }));
+  expect(scroll).toBeGreaterThan(client);
+  // A code far down the list still leaves the detail in view.
+  await item(page, 526).click();
+  await expect(page.locator('.detail-code')).toBeInViewport();
+});

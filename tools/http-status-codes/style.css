@@ -166,9 +166,23 @@ body {
 .main-content {
     display: grid;
     grid-template-columns: minmax(280px, 2fr) minmax(360px, 3fr);
+    /* A 0-min row so the panels take the space left under the toolbar and
+       scroll inside, rather than an auto row sized to all 70-odd codes. */
+    grid-template-rows: minmax(0, 1fr);
     gap: var(--space-4);
     flex: 1;
     min-height: 0;
+}
+
+/* Side by side, the page is exactly one viewport tall: the code list scrolls
+   in its panel and the detail stays in view. With min-height the container
+   grew to the list's full length (3400px at 1440×900), leaving the detail
+   panel a tall empty column and the selected code scrolled off-screen. */
+@media (min-width: 901px) {
+    .app-container {
+        height: 100vh;
+        height: 100dvh;
+    }
 }
 
 .panel {
@@ -186,6 +200,9 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
+    /* Same height as a header holding icon buttons, so "Codes" and "Detail"
+       sit on one line. */
+    min-height: 71px;
     padding: var(--space-4);
     border-bottom: 1px solid var(--border);
 }

@@ -194,3 +194,47 @@ test('the active tool tab is kept in the URL hash', async ({ page }) => {
   await expect(page.locator('[data-view="range"]')).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('[data-pane="range"]')).toBeVisible();
 });
+
+test('a hosts-per-subnet request survives a block change and is emptied by clear', async ({ page }) => {
+  await openTool(page, 'subnet-calculator');
+
+  await enter(page, '10.0.0.0/24');
+  await typeInto(page, '#split-hosts', '50');
+  await expect(page.locator('#split-prefix')).toHaveValue('26');
+  // Editing the block used to reset the split to /24 while the field still said 50.
+  await enter(page, '10.0.0.0/22');
+  await expect(page.locator('#split-hosts')).toHaveValue('50');
+  await expect(page.locator('#split-prefix')).toHaveValue('26');
+  await expect(page.locator('#split-summary')).toHaveText(/^16 × \/26/);
+
+  await page.click('[data-action="clear"]');
+  await expect(page.locator('#split-hosts')).toHaveValue('');
+});
+
+test('hosts that do not fit leave nothing to copy and no stale "showing first" note', async ({ page }) => {
+  await openTool(page, 'subnet-calculator');
+
+  await enter(page, '10.0.0.0/8');
+  await expect(page.locator('#split-note')).toBeVisible();
+  await typeInto(page, '#split-hosts', '99999999');
+  await expect(page.locator('#split-summary')).toContainText('do not fit');
+  await expect(page.locator('#split-body tr')).toHaveCount(0);
+  await expect(page.locator('#split-note')).toBeHidden();
+
+  const before = await page.evaluate(() => window.__copied.length);
+  await page.click('[data-action="copy-split"]');
+  expect(await page.evaluate(() => window.__copied.length)).toBe(before);
+});
+
+test('at phone width the split copy button stays on the inputs row', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'subnet-calculator');
+
+  const prefix = await page.locator('#split-prefix').boundingBox();
+  const hosts = await page.locator('#split-hosts').boundingBox();
+  const button = await page.locator('[data-action="copy-split"]').boundingBox();
+  // Inputs level with each other even though one label wraps.
+  expect(Math.abs(prefix.y - hosts.y)).toBeLessThan(2);
+  expect(Math.abs((button.y + button.height) - (hosts.y + hosts.height))).toBeLessThan(4);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+});

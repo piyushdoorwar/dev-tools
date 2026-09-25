@@ -229,3 +229,19 @@ test('sample, paste, copy value, copy JSON and clear all work', async ({ page })
   await page.click('[data-action="paste"]');
   await expect(page.locator('#certTitle')).toHaveText('expired.devtools.example');
 });
+
+test('at phone width the placeholder wraps and validity dates keep a gap', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await open(page);
+
+  const editor = page.locator('#input');
+  const { scroll, client } = await editor.evaluate((el) => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+  expect(scroll).toBeLessThanOrEqual(client);
+
+  await page.fill('#input', LEAF);
+  const row = page.locator('.validity-dates .field-row').first();
+  await expect(row).toBeVisible();
+  const dt = await row.locator('dt').boundingBox();
+  const dd = await row.locator('dd').boundingBox();
+  expect(dd.x - (dt.x + dt.width)).toBeGreaterThanOrEqual(8);
+});
