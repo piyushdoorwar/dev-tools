@@ -1,0 +1,461 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.mode-switcher,
+.segment {
+    display: flex;
+    gap: var(--space-1);
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.mode-btn {
+    padding: 0 var(--space-4);
+}
+
+.hint-code {
+    font-family: var(--font-mono);
+    color: var(--accent-yellow);
+}
+
+/* --- Tooltips ------------------------------------------------------------
+   main.css styles how a tooltip looks; placement and show/hide are the
+   tool's. Buttons near a right edge anchor right so the label stays on screen.
+   ------------------------------------------------------------------------ */
+
+.action-btn[data-tooltip] {
+    position: relative;
+}
+
+.action-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 4px);
+    transition:
+        opacity var(--dur) var(--ease-out),
+        transform var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.action-btn[data-tooltip]:hover::after,
+.action-btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition-delay: 0s;
+}
+
+.header-actions .action-btn[data-tooltip]::after,
+.output-panel .action-btn[data-tooltip]::after {
+    left: auto;
+    right: 0;
+    transform: translateY(4px);
+}
+
+.header-actions .action-btn[data-tooltip]:hover::after,
+.header-actions .action-btn[data-tooltip]:focus-visible::after,
+.output-panel .action-btn[data-tooltip]:hover::after,
+.output-panel .action-btn[data-tooltip]:focus-visible::after {
+    transform: translateY(0);
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.legend-intro p {
+    color: var(--text-secondary);
+    line-height: var(--leading-normal);
+}
+
+/* --- Layout ------------------------------------------------------------- */
+
+.main-content {
+    display: grid;
+    grid-template-columns: minmax(300px, 1fr) minmax(460px, 1.3fr);
+    gap: var(--space-4);
+    flex: 1;
+    min-height: 0;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+    transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+}
+
+.input-panel.is-dragging {
+    border-color: var(--accent-purple-light);
+    box-shadow: var(--focus-ring);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-4);
+}
+
+.output-body {
+    overflow-y: auto;
+    gap: var(--space-4);
+}
+
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* --- Input -------------------------------------------------------------- */
+
+.key-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.key-controls {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.key-controls input {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-mono);
+}
+
+.editor {
+    flex: 1;
+    width: 100%;
+    min-height: 220px;
+    resize: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    line-height: var(--leading-code);
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.dropzone {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 220px;
+    padding: var(--space-6);
+    border: 1.5px dashed var(--border-light);
+    border-radius: var(--radius-panel);
+    background: var(--surface-soft);
+    color: var(--text-secondary);
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition-control);
+}
+
+.dropzone:hover,
+.input-panel.is-dragging .dropzone {
+    border-color: var(--accent-purple-light);
+    background: rgba(var(--accent-purple-rgb), 0.08);
+    color: var(--text-primary);
+}
+
+.dropzone:focus-visible {
+    outline: none;
+    border-color: var(--focus-border);
+    box-shadow: var(--focus-ring);
+}
+
+.dropzone svg {
+    width: 28px;
+    height: 28px;
+    color: var(--accent-purple-light);
+}
+
+.dropzone-title {
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--text-primary);
+    font-size: var(--text-md);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropzone-meta {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+}
+
+.dropzone.has-file {
+    border-style: solid;
+}
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+    color: var(--text-muted);
+}
+
+.status-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-text.success { color: var(--accent-green); }
+.status-text.warning { color: var(--accent-yellow); }
+.status-text.error { color: var(--accent-pink); }
+
+.byte-count {
+    flex: none;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+}
+
+/* --- Digests ------------------------------------------------------------ */
+
+.digest-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    list-style: none;
+}
+
+.digest-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        "head copy"
+        "value copy";
+    align-items: center;
+    column-gap: var(--space-3);
+    row-gap: var(--space-1);
+    padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+    transition: border-color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+}
+
+.digest-row.is-match {
+    border-color: rgba(var(--accent-green-rgb), 0.5);
+    background: rgba(var(--accent-green-rgb), 0.08);
+}
+
+.digest-head {
+    grid-area: head;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.digest-name {
+    font-size: var(--chrome-base);
+    font-weight: 700;
+}
+
+.digest-bits {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+}
+
+.digest-value {
+    grid-area: value;
+    min-width: 0;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    word-break: break-all;
+    user-select: all;
+}
+
+.digest-row.is-empty .digest-value {
+    color: var(--text-disabled);
+}
+
+.digest-row .action-btn {
+    grid-area: copy;
+}
+
+.compare {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: auto;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border);
+}
+
+.compare input {
+    font-family: var(--font-mono);
+}
+
+.compare-result {
+    min-height: 1.2em;
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
+.compare-result.success { color: var(--accent-green); }
+.compare-result.error { color: var(--accent-pink); }
+
+.notice {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-control);
+    color: var(--text-secondary);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+}
+
+.notice.error {
+    border-color: rgba(var(--accent-pink-rgb), 0.45);
+    background: rgba(var(--accent-pink-rgb), 0.08);
+}
+
+@media (max-width: 960px) {
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        padding: var(--space-4);
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .output-body {
+        overflow-y: visible;
+    }
+
+    .key-controls {
+        flex-direction: column;
+    }
+
+    .key-controls .segment {
+        align-self: flex-start;
+    }
+}
+}

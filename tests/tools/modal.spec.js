@@ -7,10 +7,13 @@ const MODALS = {
   'chmod-calculator':    ['#helpBtn', '#helpModal'],
   'cron-expression-generator': ['#helpBtn', '#helpModal'],
   'crypto-generator':    ['#securityInfoBtn', '#securityInfoModal'],
+  'env-json-shell-converter': ['#helpBtn', '#helpModal'],
   'fake-data-generator': ['#schemaHelpBtn', '#schemaHelpModal'],
   'http-status-codes':   ['#helpBtn', '#helpModal'],
+  'json-formatter':      ['#helpBtn', '#helpModal'],
   'regex-cheatsheet':    ['#helpBtn', '#helpModal'],
   'regex-tester':        ['#openCheatSheetBtn', '#cheatSheetModal'],
+  'string-escaper':      ['#helpBtn', '#helpModal'],
   'text-utilities':      ['#helpBtn', '#helpModal'],
   'timestamp-converter': ['#helpBtn', '#helpModal'],
 };
@@ -70,9 +73,9 @@ for (const [tool, [trigger, modal]] of Object.entries(MODALS)) {
 }
 
 test('every modal root is wired to the shared component', async ({ page }) => {
-  const TOOLS = ['base-converter', 'crypto-generator','encoder-decoder', 'fake-data-generator', 'file-compressor',
-    'image-toolkit', 'json-diff', 'json-toon-converter', 'jwt-debugger', 'markdown-editor',
-    'qr-generator', 'regex-tester', 'sql-formatter', 'text-diff'];
+  const TOOLS = ['base-converter', 'crypto-generator','encoder-decoder', 'env-json-shell-converter', 'fake-data-generator', 'file-compressor',
+    'hash-generator', 'image-toolkit', 'json-diff', 'json-toon-converter', 'jwt-debugger', 'markdown-editor',
+    'qr-generator', 'regex-tester', 'sql-formatter', 'string-escaper', 'text-diff'];
   for (const tool of TOOLS) {
     await openTool(page, tool);
     const report = await page.evaluate(() => {
@@ -131,9 +134,9 @@ test('tip lists in modals render without list markers', async ({ page }) => {
 test('a closed modal is never visible in any tool', async ({ page }) => {
   // A tool that ships no overlay layout rendered its dialog inline, on the
   // page, permanently — the shared layer now hides closed dialogs regardless.
-  const TOOLS = ['base-converter','chmod-calculator','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator',
-    'file-compressor','http-status-codes','image-toolkit','json-diff','json-toon-converter','json-xml-converter',
-    'jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester','sql-formatter','text-diff','text-utilities',
+  const TOOLS = ['base-converter','chmod-calculator','cron-expression-generator','crypto-generator','encoder-decoder','env-json-shell-converter','fake-data-generator',
+    'file-compressor','hash-generator','http-status-codes','image-toolkit','json-diff','json-toon-converter','json-xml-converter',
+    'jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester','sql-formatter','string-escaper','text-diff','text-utilities',
     'timestamp-converter'];
 
   for (const tool of TOOLS) {

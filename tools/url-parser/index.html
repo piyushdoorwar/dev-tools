@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Parser</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">URL Parser</h1>
+            </div>
+            <div class="header-right">
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="How parsing works" aria-label="How parsing works">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <section class="panel url-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">URL</h2>
+                <div class="action-group">
+                    <button class="action-btn" type="button" data-action="sample" data-tooltip="Insert sample" aria-label="Insert sample">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy URL" aria-label="Copy URL">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="panel-body">
+                <textarea id="url-input" class="url-input" rows="2" spellcheck="false" autocomplete="off"
+                          aria-label="URL" placeholder="Paste a URL, a relative path like /search?q=x, or a bare query string like a=1&amp;b=2…"></textarea>
+                <div class="url-breakdown" id="breakdown" aria-hidden="true"></div>
+                <div class="status-bar" id="status" role="status">
+                    <span class="status-text">Ready</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="main-content">
+            <section class="panel parts-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Components</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="parts-grid" id="parts">
+                        <label class="part part-scheme">
+                            <span class="part-label">Scheme</span>
+                            <input type="text" data-part="scheme" spellcheck="false" autocomplete="off" placeholder="https">
+                        </label>
+                        <label class="part part-user">
+                            <span class="part-label">Username</span>
+                            <input type="text" data-part="user" spellcheck="false" autocomplete="off">
+                        </label>
+                        <label class="part part-pass">
+                            <span class="part-label">Password</span>
+                            <input type="text" data-part="pass" spellcheck="false" autocomplete="off">
+                        </label>
+                        <label class="part part-host">
+                            <span class="part-label">Host</span>
+                            <input type="text" data-part="host" spellcheck="false" autocomplete="off" placeholder="example.com">
+                        </label>
+                        <label class="part part-port">
+                            <span class="part-label">Port</span>
+                            <input type="text" data-part="port" spellcheck="false" autocomplete="off" inputmode="numeric">
+                        </label>
+                        <label class="part part-path">
+                            <span class="part-label">Path</span>
+                            <input type="text" data-part="path" spellcheck="false" autocomplete="off" placeholder="/">
+                        </label>
+                        <label class="part part-fragment">
+                            <span class="part-label">Fragment</span>
+                            <input type="text" data-part="fragment" spellcheck="false" autocomplete="off" placeholder="section">
+                        </label>
+                    </div>
+
+                    <dl class="details" id="details"></dl>
+                </div>
+            </section>
+
+            <section class="panel params-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Query Parameters</h2>
+                    <div class="action-group">
+                        <label class="option-check" title="Decode + as a space and encode spaces as +, as HTML forms and URLSearchParams do">
+                            <input type="checkbox" id="plus-spaces" checked>
+                            <span>+ is space</span>
+                        </label>
+                        <button class="action-btn" type="button" data-action="sort" data-tooltip="Sort by key" aria-label="Sort by key">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-sort"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="copy-json" data-tooltip="Copy as JSON" aria-label="Copy parameters as JSON">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-code"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear-params" data-tooltip="Remove all parameters" aria-label="Remove all parameters">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="table-wrap">
+                        <table class="params-table" id="params-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="col-on"><span class="sr-only">Include</span></th>
+                                    <th scope="col">Key</th>
+                                    <th scope="col">Value (decoded)</th>
+                                    <th scope="col" class="col-del"><span class="sr-only">Remove</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="params-body"></tbody>
+                        </table>
+                        <p class="empty-state" id="params-empty">No query parameters.</p>
+                    </div>
+                    <div class="params-footer">
+                        <button class="btn btn-sm" type="button" data-action="add-param">+ Add parameter</button>
+                        <span class="params-meta" id="params-meta"></span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How parsing works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Splitting</strong></p>
+                        <ul class="tip-list">
+                            <li>The URL is split with the generic pattern from RFC 3986 (appendix B) into scheme, authority, path, query and fragment. Nothing is normalised, so rebuilding it gives back exactly what you pasted.</li>
+                            <li>Relative references such as <span class="hint-code">/search?q=x</span> and bare query strings such as <span class="hint-code">a=1&amp;b=2</span> work too.</li>
+                            <li><strong>Normalized</strong> shows what a browser would actually request: lower-cased host, default port dropped, <span class="hint-code">..</span> resolved, and unsafe characters percent-encoded. International hosts are shown in their punycode form.</li>
+                        </ul>
+                        <p><strong>Editing</strong></p>
+                        <ul class="tip-list">
+                            <li>Edit the URL, a component, or a parameter; the other two update as you type.</li>
+                            <li>Parameter keys and values are edited decoded and encoded for you. Parameters you haven't touched keep their original encoding.</li>
+                            <li>Untick a parameter to leave it out of the URL without losing it. Editing the URL text directly re-reads the table, which drops unticked rows.</li>
+                            <li>Repeated keys such as <span class="hint-code">tag=a&amp;tag=b</span> are kept as separate rows, in order. <strong>Copy as JSON</strong> turns them into an array.</li>
+                        </ul>
+                        <p><strong>+ is space</strong></p>
+                        <ul class="tip-list">
+                            <li>On (the default), <span class="hint-code">+</span> decodes to a space and spaces encode as <span class="hint-code">+</span>, matching HTML forms and <span class="hint-code">URLSearchParams</span>.</li>
+                            <li>Off, <span class="hint-code">+</span> is a literal plus and spaces encode as <span class="hint-code">%20</span>, as RFC 3986 treats them.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

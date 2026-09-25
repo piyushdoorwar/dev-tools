@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { openTool } from '../helpers.js';
 
-const TOOLS = ['base-converter','chmod-calculator','color-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator','file-compressor',
- 'http-status-codes','id-generator','image-toolkit','json-diff','json-toon-converter','json-xml-converter','json-yaml-toml-converter',
- 'jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester','sql-formatter','text-diff','text-utilities','timestamp-converter',
- 'unit-converter'];
+const TOOLS = ['base-converter','chmod-calculator','color-converter','cron-expression-generator','crypto-generator','encoder-decoder','env-json-shell-converter','fake-data-generator','file-compressor',
+ 'hash-generator','http-status-codes','id-generator','image-toolkit','json-diff','json-formatter', 'json-toon-converter','json-xml-converter','json-yaml-toml-converter',
+ 'jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester','sql-formatter','string-escaper','text-diff','text-utilities','timestamp-converter',
+ 'unit-converter','url-parser'];
 
 const shapeOf = (page, sel) => page.evaluate((s) => {
   const el = document.querySelector(s);

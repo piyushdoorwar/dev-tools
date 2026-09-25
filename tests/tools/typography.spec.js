@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { openTool } from '../helpers.js';
 
-const TOOLS = ['base-converter','certificate-decoder','chmod-calculator','color-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator','file-compressor',
- 'html-preview','http-status-codes','id-generator','image-toolkit','json-diff','json-toon-converter',
+const TOOLS = ['base-converter','certificate-decoder','chmod-calculator','color-converter','cron-expression-generator','crypto-generator','encoder-decoder','env-json-shell-converter','fake-data-generator','file-compressor',
+ 'hash-generator','html-preview','http-status-codes','id-generator','image-toolkit','json-diff','json-formatter', 'json-toon-converter',
  'json-xml-converter','json-yaml-toml-converter','jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester',
- 'sql-formatter','text-diff','text-utilities','timestamp-converter','unit-converter'];
+ 'sql-formatter','string-escaper','text-diff','text-utilities','timestamp-converter','unit-converter','url-parser'];
 
 const titleStyle = (page) => page.evaluate(() => {
   const h1 = document.querySelector('h1');

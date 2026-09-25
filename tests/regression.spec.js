@@ -36,13 +36,16 @@ const TOOL_ROUTES = [
   'chmod-calculator',
   'cron-expression-generator',
   'crypto-generator','encoder-decoder',
+  'env-json-shell-converter',
   'fake-data-generator',
   'file-compressor',
+  'hash-generator',
   'html-preview',
   'http-status-codes',
   'id-generator',
   'image-toolkit',
   'json-diff',
+  'json-formatter',
   'json-toon-converter',
   'json-xml-converter',
   'json-yaml-toml-converter',
@@ -52,8 +55,10 @@ const TOOL_ROUTES = [
   'regex-cheatsheet',
   'regex-tester',
   'sql-formatter',
+  'string-escaper',
   'text-diff','text-utilities','timestamp-converter',
   'unit-converter',
+  'url-parser',
 ];
 
 test('quick launch and recently used cards open their tools', async ({ page }) => {

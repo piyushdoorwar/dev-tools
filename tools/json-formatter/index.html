@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Formatter &amp; Query</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">JSON Formatter &amp; Query</h1>
+            </div>
+            <div class="header-right">
+                <button class="action-btn" type="button" id="helpBtn" data-modal-open="#helpModal" data-tooltip="Query syntax" aria-label="Query syntax">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel input-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">JSON Input</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Insert sample" aria-label="Insert sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="open" data-tooltip="Open file" aria-label="Open file">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-upload"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="format-input" data-tooltip="Format input in place" aria-label="Format input in place">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-align"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                        <input type="file" id="file-input" accept=".json,.jsonc,.geojson,.txt,application/json" hidden>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea id="input" class="editor" spellcheck="false" autocomplete="off" aria-label="JSON input"
+                              placeholder="Paste JSON here, or drop a .json file…"></textarea>
+                    <div class="status-bar" id="input-status" role="status">
+                        <span class="status-text">Ready</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel output-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="output-title">Formatted</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy output" aria-label="Copy output">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="download" data-tooltip="Download output" aria-label="Download output">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="options-bar">
+                    <div class="mode-switch" role="group" aria-label="Output style">
+                        <button class="mode-btn active" type="button" data-style="pretty" aria-pressed="true">Pretty</button>
+                        <button class="mode-btn" type="button" data-style="minified" aria-pressed="false">Minified</button>
+                    </div>
+                    <div class="option" id="indent-option">
+                        <span class="option-label">Indent</span>
+                        <select id="indent" hidden>
+                            <option value="2">2 spaces</option>
+                            <option value="4">4 spaces</option>
+                            <option value="tab">Tab</option>
+                        </select>
+                        <div class="dd" data-dd data-dd-select="#indent">
+                            <button class="dd__trigger" type="button" aria-label="Indent">
+                                <span class="dd__value">2 spaces</span>
+                            </button>
+                            <div class="dd__menu" role="listbox">
+                                <button class="dd__option" type="button" role="option" data-value="2">2 spaces</button>
+                                <button class="dd__option" type="button" role="option" data-value="4">4 spaces</button>
+                                <button class="dd__option" type="button" role="option" data-value="tab">Tab</button>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="option option-check">
+                        <input type="checkbox" id="sort-keys">
+                        <span>Sort keys</span>
+                    </label>
+                </div>
+
+                <div class="query-bar">
+                    <select id="query-lang" hidden>
+                        <option value="jsonpath">JSONPath</option>
+                        <option value="jq">jq</option>
+                    </select>
+                    <div class="dd" data-dd data-dd-select="#query-lang">
+                        <button class="dd__trigger" type="button" aria-label="Query language">
+                            <span class="dd__value">JSONPath</span>
+                        </button>
+                        <div class="dd__menu" role="listbox">
+                            <button class="dd__option" type="button" role="option" data-value="jsonpath">JSONPath</button>
+                            <button class="dd__option" type="button" role="option" data-value="jq">jq</button>
+                        </div>
+                    </div>
+                    <input type="text" id="query" class="query-input" spellcheck="false" autocomplete="off"
+                           aria-label="Query" placeholder="$.store.book[?@.price &lt; 10].title">
+                    <div class="mode-switch" id="result-switch" role="group" aria-label="JSONPath result">
+                        <button class="mode-btn active" type="button" data-result="values" aria-pressed="true">Values</button>
+                        <button class="mode-btn" type="button" data-result="paths" aria-pressed="false">Paths</button>
+                    </div>
+                </div>
+
+                <div class="panel-body">
+                    <textarea id="output" class="editor output" readonly spellcheck="false" aria-label="Output"
+                              placeholder="Formatted JSON appears here. Type a query above to filter it."></textarea>
+                    <div class="status-bar" id="output-status" role="status">
+                        <span class="status-text">Ready</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Query syntax</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="help-intro">Every example runs against the sample document. Click one to try it.</p>
+
+                    <h4 class="help-heading">JSONPath <span class="help-note">RFC 9535</span></h4>
+                    <div class="example-list">
+                        <button class="example" type="button" data-lang="jsonpath" data-query="$.store.book[*].author"><code>$.store.book[*].author</code><span>every author</span></button>
+                        <button class="example" type="button" data-lang="jsonpath" data-query="$..price"><code>$..price</code><span>every price, at any depth</span></button>
+                        <button class="example" type="button" data-lang="jsonpath" data-query="$.store.book[?@.price &lt; 10].title"><code>$.store.book[?@.price &lt; 10].title</code><span>filter by value</span></button>
+                        <button class="example" type="button" data-lang="jsonpath" data-query="$.store.book[?@.isbn]"><code>$.store.book[?@.isbn]</code><span>books that have an isbn</span></button>
+                        <button class="example" type="button" data-lang="jsonpath" data-query="$.store.book[-1:]"><code>$.store.book[-1:]</code><span>slice: the last book</span></button>
+                        <button class="example" type="button" data-lang="jsonpath" data-query="$..book[?match(@.author, '.*Tolkien')].title"><code>$..book[?match(@.author, '.*Tolkien')].title</code><span>regex: <code>match</code> (whole) or <code>search</code></span></button>
+                        <button class="example" type="button" data-lang="jsonpath" data-query="$.store.book[?length(@.tags) &gt;= 2].title"><code>$.store.book[?length(@.tags) &gt;= 2].title</code><span>functions: <code>length count value</code></span></button>
+                    </div>
+                    <ul class="tip-list">
+                        <li>Selectors: <code>.name</code> <code>['name']</code> <code>[0]</code> <code>[-1]</code> <code>[0,2]</code> <code>[1:3]</code> <code>[::2]</code> <code>*</code> <code>..</code>. Filters use <code>@</code> for the current item, <code>$</code> for the root, and <code>== != &lt; &lt;= &gt; &gt;= &amp;&amp; || !</code>.</li>
+                        <li>The leading <code>$</code> is optional. Switch to <strong>Paths</strong> to see where each match lives.</li>
+                    </ul>
+
+                    <h4 class="help-heading">jq <span class="help-note">a practical subset</span></h4>
+                    <div class="example-list">
+                        <button class="example" type="button" data-lang="jq" data-query=".store.book[] | select(.price &lt; 10) | .title"><code>.store.book[] | select(.price &lt; 10) | .title</code><span>iterate, filter, pick</span></button>
+                        <button class="example" type="button" data-lang="jq" data-query=".store.book | map({title, price})"><code>.store.book | map({title, price})</code><span>reshape objects</span></button>
+                        <button class="example" type="button" data-lang="jq" data-query=".store.book | group_by(.category) | map({category: .[0].category, count: length})"><code>group_by(.category) | map({…})</code><span>group and count</span></button>
+                        <button class="example" type="button" data-lang="jq" data-query="[.store.book[].price] | add"><code>[.store.book[].price] | add</code><span>sum</span></button>
+                        <button class="example" type="button" data-lang="jq" data-query=".store.book[] | &quot;\(.title) by \(.author)&quot;"><code>"\(.title) by \(.author)"</code><span>string interpolation</span></button>
+                        <button class="example" type="button" data-lang="jq" data-query="del(.store.bicycle) | .store.book[0].price |= . * 2"><code>del(…) | .price |= . * 2</code><span>delete and update</span></button>
+                        <button class="example" type="button" data-lang="jq" data-query=".store.book[] | [.title, .price] | @csv"><code>[.title, .price] | @csv</code><span>formats: <code>@csv @tsv @json @base64 @uri @html @sh</code></span></button>
+                    </div>
+                    <ul class="tip-list">
+                        <li>Supported: <code>| , ( )</code>, <code>.a.b</code> <code>.[]</code> <code>.[1:3]</code> <code>..</code> <code>?</code>, array and object construction, <code>+ - * / %</code>, comparisons, <code>and or not</code>, <code>//</code>, <code>if … elif … else … end</code>, <code>try … catch</code>, <code>… as $x |</code>, <code>reduce</code>, and <code>= |= += -= *= /= //=</code>.</li>
+                        <li>Builtins include <code>select map map_values keys has length type add any all sort sort_by group_by unique_by min_by max_by to_entries from_entries with_entries paths del walk flatten range limit first last join split test capture sub gsub ascii_downcase tostring tonumber tojson fromjson</code>.</li>
+                        <li>Not supported: <code>def</code>, <code>foreach</code>, <code>label</code>, destructuring, modules, and <code>input</code>/<code>inputs</code>. A query that yields several values prints one per line, like <code>jq</code>.</li>
+                    </ul>
+
+                    <h4 class="help-heading">Why "diff-friendly"</h4>
+                    <ul class="tip-list">
+                        <li>Key order is kept exactly as written. <code>JSON.parse</code> moves keys that look like numbers (<code>"10"</code>, <code>"2"</code>) to the front, which reshuffles a file and pollutes the diff. This formatter doesn't.</li>
+                        <li>Numbers are written back exactly as they appear. <code>12345678901234567890</code> stays that way instead of becoming <code>12345678901234567000</code>, and <code>1.50</code> stays <code>1.50</code>.</li>
+                        <li><strong>Sort keys</strong> gives every object a stable alphabetical order, so two dumps of the same data diff cleanly no matter how they were produced. Duplicate keys are flagged, because only the last one survives.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="query.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

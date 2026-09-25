@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700">
+        <animate attributeName="stop-color" values="#FFD700;#8B5CF6;#FFD700" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#8B5CF6">
+        <animate attributeName="stop-color" values="#8B5CF6;#FFD700;#8B5CF6" dur="3s" repeatCount="indefinite" />
+      </stop>
+    </linearGradient>
+  </defs>
+
+  <circle cx="50" cy="50" r="47" fill="#1e1e1e" stroke="url(#ring)" stroke-width="3" />
+
+  <g fill="none" stroke="#FFD700" stroke-width="6" stroke-linecap="round">
+    <line x1="44" y1="24" x2="36" y2="76" />
+    <line x1="64" y1="24" x2="56" y2="76" />
+  </g>
+
+  <g fill="none" stroke="#8B5CF6" stroke-width="6" stroke-linecap="round">
+    <line x1="26" y1="40" x2="76" y2="40">
+      <animate attributeName="opacity" values="1;0.45;1" dur="2.4s" repeatCount="indefinite" />
+    </line>
+    <line x1="24" y1="60" x2="74" y2="60">
+      <animate attributeName="opacity" values="0.45;1;0.45" dur="2.4s" repeatCount="indefinite" />
+    </line>
+  </g>
+</svg>

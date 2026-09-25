@@ -1,0 +1,313 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.mode-switch {
+    display: flex;
+    gap: var(--space-1);
+    padding: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.swap-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.hint-code {
+    font-family: var(--font-mono);
+    color: var(--accent-yellow);
+}
+
+.legend-intro p {
+    margin-top: var(--space-4);
+}
+
+.legend-intro p:first-child {
+    margin-top: 0;
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+/* --- Layout ------------------------------------------------------------- */
+
+.main-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-4);
+    flex: 1;
+    min-height: 0;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-4);
+}
+
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* --- Tooltips ------------------------------------------------------------
+   main.css paints the bubble; placement and reveal are the tool's. Every
+   icon button here sits at the right edge of its panel or the header, so the
+   bubble anchors to the button's right edge and grows leftward instead of
+   overflowing the viewport.
+   ------------------------------------------------------------------------ */
+
+.action-btn[data-tooltip] {
+    position: relative;
+}
+
+.action-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    transform: translateY(4px);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease,
+        visibility 0s linear 180ms;
+}
+
+.action-btn[data-tooltip]:hover::after,
+.action-btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition-delay: 0s;
+}
+
+/* --- Options ------------------------------------------------------------ */
+
+.options-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-secondary);
+    font-size: var(--chrome-base);
+}
+
+.option-label {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.option .dd {
+    min-width: 140px;
+}
+
+.option .dd__trigger {
+    flex: 1;
+}
+
+/* An empty options bar still holds its height, so both panels' editors
+   start at the same line whichever options the current formats show. */
+.options-bar {
+    min-height: calc(var(--control-h-sm, 32px) + 2 * var(--space-3));
+}
+
+.option-note {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+}
+
+.option-check {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* --- Editors ------------------------------------------------------------ */
+
+.editor {
+    flex: 1;
+    width: 100%;
+    min-height: 240px;
+    resize: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+    white-space: pre;
+}
+
+.editor.is-dragover {
+    border-color: var(--accent-purple-light);
+    box-shadow: var(--focus-ring);
+}
+
+.status-bar {
+    flex: none;
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-family: var(--font-mono);
+}
+
+.status-bar.is-success { color: var(--accent-green); }
+.status-bar.is-warning { color: var(--accent-orange); }
+.status-bar.is-error { color: var(--accent-pink); }
+
+/* Long parser errors stay on one line; the full text is in the title. Not
+   `.status-text`: the shared layer paints that muted, which would hide the
+   bar's success/warning/error colour. */
+.status-message {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.output {
+    color: var(--text-secondary);
+}
+
+@media (max-width: 960px) {
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        padding: var(--space-4);
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .editor {
+        min-height: 200px;
+    }
+
+    .header-right {
+        flex-wrap: wrap;
+    }
+}
+}

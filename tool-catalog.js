@@ -56,6 +56,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["Base64 and Base64url encoding", "URL component and full-URL escaping", "HTML entity escaping and unescaping"],
   },
   {
+    id: "env-json-shell-converter",
+    name: ".env ⇄ JSON ⇄ Shell Converter",
+    route: "env-json-shell-converter",
+    description: "Convert environment variables between .env files, JSON objects, and shell export lines for Bash, fish, and PowerShell, locally in your browser.",
+    capabilities: [".env, JSON, and shell export in any direction", "Bash, fish, and PowerShell output with safe quoting", "${VAR} expansion, multiline values, and Kubernetes-style env lists"],
+  },
+  {
     id: "fake-data-generator",
     name: "Fake Data Generator",
     route: "fake-data-generator",
@@ -68,6 +75,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     route: "file-compressor",
     description: "Compress files locally in your browser with multiple algorithms while comparing original and compressed sizes before download.",
     capabilities: ["Multiple compression formats", "Before-and-after size comparison", "Local file processing"],
+  },
+  {
+    id: "hash-generator",
+    name: "Hash Generator",
+    route: "hash-generator",
+    description: "Compute MD5, SHA-1, SHA-256, SHA-384, and SHA-512 hashes and HMACs of text or files, and check them against an expected checksum, entirely in your browser.",
+    capabilities: ["MD5, SHA-1, SHA-256, SHA-384, and SHA-512 digests", "HMAC with UTF-8, hex, or Base64 keys", "File hashing and checksum comparison"],
   },
   {
     id: "html-preview",
@@ -109,6 +123,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     route: "json-diff",
     description: "Compare two JSON documents with formatting, validation, and clear structural difference highlighting.",
     capabilities: ["Side-by-side JSON comparison", "Syntax validation and formatting", "Structural difference highlighting"],
+  },
+  {
+    id: "json-formatter",
+    name: "JSON Formatter & Query",
+    route: "json-formatter",
+    description: "Format, minify, and sort JSON without reordering keys or rounding big numbers, then query it with JSONPath or jq, all in your browser.",
+    capabilities: ["Pretty, minified, and sorted-key output", "Key order and number literals preserved", "JSONPath and jq query tester"],
   },
   {
     id: "json-toon-converter",
@@ -190,6 +211,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["SQL formatting and beautification", "Readable indentation", "Local query processing"],
   },
   {
+    id: "string-escaper",
+    name: "Slug Generator / String Escaper",
+    route: "string-escaper",
+    description: "Generate URL slugs and escape or unescape strings for JSON, SQL, shell, regex, and HTML attributes locally in your browser.",
+    capabilities: ["URL slugs with transliteration and length limits", "JSON, SQL, shell, regex, and HTML attribute escaping", "Unescaping literals back to plain text"],
+  },
+  {
     id: "text-case-converter",
     name: "Text Case Converter",
     route: "text-case-converter",
@@ -235,6 +263,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     route: "unit-converter",
     description: "Convert common measurements across length, area, volume, mass, temperature, time, speed, data, and more.",
     capabilities: ["Multiple measurement categories", "Instant bidirectional conversion", "US, UK, metric, and digital units"],
+  },
+  {
+    id: "url-parser",
+    name: "URL Parser",
+    route: "url-parser",
+    description: "Break a URL into its scheme, host, port, path, query, and fragment, edit the query parameters in a table, and rebuild the URL without changing what you didn't touch.",
+    capabilities: ["Lossless URL breakdown into components", "Editable query-parameter table", "Normalized URL, punycode host, and encoding checks"],
   },
 ].map((tool) => Object.freeze({
   ...tool,

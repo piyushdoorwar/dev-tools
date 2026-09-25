@@ -13,7 +13,7 @@ const escapeHtml = (value) => String(value)
   .replaceAll('"', '&quot;');
 
 test('SEO catalog has unique logical routes with complete metadata', () => {
-  assert.equal(TOOL_CATALOG.length, 31);
+  assert.equal(TOOL_CATALOG.length, 36);
   assert.equal(new Set(TOOL_CATALOG.map((tool) => tool.id)).size, TOOL_CATALOG.length);
   assert.equal(new Set(TOOL_CATALOG.map((tool) => tool.route)).size, TOOL_CATALOG.length);
   for (const tool of TOOL_CATALOG) {

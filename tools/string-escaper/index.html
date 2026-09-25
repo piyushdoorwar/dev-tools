@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slug Generator / String Escaper</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Slug Generator / String Escaper</h1>
+            </div>
+            <div class="header-right">
+                <div class="mode-switcher" role="tablist" aria-label="Target">
+                    <button class="mode-btn active" type="button" role="tab" aria-selected="true" data-mode="slug">Slug</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="json">JSON</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="sql">SQL</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="shell">Shell</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="regex">Regex</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="html-attr">HTML Attribute</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="direction-group" id="direction-group">
+                    <span class="toolbar-label">Direction</span>
+                    <div class="segment" id="direction-switch" role="group" aria-label="Direction">
+                        <button class="segment-btn active" type="button" data-direction="escape">Escape</button>
+                        <button class="segment-btn" type="button" data-direction="unescape">Unescape</button>
+                    </div>
+                    <button class="action-btn swap-btn" type="button" data-action="swap" data-tooltip="Swap input and output">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-swap"></use></svg>
+                    </button>
+                </div>
+                <span class="toolbar-label slug-hint" id="slug-hint">One slug per line</span>
+            </div>
+
+            <div class="toolbar-right">
+                <div class="option-group" data-for="slug">
+                    <span class="toolbar-label">Separator</span>
+                    <div class="segment" data-option="separator" role="group" aria-label="Separator">
+                        <button class="segment-btn active" type="button" data-value="-">-</button>
+                        <button class="segment-btn" type="button" data-value="_">_</button>
+                        <button class="segment-btn" type="button" data-value=".">.</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="slug">
+                    <span class="toolbar-label">Case</span>
+                    <div class="segment" data-option="slugCase" role="group" aria-label="Case">
+                        <button class="segment-btn active" type="button" data-value="lower">lower</button>
+                        <button class="segment-btn" type="button" data-value="keep">Keep</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="slug">
+                    <span class="toolbar-label">Letters</span>
+                    <div class="segment" data-option="slugChars" role="group" aria-label="Letters">
+                        <button class="segment-btn active" type="button" data-value="ascii">ASCII</button>
+                        <button class="segment-btn" type="button" data-value="unicode">Unicode</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="slug">
+                    <label class="toolbar-label" for="slug-max">Max</label>
+                    <input class="max-input" id="slug-max" type="number" min="0" max="500" step="1" inputmode="numeric" placeholder="∞" aria-label="Maximum slug length">
+                </div>
+                <div class="option-group" data-for="sql" hidden>
+                    <span class="toolbar-label">Dialect</span>
+                    <div class="segment" data-option="sqlDialect" role="group" aria-label="SQL dialect">
+                        <button class="segment-btn active" type="button" data-value="standard">Standard</button>
+                        <button class="segment-btn" type="button" data-value="mysql">MySQL</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="shell" hidden>
+                    <span class="toolbar-label">Quoting</span>
+                    <div class="segment" data-option="shellStyle" role="group" aria-label="Shell quoting style">
+                        <button class="segment-btn active" type="button" data-value="single">'Single'</button>
+                        <button class="segment-btn" type="button" data-value="double">"Double"</button>
+                        <button class="segment-btn" type="button" data-value="ansi">$'ANSI-C'</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="json" hidden>
+                    <span class="toolbar-label">Non-ASCII</span>
+                    <div class="segment" data-option="jsonAscii" role="group" aria-label="Non-ASCII characters">
+                        <button class="segment-btn active" type="button" data-value="off">Keep</button>
+                        <button class="segment-btn" type="button" data-value="on">\uXXXX</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="regex" hidden>
+                    <span class="toolbar-label">Slash</span>
+                    <div class="segment" data-option="regexSlash" role="group" aria-label="Forward slash">
+                        <button class="segment-btn active" type="button" data-value="on">Escape /</button>
+                        <button class="segment-btn" type="button" data-value="off">Leave /</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="html-attr" hidden>
+                    <span class="toolbar-label">Whitespace</span>
+                    <div class="segment" data-option="attrWhitespace" role="group" aria-label="Newlines and tabs">
+                        <button class="segment-btn active" type="button" data-value="keep">Keep</button>
+                        <button class="segment-btn" type="button" data-value="encode">&amp;#10;</button>
+                    </div>
+                </div>
+                <div class="option-group" data-for="json sql html-attr" data-direction-only="escape" hidden>
+                    <span class="toolbar-label">Quotes</span>
+                    <div class="segment" data-option="quotes" role="group" aria-label="Surrounding quotes">
+                        <button class="segment-btn active" type="button" data-value="on">Wrap</button>
+                        <button class="segment-btn" type="button" data-value="off">Bare</button>
+                    </div>
+                </div>
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="Escaping reference">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-panel left-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="input-title">Plain Text</h2>
+                    <div class="action-bar">
+                        <button class="action-btn" type="button" data-action="load-sample" data-tooltip="Load sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste-input" data-tooltip="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="copy-input" data-tooltip="Copy">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear-input" data-tooltip="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea class="editor-textarea" id="input-editor" spellcheck="false" placeholder="Type or paste titles to turn into slugs..."></textarea>
+                    <div class="status-bar" id="input-status">
+                        <span class="status-text">Ready</span>
+                        <span class="char-count" id="input-count">0 chars</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="editor-panel right-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="output-title">Slug</h2>
+                    <div class="action-bar">
+                        <button class="action-btn" type="button" data-action="copy-output" data-tooltip="Copy">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="download-output" data-tooltip="Download">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea class="editor-textarea" id="output-editor" spellcheck="false" readonly placeholder="Output appears here..."></textarea>
+                    <div class="status-bar" id="output-status">
+                        <span class="status-text">Ready</span>
+                        <span class="char-count" id="output-count">0 chars</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Escaping Reference</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Everything runs locally.</strong></p>
+                        <p>Escaping makes text safe to drop inside a literal. It is not a substitute for parameterised queries or argument arrays when those are available.</p>
+                    </div>
+                    <div class="legend-grid">
+                        <div class="legend-row">
+                            <div class="legend-title">Slug</div>
+                            <div class="legend-desc">Each line becomes one slug. Accents are stripped (<span class="hint-code">é → e</span>), a few letters are spelled out (<span class="hint-code">ß → ss</span>, <span class="hint-code">&amp; → and</span>), apostrophes are dropped, and every other run of punctuation or spaces becomes the separator. <em>Unicode</em> keeps non-Latin letters instead of dropping them. <em>Max</em> trims at a word boundary where it can.</div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-title">JSON</div>
+                            <div class="legend-desc">Escapes <span class="hint-code">" \</span> and control characters as <span class="hint-code">\n \t \u0000</span>. The result is also a valid JavaScript string. <span class="hint-code">\uXXXX</span> additionally escapes everything above U+007E, emitting surrogate pairs for emoji.</div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-title">SQL</div>
+                            <div class="legend-desc"><em>Standard</em> doubles single quotes (<span class="hint-code">O''Brien</span>), which is all PostgreSQL, SQLite, SQL Server and Oracle need. <em>MySQL</em> uses backslash escapes for <span class="hint-code">\ ' " \0 \n \r \Z</span>, matching <span class="hint-code">mysql_real_escape_string</span>.</div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-title">Shell</div>
+                            <div class="legend-desc"><em>Single</em> quotes are the safest POSIX form: nothing inside is special, and a literal <span class="hint-code">'</span> becomes <span class="hint-code">'\''</span>. <em>Double</em> escapes <span class="hint-code">\ " $ `</span>, but interactive bash may still expand <span class="hint-code">!</span>. <em>ANSI-C</em> (<span class="hint-code">$'…'</span>, bash and zsh) can spell newlines and control characters. Unescaping splits the input into words, one per line, and never expands variables.</div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-title">Regex</div>
+                            <div class="legend-desc">Escapes exactly the syntax characters <span class="hint-code">\ ^ $ . * + ? ( ) [ ] { } |</span> and optionally <span class="hint-code">/</span>. That set is valid in JavaScript even with the <span class="hint-code">u</span> flag, and in PCRE, Python, Go and Java.</div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-title">HTML Attribute</div>
+                            <div class="legend-desc">Escapes <span class="hint-code">&amp; " ' &lt; &gt;</span>, so the value is safe in single- or double-quoted attributes. <span class="hint-code">&amp;#10;</span> also encodes newlines and tabs, which XML parsers otherwise normalise to spaces.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

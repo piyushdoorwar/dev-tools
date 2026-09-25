@@ -1,0 +1,469 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.mode-switch {
+    display: flex;
+    gap: var(--space-1);
+    padding: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: min(720px, 92vw);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+/* --- Layout ------------------------------------------------------------- */
+
+.main-content {
+    display: grid;
+    grid-template-columns: minmax(300px, 1fr) minmax(360px, 1fr);
+    gap: var(--space-4);
+    flex: 1;
+    min-height: 0;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-4);
+}
+
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* --- Tooltips ------------------------------------------------------------
+   main.css paints the bubble; placement and reveal are the tool's. Every
+   icon button here sits at the right edge of its panel or the header, so the
+   bubble anchors to the button's right edge and grows leftward instead of
+   overflowing the viewport.
+   ------------------------------------------------------------------------ */
+
+.action-btn[data-tooltip] {
+    position: relative;
+}
+
+.action-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    transform: translateY(4px);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease,
+        visibility 0s linear 180ms;
+}
+
+.action-btn[data-tooltip]:hover::after,
+.action-btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition-delay: 0s;
+}
+
+/* --- Options ------------------------------------------------------------ */
+
+.options-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-secondary);
+    font-size: var(--chrome-base);
+}
+
+.option-label {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.option .dd {
+    min-width: 140px;
+}
+
+.option .dd__trigger {
+    flex: 1;
+}
+
+.option-check {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* --- Editors ------------------------------------------------------------ */
+
+.editor {
+    flex: 1;
+    width: 100%;
+    min-height: 240px;
+    resize: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+    white-space: pre;
+    tab-size: 4;
+}
+
+.editor.is-dragover {
+    border-color: var(--accent-purple-light);
+    box-shadow: var(--focus-ring);
+}
+
+.output {
+    color: var(--text-secondary);
+    transition: opacity var(--dur) var(--ease-out);
+}
+
+/* A query mid-edit leaves the last good result up, dimmed so it does not
+   read as the answer to what is currently typed. */
+.output.is-stale {
+    opacity: 0.45;
+}
+
+.status-bar {
+    flex: none;
+    min-width: 0;
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-family: var(--font-mono);
+}
+
+.status-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-bar.is-success { color: var(--accent-green); }
+.status-bar.is-warning { color: var(--accent-orange); }
+.status-bar.is-error { color: var(--accent-pink); }
+
+/* A parse error with a position can be clicked to put the caret on it. */
+.status-bar.is-jump {
+    cursor: pointer;
+}
+
+.status-bar.is-jump:hover .status-text {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* --- Options ------------------------------------------------------------ */
+
+.options-bar,
+.query-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-secondary);
+    font-size: var(--chrome-base);
+}
+
+.option.is-disabled {
+    opacity: 0.4;
+}
+
+.option-label {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.option .dd {
+    min-width: 120px;
+}
+
+.option .dd__trigger {
+    flex: 1;
+}
+
+.option-check {
+    cursor: pointer;
+    user-select: none;
+}
+
+.query-bar {
+    gap: var(--space-2);
+    flex-wrap: nowrap;
+}
+
+.query-bar .dd {
+    flex: none;
+    width: 118px;
+}
+
+.query-bar .dd__trigger {
+    width: 100%;
+}
+
+.query-input {
+    flex: 1;
+    min-width: 0;
+    min-height: var(--control-h-sm);
+    font-family: var(--font-mono);
+    font-size: var(--text-md);
+}
+
+.query-input[aria-invalid='true'] {
+    border-color: var(--accent-pink);
+}
+
+.query-bar .mode-switch {
+    flex: none;
+}
+
+/* --- Help --------------------------------------------------------------- */
+
+.help-intro {
+    color: var(--text-secondary);
+}
+
+.help-heading {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin: var(--space-5) 0 var(--space-3);
+}
+
+.help-note {
+    color: var(--text-muted);
+    font-family: var(--font-body);
+    font-size: var(--chrome-sm);
+    font-weight: 500;
+}
+
+.example-list {
+    display: grid;
+    gap: var(--space-1);
+    margin-bottom: var(--space-3);
+}
+
+.example {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    width: 100%;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+    color: var(--text-muted);
+    font: inherit;
+    font-size: var(--chrome-sm);
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition-control);
+}
+
+.example:hover,
+.example:focus-visible {
+    border-color: var(--accent-purple);
+    background: var(--surface-strong);
+    color: var(--text-secondary);
+}
+
+.example:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.example > code {
+    color: var(--accent-yellow);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+}
+
+.example > span {
+    flex: none;
+    max-width: 45%;
+    text-align: right;
+}
+
+.modal-body code {
+    font-family: var(--font-mono);
+}
+
+.tip-list code {
+    color: var(--accent-yellow);
+}
+
+@media (max-width: 960px) {
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        padding: var(--space-4);
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .editor {
+        min-height: 220px;
+    }
+}
+
+@media (max-width: 560px) {
+    .query-bar {
+        flex-wrap: wrap;
+    }
+
+    .query-input {
+        flex-basis: 100%;
+        order: 3;
+    }
+
+    .example {
+        flex-direction: column;
+        gap: var(--space-1);
+    }
+
+    .example > span {
+        max-width: none;
+        text-align: left;
+    }
+}
+}

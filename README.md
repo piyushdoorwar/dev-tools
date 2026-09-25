@@ -10,13 +10,16 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - Cron Expression Generator
 - Crypto Generator
 - Encoder / Decoder
+- .env ⇄ JSON ⇄ Shell Converter
 - Fake Data Generator
 - File Compressor
+- Hash Generator
 - HTML Preview
 - HTTP Status Codes
 - ID Generator
 - Image Converter
 - JSON Diff
+- JSON Formatter & Query (JSONPath / jq)
 - JSON ⇄ TOON Converter
 - JSON ⇄ XML Converter
 - JSON ⇄ YAML ⇄ TOML Converter
@@ -26,11 +29,13 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - QR Generator
 - Regex Cheat Sheet
 - Regex Tester
+- Slug Generator / String Escaper
 - SQL Formatter
 - Text Cleaner
 - Text Diff
 - Timestamp Converter
 - Unit Converter
+- URL Parser
 - Word & Character Counter
 
 ## Run locally

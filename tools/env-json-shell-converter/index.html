@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>.env ⇄ JSON ⇄ Shell Converter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">.env ⇄ JSON ⇄ Shell</h1>
+            </div>
+            <div class="header-right">
+                <div class="mode-switch" id="from-switcher" role="group" aria-label="Input format">
+                    <button class="mode-btn" type="button" data-side="from" data-format="env" aria-pressed="true">.env</button>
+                    <button class="mode-btn" type="button" data-side="from" data-format="json" aria-pressed="false">JSON</button>
+                    <button class="mode-btn" type="button" data-side="from" data-format="shell" aria-pressed="false">Shell</button>
+                </div>
+                <button class="action-btn swap-btn" type="button" data-action="swap" data-tooltip="Swap direction" aria-label="Swap direction">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-swap"></use></svg>
+                </button>
+                <div class="mode-switch" id="to-switcher" role="group" aria-label="Output format">
+                    <button class="mode-btn" type="button" data-side="to" data-format="env" aria-pressed="false">.env</button>
+                    <button class="mode-btn" type="button" data-side="to" data-format="json" aria-pressed="true">JSON</button>
+                    <button class="mode-btn" type="button" data-side="to" data-format="shell" aria-pressed="false">Shell</button>
+                </div>
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="How conversion works" aria-label="How conversion works">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel input-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="input-title">.env Input</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Insert sample" aria-label="Insert sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="open" data-tooltip="Open file" aria-label="Open file">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-upload"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                        <input type="file" id="file-input" hidden>
+                    </div>
+                </div>
+                <div class="options-bar">
+                    <label class="option option-check" data-show-from="env shell">
+                        <input type="checkbox" id="expand-vars" checked>
+                        <span>Expand <span class="hint-code">${VAR}</span> references</span>
+                    </label>
+                    <span class="option option-note" data-show-from="json">Accepts an object or a <span class="hint-code">[{"name","value"}]</span> list</span>
+                </div>
+                <div class="panel-body">
+                    <textarea id="input" class="editor" spellcheck="false" autocomplete="off"
+                              aria-labelledby="input-title" placeholder="Paste a .env file here, or drop one…"></textarea>
+                    <div class="status-bar" id="input-status" role="status">
+                        <span class="status-message">Ready</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel output-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="output-title">JSON Output</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy output" aria-label="Copy output">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="download" data-tooltip="Download output" aria-label="Download output">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="options-bar">
+                    <div class="option" data-show-to="shell">
+                        <span class="option-label">Shell</span>
+                        <select id="dialect" hidden>
+                            <option value="posix">Bash / Zsh</option>
+                            <option value="fish">fish</option>
+                            <option value="powershell">PowerShell</option>
+                        </select>
+                        <div class="dd" data-dd data-dd-select="#dialect">
+                            <button class="dd__trigger" type="button" aria-label="Shell dialect">
+                                <span class="dd__value">Bash / Zsh</span>
+                            </button>
+                            <div class="dd__menu" role="listbox">
+                                <button class="dd__option" type="button" role="option" data-value="posix">Bash / Zsh</button>
+                                <button class="dd__option" type="button" role="option" data-value="fish">fish</button>
+                                <button class="dd__option" type="button" role="option" data-value="powershell">PowerShell</button>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="option option-check" data-show-to="json">
+                        <input type="checkbox" id="typed-values">
+                        <span>Numbers &amp; booleans as JSON types</span>
+                    </label>
+                    <label class="option option-check">
+                        <input type="checkbox" id="sort-keys">
+                        <span>Sort keys</span>
+                    </label>
+                </div>
+                <div class="panel-body">
+                    <textarea id="output" class="editor output" readonly spellcheck="false"
+                              aria-labelledby="output-title" placeholder="JSON output will appear here…"></textarea>
+                    <div class="status-bar" id="output-status" role="status">
+                        <span class="status-message">Ready</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How conversion works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Reading .env</strong></p>
+                        <ul class="tip-list">
+                            <li>One <span class="hint-code">KEY=value</span> per line. Blank lines, <span class="hint-code">#</span> comments, and a leading <span class="hint-code">export</span> are ignored.</li>
+                            <li>Unquoted values are trimmed and end at <span class="hint-code"> #</span>. Single-quoted values are literal. Double-quoted values understand <span class="hint-code">\n</span>, <span class="hint-code">\t</span>, <span class="hint-code">\"</span>, <span class="hint-code">\\</span>, and <span class="hint-code">\$</span>. Both kinds of quote may span several lines.</li>
+                            <li>A repeated key keeps its last value, as dotenv does.</li>
+                        </ul>
+                        <p><strong>Reading shell</strong></p>
+                        <ul class="tip-list">
+                            <li>Understands <span class="hint-code">export A=1 B=2</span>, bare <span class="hint-code">A=1</span>, <span class="hint-code">declare -x</span>, fish <span class="hint-code">set -gx A 1</span>, and PowerShell <span class="hint-code">$env:A = '1'</span>, with shell quoting rules: single quotes are literal, double quotes only escape <span class="hint-code">\" \\ \$ \`</span>.</li>
+                            <li>Other commands, such as <span class="hint-code">echo</span> or <span class="hint-code">FOO=1 npm start</span>, are skipped and counted. <span class="hint-code">$(…)</span> is kept as text, never run.</li>
+                        </ul>
+                        <p><strong>Variable references</strong></p>
+                        <ul class="tip-list">
+                            <li>With <strong>Expand</strong> on, <span class="hint-code">$VAR</span>, <span class="hint-code">${VAR}</span>, and <span class="hint-code">${VAR:-default}</span> resolve against keys defined earlier in the input, the way Docker Compose, Vite, Next.js, and <span class="hint-code">source</span> read them. Single-quoted values are never expanded. Nothing is read from your real environment.</li>
+                            <li>With it off, references are kept as literal text.</li>
+                        </ul>
+                        <p><strong>Writing</strong></p>
+                        <ul class="tip-list">
+                            <li>Values are quoted only when they need it, so the output always reads back to exactly the same value. Shell output uses single quotes, so nothing in a value is expanded when you paste or <span class="hint-code">source</span> it.</li>
+                            <li>JSON input accepts an object of <span class="hint-code">KEY: value</span> pairs or a Kubernetes/ECS-style <span class="hint-code">[{"name": …, "value": …}]</span> list. Numbers and booleans become text, <span class="hint-code">null</span> becomes empty, and nested objects are written as JSON text.</li>
+                            <li>Keys that the target cannot hold, such as <span class="hint-code">my-key</span> in Bash, are skipped and counted rather than written as a broken line. In PowerShell, setting a variable to an empty string removes it.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

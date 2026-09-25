@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Generator</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Hash Generator</h1>
+            </div>
+            <div class="header-right">
+                <div class="mode-switcher" role="tablist" aria-label="Mode">
+                    <button class="mode-btn active" type="button" role="tab" aria-selected="true" data-mode="digest">Digest</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="hmac">HMAC</button>
+                </div>
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="About these hashes" aria-label="About these hashes">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel input-panel" id="inputPanel">
+                <div class="panel-header">
+                    <div class="segment" id="sourceSwitch" role="group" aria-label="Input source">
+                        <button class="segment-btn active" type="button" data-source="text">Text</button>
+                        <button class="segment-btn" type="button" data-source="file">File</button>
+                    </div>
+                    <div class="action-group" data-for-source="text">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Load sample" aria-label="Load sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                    <div class="action-group" data-for-source="file" hidden>
+                        <button class="action-btn" type="button" data-action="open" data-tooltip="Choose file" aria-label="Choose file">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-upload"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear-file" data-tooltip="Remove file" aria-label="Remove file">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" hidden>
+                </div>
+                <div class="panel-body">
+                    <div class="key-row" id="keyRow" hidden>
+                        <label class="field-label" for="keyInput">Secret key</label>
+                        <div class="key-controls">
+                            <input type="text" id="keyInput" spellcheck="false" autocomplete="off" placeholder="HMAC secret">
+                            <div class="segment" id="keyEncoding" role="group" aria-label="Key encoding">
+                                <button class="segment-btn active" type="button" data-value="utf8">UTF-8</button>
+                                <button class="segment-btn" type="button" data-value="hex">Hex</button>
+                                <button class="segment-btn" type="button" data-value="base64">Base64</button>
+                            </div>
+                        </div>
+                        <p class="field-error" id="keyError" hidden></p>
+                    </div>
+
+                    <textarea id="textInput" class="editor" data-for-source="text" spellcheck="false" autocomplete="off" aria-label="Text to hash"
+                              placeholder="Type or paste text to hash. Drop a file here to hash its bytes instead."></textarea>
+
+                    <button class="dropzone" type="button" id="dropzone" data-for-source="file" hidden>
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-upload"></use></svg>
+                        <span class="dropzone-title" id="fileName">Drop a file here or click to choose</span>
+                        <span class="dropzone-meta" id="fileMeta">Any type. The file never leaves your browser.</span>
+                    </button>
+
+                    <div class="status-bar">
+                        <span class="status-text" id="inputStatus">Ready</span>
+                        <span class="byte-count" id="byteCount">0 bytes</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel output-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="outputTitle">Digests</h2>
+                    <div class="action-group">
+                        <div class="segment" id="formatSwitch" role="group" aria-label="Output format">
+                            <button class="segment-btn active" type="button" data-value="hex">hex</button>
+                            <button class="segment-btn" type="button" data-value="HEX">HEX</button>
+                            <button class="segment-btn" type="button" data-value="base64">Base64</button>
+                        </div>
+                        <button class="action-btn" type="button" data-action="copy-all" data-tooltip="Copy all" aria-label="Copy all">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body output-body">
+                    <p class="notice error" id="outputError" hidden></p>
+                    <ul class="digest-list" id="digestList"></ul>
+
+                    <div class="compare">
+                        <label class="field-label" for="compareInput">Compare with an expected hash</label>
+                        <input type="text" id="compareInput" spellcheck="false" autocomplete="off" placeholder="Paste a checksum, hex or Base64 — sha256sum output works too">
+                        <p class="compare-result" id="compareResult" aria-live="polite"></p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">About these hashes</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Everything runs locally.</strong> Text and files are hashed in this tab and never uploaded.</p>
+                    </div>
+                    <ul class="tip-list">
+                        <li><strong>Text is hashed as UTF-8.</strong> Line breaks are <span class="hint-code">\n</span>, so a file saved with Windows line endings hashes differently — use File mode to hash the exact bytes.</li>
+                        <li><strong>Watch the trailing newline.</strong> <span class="hint-code">echo "abc" | sha256sum</span> hashes <span class="hint-code">abc\n</span>. Use <span class="hint-code">printf %s "abc"</span> or <span class="hint-code">echo -n</span> to match this tool.</li>
+                        <li><strong>MD5 and SHA-1 are broken for security.</strong> Collisions are practical. They are still fine as checksums against accidental corruption, not against tampering.</li>
+                        <li><strong>HMAC</strong> (RFC 2104) keys the hash with a secret, which is how webhook signatures such as GitHub's <span class="hint-code">X-Hub-Signature-256</span> are made. Keys longer than the block size are hashed first; an empty key is allowed.</li>
+                        <li><strong>Compare</strong> accepts hex in either case or Base64, and takes the first word, so a pasted <span class="hint-code">sha256sum</span> line works as-is.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
