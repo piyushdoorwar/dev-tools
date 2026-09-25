@@ -19,6 +19,7 @@
                 <div class="mode-switcher">
                     <button class="mode-btn active" data-mode="json-xml">JSON → XML</button>
                     <button class="mode-btn" data-mode="xml-json">XML → JSON</button>
+                    <button class="mode-btn" data-mode="xml-format">XML Formatter</button>
                 </div>
             </div>
         </header>
@@ -113,6 +114,38 @@
                             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
                         </button>
                     </div>
+                </div>
+                <!-- XML Formatter settings. Only shown in #xml-format; the
+                     converters keep their fixed 2-space output. -->
+                <div class="options-bar format-only" id="format-options">
+                    <div class="option">
+                        <span class="option-label">Indent</span>
+                        <select id="xml-indent" hidden>
+                            <option value="2">2 spaces</option>
+                            <option value="4">4 spaces</option>
+                            <option value="tab">Tab</option>
+                            <option value="minify">Minified</option>
+                        </select>
+                        <div class="dd" data-dd data-dd-select="#xml-indent">
+                            <button class="dd__trigger" type="button" aria-label="Indent">
+                                <span class="dd__value">2 spaces</span>
+                            </button>
+                            <div class="dd__menu" role="listbox">
+                                <button class="dd__option" type="button" role="option" data-value="2">2 spaces</button>
+                                <button class="dd__option" type="button" role="option" data-value="4">4 spaces</button>
+                                <button class="dd__option" type="button" role="option" data-value="tab">Tab</button>
+                                <button class="dd__option" type="button" role="option" data-value="minify">Minified</button>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="option option-check">
+                        <input type="checkbox" id="xml-self-close" checked>
+                        <span>Self-close empty elements</span>
+                    </label>
+                    <label class="option option-check">
+                        <input type="checkbox" id="xml-sort-attrs">
+                        <span>Sort attributes</span>
+                    </label>
                 </div>
                 <div class="panel-body">
                     <div class="code-editor-wrapper">

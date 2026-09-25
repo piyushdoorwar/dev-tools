@@ -2125,9 +2125,226 @@ textarea::selection {
   }
 }
 
+/* --- Strength analyser --------------------------------------------------- */
+
+/* Input and score across the top, crack times and weaknesses side by side:
+   the shared auto-fit grid would squeeze all three into one row. */
+#mode-analyse .card-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#mode-analyse .card.wide {
+  grid-column: 1 / -1;
+}
+
+.analyse-input-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.crypto-main .analyse-input-row input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+}
+
+#analyseToggleBtn .eye-closed,
+#analyseToggleBtn[aria-pressed='true'] .eye-open {
+  display: none;
+}
+
+#analyseToggleBtn[aria-pressed='true'] .eye-closed {
+  display: block;
+}
+
+.score-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  --score-color: var(--text-muted);
+}
+
+.score-panel[data-score='0'] { --score-color: #ff4b5c; }
+.score-panel[data-score='1'] { --score-color: var(--accent-orange); }
+.score-panel[data-score='2'] { --score-color: var(--accent-yellow); }
+.score-panel[data-score='3'] { --score-color: var(--accent-blue); }
+.score-panel[data-score='4'] { --score-color: var(--accent-green); }
+
+.score-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.score-label {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--score-color);
+}
+
+.score-value {
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-size: var(--text-md);
+}
+
+.score-meter {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-1);
+}
+
+.score-meter span {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  transition: background 0.2s ease;
+}
+
+/* Score n lights n + 1 segments, so even a 0 shows one red bar. */
+.score-panel[data-score='0'] .score-meter span:nth-child(-n + 1),
+.score-panel[data-score='1'] .score-meter span:nth-child(-n + 2),
+.score-panel[data-score='2'] .score-meter span:nth-child(-n + 3),
+.score-panel[data-score='3'] .score-meter span:nth-child(-n + 4),
+.score-panel[data-score='4'] .score-meter span {
+  background: var(--score-color);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stat-label,
+.crack-detail {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.stat-label {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  color: var(--text);
+}
+
+.stat-hint {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.crack-list,
+.weakness-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.crack-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.crack-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.crack-label {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.crack-time {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  color: var(--accent-yellow-light);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.weakness {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: 12px;
+  background: rgba(255, 75, 92, 0.06);
+  border: 1px solid rgba(255, 75, 92, 0.22);
+}
+
+.weakness[data-type='length'],
+.weakness[data-type='case'] {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.weakness-tag {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: #ff7b86;
+}
+
+.weakness[data-type='length'] .weakness-tag,
+.weakness[data-type='case'] .weakness-tag {
+  color: var(--text-muted);
+}
+
+.weakness-text {
+  font-size: var(--text-md);
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.weakness-empty {
+  font-size: var(--text-md);
+  color: var(--text-muted);
+}
+
+.weakness-none {
+  color: var(--accent-green);
+}
+
 @media (max-width: 900px) {
   .card.wide {
     grid-column: span 1;
+  }
+
+  #mode-analyse .card-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .output-head {

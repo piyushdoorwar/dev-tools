@@ -110,3 +110,160 @@ test('copy, paste, clear, and download act on the right pane', async ({ page }) 
   await page.locator('[data-action="clear-left"]').click();
   await expect(page.locator('#left-editor')).toHaveValue('');
 });
+
+/* ---------- XML Formatter mode (#xml-format) ---------- */
+
+const MESSY = '<root><a x="1"><b>t</b></a><c/></root>';
+
+async function openFormatter(page) {
+  await openTool(page, 'json-xml-converter');
+  await page.goto('/tools/json-xml-converter/#xml-format');
+  await expect(page.locator('#right-title')).toHaveText('Formatted XML');
+}
+
+async function pickIndent(page, value) {
+  await page.locator('#format-options .dd__trigger').click();
+  await page.locator(`#format-options .dd__option[data-value="${value}"]`).click();
+}
+
+test('#xml-format deep-links to the formatter, seeded with a formatted sample', async ({ page }) => {
+  await openFormatter(page);
+
+  await expect(page.locator('.mode-btn[data-mode="xml-format"]')).toHaveClass(/active/);
+  await expect(page).toHaveTitle('XML Formatter');
+  await expect(page.locator('#format-options')).toBeVisible();
+  await expect(page.locator('[data-action="sort-keys"]')).toBeHidden();
+  await expect(page.locator('#left-status')).toContainText('Valid XML');
+  await expect(page.locator('#right-editor')).toHaveValue(/\n  <book id="bk101" lang="en">\n    <dc:title>/);
+});
+
+test('switching modes writes the formatter hash and the options only show there', async ({ page }) => {
+  await openTool(page, 'json-xml-converter');
+  await expect(page.locator('#format-options')).toBeHidden();
+
+  await page.locator('.mode-btn[data-mode="xml-format"]').click();
+  await expect(page).toHaveURL(/#xml-format$/);
+  await expect(page.locator('#format-options')).toBeVisible();
+
+  await page.locator('.mode-btn[data-mode="xml-json"]').click();
+  await expect(page).toHaveURL(/#xml-json$/);
+  await expect(page.locator('#format-options')).toBeHidden();
+});
+
+test('indent can be 2 spaces, 4 spaces, or a tab, and output can be minified', async ({ page }) => {
+  await openFormatter(page);
+  await typeInto(page, '#left-editor', MESSY);
+
+  await expect(page.locator('#right-editor')).toHaveValue('<root>\n  <a x="1">\n    <b>t</b>\n  </a>\n  <c/>\n</root>');
+  await expect(page.locator('#right-status')).toContainText('2-space indent');
+
+  await pickIndent(page, '4');
+  await expect(page.locator('#right-editor')).toHaveValue('<root>\n    <a x="1">\n        <b>t</b>\n    </a>\n    <c/>\n</root>');
+
+  await pickIndent(page, 'tab');
+  await expect(page.locator('#right-editor')).toHaveValue('<root>\n\t<a x="1">\n\t\t<b>t</b>\n\t</a>\n\t<c/>\n</root>');
+
+  await typeInto(page, '#left-editor', '<?xml version="1.0"?>\n<root>\n  <a x="1">\n    <b>t</b>\n  </a>\n  <c/>\n</root>');
+  await pickIndent(page, 'minify');
+  await expect(page.locator('#right-editor')).toHaveValue('<?xml version="1.0"?><root><a x="1"><b>t</b></a><c/></root>');
+  await expect(page.locator('#right-status')).toContainText('Minified');
+});
+
+test('mixed content keeps its inline spacing; only whitespace between elements collapses', async ({ page }) => {
+  await openFormatter(page);
+
+  const result = await page.evaluate(() => ({
+    inline: formatXmlString('<doc>\n\n      <p>Hello <b>world</b>!</p>\n<p>  two  spaces  <i> in </i></p></doc>'),
+    minified: formatXmlString('<doc>\n  <p>Hello <b>world</b> !</p>\n</doc>', { minify: true }),
+    leafSpace: formatXmlString('<a>\n  <pad>   </pad>\n</a>'),
+    preserve: formatXmlString('<a><pre xml:space="preserve">\n  <x/>\n</pre></a>'),
+  }));
+
+  expect(result.inline).toBe('<doc>\n  <p>Hello <b>world</b>!</p>\n  <p>  two  spaces  <i> in </i></p>\n</doc>');
+  expect(result.minified).toBe('<doc><p>Hello <b>world</b> !</p></doc>');
+  expect(result.leafSpace).toBe('<a>\n  <pad>   </pad>\n</a>');
+  expect(result.preserve).toBe('<a>\n  <pre xml:space="preserve">\n  <x/>\n</pre>\n</a>');
+});
+
+test('declaration, doctype, comments, CDATA, PIs, namespaces and attribute order survive', async ({ page }) => {
+  await openFormatter(page);
+
+  const source = [
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
+    '<!DOCTYPE note [<!ELEMENT note ANY>]>',
+    '<!-- top comment -->',
+    '<?xml-stylesheet href="s.xsl" type="text/xsl"?>',
+    '<n:note z="1" xmlns:n="urn:n" a="2" xmlns="urn:d"><!-- inner --><n:body><![CDATA[a < b && c]]></n:body><?render fast?></n:note>',
+  ].join('');
+  await typeInto(page, '#left-editor', source);
+
+  await expect(page.locator('#right-editor')).toHaveValue([
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
+    '<!DOCTYPE note [<!ELEMENT note ANY>]>',
+    '<!-- top comment -->',
+    '<?xml-stylesheet href="s.xsl" type="text/xsl"?>',
+    // Source attribute order, even though the DOM lists xmlns first.
+    '<n:note z="1" xmlns:n="urn:n" a="2" xmlns="urn:d">',
+    '  <!-- inner -->',
+    '  <n:body><![CDATA[a < b && c]]></n:body>',
+    '  <?render fast?>',
+    '</n:note>',
+  ].join('\n'));
+});
+
+test('sort attributes and self-closing are toggles', async ({ page }) => {
+  await openFormatter(page);
+  await typeInto(page, '#left-editor', '<r xmlns:q="urn:q" z="1" b="2" a="3"><e></e><f/></r>');
+  await expect(page.locator('#right-editor')).toHaveValue('<r xmlns:q="urn:q" z="1" b="2" a="3">\n  <e/>\n  <f/>\n</r>');
+
+  await page.locator('#xml-sort-attrs').check();
+  await expect(page.locator('#right-editor')).toHaveValue(/^<r xmlns:q="urn:q" a="3" b="2" z="1">/);
+
+  await page.locator('#xml-self-close').uncheck();
+  await expect(page.locator('#right-editor')).toHaveValue(/\n  <e><\/e>\n  <f><\/f>\n/);
+});
+
+test('text and attribute values are re-escaped correctly', async ({ page }) => {
+  await openFormatter(page);
+
+  const out = await page.evaluate(() => formatXmlString(
+    '<a t="x &amp; &lt;y&gt; &quot;q&quot; \'s\' &#10;end">1 &lt; 2 &amp;&amp; 3 &gt; 2 "ok" \'fine\'</a>'));
+  expect(out).toBe('<a t="x &amp; &lt;y> &quot;q&quot; \'s\' &#10;end">1 &lt; 2 &amp;&amp; 3 &gt; 2 "ok" \'fine\'</a>');
+
+  // Round-trips to the same DOM values.
+  const same = await page.evaluate((xml) => {
+    const doc = new DOMParser().parseFromString(xml, 'text/xml');
+    return [doc.documentElement.getAttribute('t'), doc.documentElement.textContent];
+  }, out);
+  expect(same).toEqual(['x & <y> "q" \'s\' \nend', '1 < 2 && 3 > 2 "ok" \'fine\'']);
+});
+
+test('invalid XML reports line and column in the status bar', async ({ page }) => {
+  await openFormatter(page);
+
+  await typeInto(page, '#left-editor', '<a>\n  <b>text</c>\n</a>');
+  const status = page.locator('#left-status .status-text');
+  await expect(status).toHaveClass(/error/);
+  await expect(status).toContainText('Line 2, column');
+  await expect(status).toContainText('mismatch');
+  await expect(page.locator('#right-status')).toContainText('Waiting for valid XML');
+
+  const error = await page.evaluate(() => {
+    try { parseXmlDocument('<a x="1" x="2"/>'); } catch (e) { return { message: e.message, line: e.line, column: e.column }; }
+    return null;
+  });
+  expect(error.line).toBe(1);
+  expect(error.column).toBeGreaterThan(0);
+  expect(error.message).toMatch(/^Line 1, column \d+: .*redefined/);
+});
+
+test('formatter validate and download treat both panes as XML', async ({ page }) => {
+  await openFormatter(page);
+
+  await page.locator('[data-action="validate-right"]').click();
+  await expect(page.locator('#right-status')).toContainText('Valid XML');
+
+  const download = await captureDownload(page, () => page.locator('[data-action="download-right"]').click());
+  expect(download.suggestedFilename()).toBe('formatted.xml');
+  expect(await downloadText(download)).toContain('<catalog');
+});

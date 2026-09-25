@@ -16,15 +16,21 @@
                 <h1 class="app-title">JSON ⇄ YAML ⇄ TOML</h1>
             </div>
             <div class="header-right">
+                <!-- Format keeps the input's own format on both sides
+                     (hash #yaml-yaml, #json-json, #toml-toml). -->
+                <div class="mode-switcher" id="task-switcher" role="group" aria-label="Task">
+                    <button class="mode-btn" type="button" data-task="convert" aria-pressed="true">Convert</button>
+                    <button class="mode-btn" type="button" data-task="format" aria-pressed="false">Format</button>
+                </div>
                 <div class="mode-switcher" id="from-switcher" role="group" aria-label="Input format">
                     <button class="mode-btn" type="button" data-side="from" data-format="json" aria-pressed="true">JSON</button>
                     <button class="mode-btn" type="button" data-side="from" data-format="yaml" aria-pressed="false">YAML</button>
                     <button class="mode-btn" type="button" data-side="from" data-format="toml" aria-pressed="false">TOML</button>
                 </div>
-                <button class="action-btn swap-btn" type="button" data-action="swap" aria-label="Swap direction" data-tooltip="Swap direction">
+                <button class="action-btn swap-btn convert-only" type="button" data-action="swap" aria-label="Swap direction" data-tooltip="Swap direction">
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-swap"></use></svg>
                 </button>
-                <div class="mode-switcher" id="to-switcher" role="group" aria-label="Output format">
+                <div class="mode-switcher convert-only" id="to-switcher" role="group" aria-label="Output format">
                     <button class="mode-btn" type="button" data-side="to" data-format="json" aria-pressed="false">JSON</button>
                     <button class="mode-btn" type="button" data-side="to" data-format="yaml" aria-pressed="true">YAML</button>
                     <button class="mode-btn" type="button" data-side="to" data-format="toml" aria-pressed="false">TOML</button>
@@ -95,6 +101,26 @@
                             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
                         </button>
                     </div>
+                </div>
+                <div class="options-bar format-only" id="format-options">
+                    <div class="option indent-option">
+                        <span class="option-label">Indent</span>
+                        <select id="format-indent" hidden>
+                            <option value="2">2 spaces</option>
+                            <option value="4">4 spaces</option>
+                        </select>
+                        <div class="dd" data-dd data-dd-select="#format-indent">
+                            <button class="dd__trigger" type="button" aria-label="Indent">
+                                <span class="dd__value">2 spaces</span>
+                            </button>
+                            <div class="dd__menu" role="listbox">
+                                <button class="dd__option" type="button" role="option" data-value="2">2 spaces</button>
+                                <button class="dd__option" type="button" role="option" data-value="4">4 spaces</button>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="format-note" id="format-note">Key order is kept. Formatting re-serializes through a parser, so comments are not kept.</p>
+                    <p class="format-warning" id="comment-warning" role="status" hidden>Your input has # comments — they will be dropped from the formatted output.</p>
                 </div>
                 <div class="panel-body">
                     <div class="code-editor-wrapper">

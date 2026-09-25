@@ -9,8 +9,13 @@ const leftStatus = document.getElementById('left-status');
 const rightStatus = document.getElementById('right-status');
 const modeBtns = document.querySelectorAll('.mode-btn');
 const appContainer = document.querySelector('.app-container');
+const xmlIndentSelect = document.getElementById('xml-indent');
+const xmlSelfCloseInput = document.getElementById('xml-self-close');
+const xmlSortAttrsInput = document.getElementById('xml-sort-attrs');
 
-// Current mode
+// Current mode. The hash mirrors it (#json-xml, #xml-json, #xml-format) so
+// each mode is linkable; anything else falls back to JSON → XML.
+const MODES = ['json-xml', 'xml-json', 'xml-format'];
 let currentMode = 'json-xml';
 
 // History for undo functionality
@@ -21,8 +26,8 @@ const MAX_HISTORY = 50;
 // Initialize
 function init() {
     // Check URL hash for mode
-    const hash = window.location.hash.substring(1);
-    if (hash === 'xml-json' || hash === 'json-xml') {
+    const hash = DevToolsMain.readHashState();
+    if (MODES.includes(hash)) {
         currentMode = hash;
     }
     
@@ -39,22 +44,30 @@ function setupEventListeners() {
             const mode = btn.dataset.mode;
             if (mode === currentMode) return;
             currentMode = mode;
-            window.location.hash = mode;
+            // replaceState (no hashchange event) plus a message so the
+            // dashboard shell mirrors the mode into its address bar.
+            DevToolsMain.writeHashState(mode);
             // Apply synchronously so the editors are cleared before the user
-            // can type. The hashchange handler then sees hash === currentMode
-            // and does nothing; without that guard it cleared them a second
-            // time, asynchronously, wiping anything typed in between.
+            // can type. A later hashchange sees hash === currentMode and does
+            // nothing; without that guard it cleared them a second time,
+            // asynchronously, wiping anything typed in between.
             updateMode();
         });
     });
     
-    // Hash change
-    window.addEventListener('hashchange', () => {
-        const hash = window.location.hash.substring(1);
-        if ((hash === 'xml-json' || hash === 'json-xml') && hash !== currentMode) {
+    // Hash change (deep links, and the shell re-pointing the frame)
+    DevToolsMain.onHashState((hash) => {
+        if (MODES.includes(hash) && hash !== currentMode) {
             currentMode = hash;
             updateMode();
         }
+    });
+
+    // Formatter options reformat live.
+    [xmlIndentSelect, xmlSelfCloseInput, xmlSortAttrsInput].forEach(control => {
+        control.addEventListener('change', () => {
+            if (currentMode === 'xml-format') handleConvert();
+        });
     });
     
     // Action buttons
@@ -110,9 +123,12 @@ function updateMode() {
     if (currentMode === 'json-xml') {
         favicon.href = 'favicon-json-xml.svg';
         document.title = 'JSON → XML Converter';
-    } else {
+    } else if (currentMode === 'xml-json') {
         favicon.href = 'favicon-xml-json.svg';
         document.title = 'XML → JSON Converter';
+    } else {
+        favicon.href = 'favicon-xml-json.svg';
+        document.title = 'XML Formatter';
     }
     
     if (currentMode === 'json-xml') {
@@ -120,11 +136,16 @@ function updateMode() {
         rightTitle.textContent = 'XML Output';
         leftEditor.placeholder = 'Enter your JSON here...';
         rightEditor.placeholder = 'XML output will appear here...';
-    } else {
+    } else if (currentMode === 'xml-json') {
         leftTitle.textContent = 'XML Input';
         rightTitle.textContent = 'JSON Output';
         leftEditor.placeholder = 'Enter your XML here...';
         rightEditor.placeholder = 'JSON output will appear here...';
+    } else {
+        leftTitle.textContent = 'XML Input';
+        rightTitle.textContent = 'Formatted XML';
+        leftEditor.placeholder = 'Paste XML to pretty-print, minify, or validate...';
+        rightEditor.placeholder = 'Formatted XML will appear here...';
     }
     
     // Clear editors when switching
@@ -135,6 +156,17 @@ function updateMode() {
     updateCharCounts();
     updateLineNumbers('left');
     updateLineNumbers('right');
+
+    // The formatter explains itself: arrive on a messy document that shows
+    // off what is kept (comments, CDATA, PIs, mixed content, namespaces).
+    if (currentMode === 'xml-format') loadSample();
+}
+
+// Which syntax a pane holds in the current mode.
+function paneFormat(side) {
+    if (currentMode === 'xml-format') return 'xml';
+    if (currentMode === 'json-xml') return side === 'left' ? 'json' : 'xml';
+    return side === 'left' ? 'xml' : 'json';
 }
 
 // Load Sample Data
@@ -155,6 +187,8 @@ function loadSample() {
     "isActive": true
   }
 }`;
+    } else if (currentMode === 'xml-format') {
+        leftEditor.value = XML_FORMAT_SAMPLE;
     } else {
         // Sample XML
         leftEditor.value = `<?xml version="1.0" encoding="UTF-8"?>
@@ -174,12 +208,13 @@ function loadSample() {
 </library>`;
     }
     
-    updateStatus('left', '✓ Sample loaded', true);
     updateCharCount('left');
     updateLineNumbers('left');
     saveToHistory('left');
+    // The conversion's own status ("✓ Valid XML") replaces any "sample
+    // loaded" note. No timed reset to "Ready": it would wipe an error the
+    // user produced by editing within the next two seconds.
     handleConvert(); // Live conversion after loading sample
-    setTimeout(() => updateStatus('left', 'Ready', false), 2000);
 }
 
 // Handle Actions
@@ -260,22 +295,12 @@ function validateEditor(side) {
     }
     
     try {
-        if (currentMode === 'json-xml') {
-            if (side === 'left') {
-                JSON.parse(content);
-                updateStatus(side, '✓ Valid JSON', true);
-            } else {
-                validateXML(content);
-                updateStatus(side, '✓ Valid XML', true);
-            }
+        if (paneFormat(side) === 'json') {
+            JSON.parse(content);
+            updateStatus(side, '✓ Valid JSON', true);
         } else {
-            if (side === 'left') {
-                validateXML(content);
-                updateStatus(side, '✓ Valid XML', true);
-            } else {
-                JSON.parse(content);
-                updateStatus(side, '✓ Valid JSON', true);
-            }
+            validateXML(content);
+            updateStatus(side, '✓ Valid XML', true);
         }
     } catch (error) {
         updateStatus(side, '✗ ' + error.message, false, true);
@@ -293,25 +318,12 @@ function beautifyEditor(side) {
     }
     
     try {
-        if (currentMode === 'json-xml') {
-            if (side === 'left') {
-                const obj = JSON.parse(content);
-                editor.value = JSON.stringify(obj, null, 2);
-                updateStatus(side, 'Beautified', true);
-            } else {
-                editor.value = formatXML(content);
-                updateStatus(side, 'Beautified', true);
-            }
+        if (paneFormat(side) === 'json') {
+            editor.value = JSON.stringify(JSON.parse(content), null, 2);
         } else {
-            if (side === 'left') {
-                editor.value = formatXML(content);
-                updateStatus(side, 'Beautified', true);
-            } else {
-                const obj = JSON.parse(content);
-                editor.value = JSON.stringify(obj, null, 2);
-                updateStatus(side, 'Beautified', true);
-            }
+            editor.value = formatXML(content);
         }
+        updateStatus(side, 'Beautified', true);
         updateCharCount(side);
         updateLineNumbers(side);
     } catch (error) {
@@ -423,16 +435,24 @@ function handleConvert() {
             rightEditor.value = xml;
             updateStatus('left', '✓ Valid JSON', true);
             updateStatus('right', '✓ Converted to XML', true);
-        } else {
+        } else if (currentMode === 'xml-json') {
             const obj = xmlToJSON(input);
             rightEditor.value = JSON.stringify(obj, null, 2);
             updateStatus('left', '✓ Valid XML', true);
             updateStatus('right', '✓ Converted to JSON', true);
+        } else {
+            const options = xmlFormatOptions();
+            rightEditor.value = formatXmlString(input, options);
+            updateStatus('left', '✓ Valid XML', true);
+            updateStatus('right', options.minify
+                ? `✓ Minified (${input.length} → ${rightEditor.value.length} characters)`
+                : `✓ Formatted · ${xmlIndentSelect.value === 'tab' ? 'tab' : xmlIndentSelect.value + '-space'} indent`, true);
         }
         updateCharCount('right');
         updateLineNumbers('right');
     } catch (error) {
         updateStatus('left', '✗ ' + error.message, false, true);
+        if (currentMode === 'xml-format') updateStatus('right', 'Waiting for valid XML', false);
     }
 }
 
@@ -500,13 +520,11 @@ function jsonToXML(obj, rootName = 'root') {
 
 // XML to JSON Converter
 function xmlToJSON(xmlString) {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-    
-    // Check for parsing errors
-    const parserError = xmlDoc.querySelector('parsererror');
-    if (parserError) {
-        throw new Error('Invalid XML: ' + parserError.textContent);
+    let xmlDoc;
+    try {
+        xmlDoc = parseXmlDocument(xmlString);
+    } catch (error) {
+        throw new Error('Invalid XML: ' + error.message);
     }
     
     function parseNode(node) {
@@ -566,50 +584,255 @@ function xmlToJSON(xmlString) {
 
 // Validate XML
 function validateXML(xmlString) {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
-    const parserError = xmlDoc.querySelector('parsererror');
-    if (parserError) {
-        throw new Error(parserError.textContent);
-    }
+    parseXmlDocument(xmlString);
     return true;
 }
 
-// Format XML
+// Beautify for the converter panes: the DOM-based formatter at 2 spaces, so
+// mixed content and comments survive a beautify just as they do in the
+// XML Formatter mode.
 function formatXML(xml) {
-    const PADDING = '  ';
-    const reg = /(>)(<)(\/*)/g;
-    let formatted = '';
-    let pad = 0;
-    
-    // Normalize existing formatting so beautify is idempotent
-    xml = xml
-        .trim()
-        .replace(/\r\n/g, '\n')
-        .replace(/>\s+</g, '><')
-        .replace(reg, '$1\n$2$3');
+    return formatXmlString(xml, { indent: '  ' });
+}
 
-    xml.split('\n').forEach(node => {
-        node = node.trim();
-        if (!node) return;
-        let indent = 0;
-        if (node.match(/.+<\/\w[^>]*>$/)) {
-            indent = 0;
-        } else if (node.match(/^<\/\w/)) {
-            if (pad !== 0) {
-                pad -= 1;
+/* ---------- XML Formatter ---------- */
+
+const XML_FORMAT_SAMPLE = `<?xml version="1.0" encoding="UTF-8"?>
+<!-- Catalog export: formatting keeps comments, CDATA and PIs -->
+<?xml-stylesheet type="text/xsl" href="catalog.xsl"?>
+<catalog xmlns="urn:example:catalog" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2">
+<book id="bk101" lang="en"><dc:title>XML Developer's Guide</dc:title>
+      <price currency="USD">44.95</price><tags/>
+  <description>An <em>in-depth</em> look at creating applications with <b>XML</b>.</description>
+<script><![CDATA[if (a < b && c > d) { run(); }]]></script>
+</book>
+    <book id="bk102"><dc:title>Midnight Rain</dc:title><price currency="GBP">5.95</price></book>
+</catalog>`;
+
+function xmlFormatOptions() {
+    const indent = xmlIndentSelect.value;
+    return {
+        indent: indent === 'tab' ? '\t' : ' '.repeat(Number(indent) || 2),
+        minify: indent === 'minify',
+        selfClose: xmlSelfCloseInput.checked,
+        sortAttributes: xmlSortAttrsInput.checked,
+    };
+}
+
+/* DOMParser reports errors as a <parsererror> element rather than throwing,
+ * and each engine words it differently:
+ *   Chromium/WebKit: "…error on line 2 at column 11: Opening and ending tag mismatch…"
+ *   Firefox:         "XML Parsing Error: mismatched tag…\nLocation: …\nLine Number 2, Column 11:"
+ * Pull out line, column and the message so the status bar reads as one line. */
+function describeXmlError(text) {
+    const raw = String(text || '');
+    let match = raw.match(/line (\d+) at column (\d+):\s*([^\n]*)/i);
+    if (match) return { line: Number(match[1]), column: Number(match[2]), reason: match[3].trim() };
+    match = raw.match(/XML Parsing Error:\s*([^\n]*)[\s\S]*?Line Number (\d+), Column (\d+)/i);
+    if (match) return { line: Number(match[2]), column: Number(match[3]), reason: match[1].trim() };
+    const reason = raw.replace(/^This page contains the following errors:/, '').split('\n')[0].trim();
+    return { line: null, column: null, reason: reason || 'Malformed XML' };
+}
+
+function parseXmlDocument(source) {
+    const doc = new DOMParser().parseFromString(source, 'text/xml');
+    const parserError = doc.getElementsByTagName('parsererror')[0];
+    if (parserError) {
+        const info = describeXmlError(parserError.textContent);
+        const where = info.line ? `Line ${info.line}, column ${info.column}: ` : '';
+        const error = new Error(where + info.reason);
+        error.line = info.line;
+        error.column = info.column;
+        throw error;
+    }
+    return doc;
+}
+
+/* The DOM loses three things the formatter must keep, so read them from the
+ * (already validated) source text:
+ *  - the XML declaration, which is not a node at all;
+ *  - the doctype's internal subset (Chromium exposes no internalSubset);
+ *  - attribute order: Chromium hoists xmlns declarations to the front of
+ *    Element.attributes, so source order has to come from the start tags.
+ * Start tags are recorded in document order, which is the order of
+ * getElementsByTagName('*'). */
+function scanXmlSource(source) {
+    const result = { declaration: '', doctype: '', attributeOrder: [] };
+    const skipTo = (marker, from) => {
+        const at = source.indexOf(marker, from);
+        return at === -1 ? source.length : at + marker.length;
+    };
+    let i = 0;
+    while (i < source.length) {
+        const lt = source.indexOf('<', i);
+        if (lt === -1) break;
+        if (source.startsWith('<!--', lt)) {
+            i = skipTo('-->', lt + 4);
+        } else if (source.startsWith('<![CDATA[', lt)) {
+            i = skipTo(']]>', lt + 9);
+        } else if (source.startsWith('<?', lt)) {
+            i = skipTo('?>', lt + 2);
+            if (lt === 0 && /^<\?xml\s/.test(source)) result.declaration = source.slice(0, i);
+        } else if (source.startsWith('<!', lt)) {
+            // DOCTYPE: '>' inside the [internal subset] or a quoted literal
+            // does not end it.
+            let depth = 0;
+            let quote = '';
+            let j = lt + 2;
+            for (; j < source.length; j++) {
+                const ch = source[j];
+                if (quote) { if (ch === quote) quote = ''; }
+                else if (ch === '"' || ch === "'") quote = ch;
+                else if (ch === '[') depth++;
+                else if (ch === ']') depth--;
+                else if (ch === '>' && depth <= 0) break;
             }
-        } else if (node.match(/^<\w([^>]*[^\/])?>.*$/)) {
-            indent = 1;
+            i = j + 1;
+            if (/^<!DOCTYPE/i.test(source.slice(lt, lt + 9))) result.doctype = source.slice(lt, i);
+        } else if (source[lt + 1] === '/') {
+            i = skipTo('>', lt);
         } else {
-            indent = 0;
+            const names = [];
+            let j = lt + 1;
+            while (j < source.length && !/[\s/>]/.test(source[j])) j++;
+            while (j < source.length) {
+                while (/\s/.test(source[j])) j++;
+                if (source[j] === '>' || source[j] === '/' || j >= source.length) break;
+                const start = j;
+                while (j < source.length && !/[\s=]/.test(source[j])) j++;
+                names.push(source.slice(start, j));
+                while (/[\s=]/.test(source[j])) j++;
+                const quote = source[j];
+                j = source.indexOf(quote, j + 1) + 1 || source.length;
+            }
+            result.attributeOrder.push(names);
+            i = skipTo('>', j);
         }
-        
-        formatted += PADDING.repeat(pad) + node + '\n';
-        pad += indent;
-    });
-    
-    return formatted.trim();
+    }
+    return result;
+}
+
+// Text: & and < must be escaped; > too, so "]]>" can never appear.
+function escapeXmlText(value) {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\r/g, '&#13;');
+}
+
+// Attributes are always written double-quoted, so " needs escaping and '
+// does not. Tab/newline/CR become character references: literal ones would
+// be normalized to spaces by the next parser (XML 1.0 §3.3.3).
+function escapeXmlAttribute(value) {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/"/g, '&quot;')
+        .replace(/\t/g, '&#9;')
+        .replace(/\n/g, '&#10;')
+        .replace(/\r/g, '&#13;');
+}
+
+const isNamespaceDeclaration = (name) => name === 'xmlns' || name.startsWith('xmlns:');
+
+/* Pretty-print or minify an XML string by re-serializing its DOM.
+ * options: { indent: '  ' | '    ' | '\t', minify, selfClose, sortAttributes }
+ *
+ * Whitespace rule: an element whose children are only elements, comments and
+ * PIs (plus whitespace-only text) is laid out one child per line and that
+ * whitespace is discarded. Anything with real text or CDATA is mixed content:
+ * it and everything inside it is written exactly as parsed, because
+ * whitespace there is data (`<p>Hello <b>world</b>!</p>`). xml:space="preserve"
+ * forces the same verbatim treatment. */
+function formatXmlString(source, options = {}) {
+    const opts = { indent: '  ', minify: false, selfClose: true, sortAttributes: false, ...options };
+    const text = String(source).replace(/^\uFEFF/, '').trim();
+    const doc = parseXmlDocument(text);
+    const scan = scanXmlSource(text);
+
+    const sourceOrder = new Map();
+    const elements = doc.getElementsByTagName('*');
+    // A mismatch means entity expansion produced elements the scanner could
+    // not see; fall back to DOM order rather than guess.
+    if (elements.length === scan.attributeOrder.length) {
+        for (let k = 0; k < elements.length; k++) sourceOrder.set(elements[k], scan.attributeOrder[k]);
+    }
+
+    const newline = opts.minify ? '' : '\n';
+    const unit = opts.minify ? '' : opts.indent;
+
+    const attributesOf = (el) => {
+        const attrs = Array.from(el.attributes);
+        const order = sourceOrder.get(el);
+        if (order) {
+            const rank = (name) => { const at = order.indexOf(name); return at === -1 ? order.length : at; };
+            attrs.sort((a, b) => rank(a.name) - rank(b.name));
+        }
+        if (opts.sortAttributes) {
+            // Namespace declarations stay first (in source order) so a reader
+            // sees prefixes bound before they are used.
+            const decls = attrs.filter(a => isNamespaceDeclaration(a.name));
+            const rest = attrs.filter(a => !isNamespaceDeclaration(a.name))
+                .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+            return decls.concat(rest);
+        }
+        return attrs;
+    };
+
+    const serialize = (node, depth, verbatim) => {
+        switch (node.nodeType) {
+            case Node.TEXT_NODE:
+                return escapeXmlText(node.nodeValue);
+            case Node.CDATA_SECTION_NODE:
+                return `<![CDATA[${node.nodeValue}]]>`;
+            case Node.COMMENT_NODE:
+                return `<!--${node.nodeValue}-->`;
+            case Node.PROCESSING_INSTRUCTION_NODE:
+                return `<?${node.target}${node.data ? ' ' + node.data : ''}?>`;
+            case Node.ELEMENT_NODE:
+                break;
+            default:
+                return '';
+        }
+
+        const name = node.tagName;
+        const open = `<${name}${attributesOf(node).map(a => ` ${a.name}="${escapeXmlAttribute(a.value)}"`).join('')}`;
+        const close = `</${name}>`;
+        const children = Array.from(node.childNodes);
+        if (children.length === 0) return opts.selfClose ? `${open}/>` : `${open}>${close}`;
+
+        const isMixed = children.some(child =>
+            child.nodeType === Node.CDATA_SECTION_NODE
+            || (child.nodeType === Node.TEXT_NODE && /\S/.test(child.nodeValue)));
+        // `<a>  </a>`: whitespace that is the element's only content is its
+        // value, not layout between elements.
+        const onlyText = children.every(child => child.nodeType === Node.TEXT_NODE);
+        if (verbatim || isMixed || onlyText || node.getAttribute('xml:space') === 'preserve') {
+            return `${open}>${children.map(child => serialize(child, 0, true)).join('')}${close}`;
+        }
+
+        const pad = newline + unit.repeat(depth + 1);
+        const body = children
+            .filter(child => child.nodeType !== Node.TEXT_NODE)
+            .map(child => pad + serialize(child, depth + 1, false))
+            .join('');
+        return `${open}>${body}${newline}${unit.repeat(depth)}${close}`;
+    };
+
+    const parts = [];
+    if (scan.declaration) parts.push(scan.declaration);
+    for (const node of doc.childNodes) {
+        if (node.nodeType === Node.DOCUMENT_TYPE_NODE) {
+            parts.push(scan.doctype || serializeDoctype(node));
+        } else if (node.nodeType !== Node.TEXT_NODE) {
+            parts.push(serialize(node, 0, false));
+        }
+    }
+    return parts.join(newline);
+}
+
+function serializeDoctype(node) {
+    const ids = node.publicId
+        ? ` PUBLIC "${node.publicId}" "${node.systemId}"`
+        : node.systemId ? ` SYSTEM "${node.systemId}"` : '';
+    return `<!DOCTYPE ${node.name}${ids}>`;
 }
 
 // Copy to Clipboard
@@ -658,25 +881,11 @@ function downloadContent(side) {
     }
     
     // Determine file extension and name based on mode and side
-    let filename, mimeType;
-    
-    if (currentMode === 'json-xml') {
-        if (side === 'left') {
-            filename = 'data.json';
-            mimeType = 'application/json';
-        } else {
-            filename = 'data.xml';
-            mimeType = 'application/xml';
-        }
-    } else {
-        if (side === 'left') {
-            filename = 'data.xml';
-            mimeType = 'application/xml';
-        } else {
-            filename = 'data.json';
-            mimeType = 'application/json';
-        }
-    }
+    const isJson = paneFormat(side) === 'json';
+    const filename = currentMode === 'xml-format' && side === 'right'
+        ? 'formatted.xml'
+        : isJson ? 'data.json' : 'data.xml';
+    const mimeType = isJson ? 'application/json' : 'application/xml';
     
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);

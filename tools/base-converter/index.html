@@ -16,6 +16,10 @@
                 <h1 class="app-title">Base Converter</h1>
             </div>
             <div class="header-right">
+                <div class="mode-switcher" role="tablist" aria-label="Mode">
+                    <button class="mode-btn active" type="button" role="tab" aria-selected="true" data-view="text">Text &amp; bytes</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-view="integer">Integer</button>
+                </div>
                 <div class="action-group header-actions">
                     <button class="action-btn" data-action="clear-all" aria-label="Clear all">
                         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
@@ -30,6 +34,7 @@
             </div>
         </header>
         <div class="main-content single-panel">
+            <div class="view-pane" data-pane="text">
             <div class="converter-grid">
                 <div class="field-row converter-row" data-row="text">
                     <div class="field-cell">
@@ -132,6 +137,147 @@
                     </div>
                 </div>
             </div>
+            </div>
+
+            <div class="view-pane" data-pane="integer" hidden>
+                <div class="int-layout">
+                    <section class="field-row converter-row int-card" data-int-row="input">
+                        <div class="converter-row-header">
+                            <label class="field-label" for="int-input">
+                                <span class="converter-icon">N</span>
+                                <span class="converter-label-text">Integer</span>
+                                <span class="field-tag">Any base 2–36</span>
+                            </label>
+                            <div class="converter-row-actions">
+                                <button class="copy-btn" type="button" data-int-copy="input" aria-label="Copy input">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="int-input-line">
+                            <input type="text" class="field-input int-input" id="int-input" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="255, -42, 0xff, 0b1010, 1_000_000" aria-describedby="int-error">
+                            <select id="int-base" hidden>
+                                    <option value="auto">Auto-detect</option>
+                                    <option value="2">Base 2 · binary</option>
+                                    <option value="3">Base 3</option>
+                                    <option value="4">Base 4</option>
+                                    <option value="5">Base 5</option>
+                                    <option value="6">Base 6</option>
+                                    <option value="7">Base 7</option>
+                                    <option value="8">Base 8 · octal</option>
+                                    <option value="9">Base 9</option>
+                                    <option value="10">Base 10 · decimal</option>
+                                    <option value="11">Base 11</option>
+                                    <option value="12">Base 12</option>
+                                    <option value="13">Base 13</option>
+                                    <option value="14">Base 14</option>
+                                    <option value="15">Base 15</option>
+                                    <option value="16">Base 16 · hex</option>
+                                    <option value="17">Base 17</option>
+                                    <option value="18">Base 18</option>
+                                    <option value="19">Base 19</option>
+                                    <option value="20">Base 20</option>
+                                    <option value="21">Base 21</option>
+                                    <option value="22">Base 22</option>
+                                    <option value="23">Base 23</option>
+                                    <option value="24">Base 24</option>
+                                    <option value="25">Base 25</option>
+                                    <option value="26">Base 26</option>
+                                    <option value="27">Base 27</option>
+                                    <option value="28">Base 28</option>
+                                    <option value="29">Base 29</option>
+                                    <option value="30">Base 30</option>
+                                    <option value="31">Base 31</option>
+                                    <option value="32">Base 32 · radix-32</option>
+                                    <option value="33">Base 33</option>
+                                    <option value="34">Base 34</option>
+                                    <option value="35">Base 35</option>
+                                    <option value="36">Base 36 · base36</option>
+                            </select>
+                            <div class="dd int-base-dd" data-dd data-dd-select="#int-base">
+                                <button class="dd__trigger" type="button" aria-label="Input base">
+                                    <span class="dd__value">Auto-detect</span>
+                                </button>
+                                <div class="dd__menu" role="listbox">
+                                        <button class="dd__option" type="button" role="option" data-value="auto">Auto-detect</button>
+                                        <button class="dd__option" type="button" role="option" data-value="2">Base 2 · binary</button>
+                                        <button class="dd__option" type="button" role="option" data-value="3">Base 3</button>
+                                        <button class="dd__option" type="button" role="option" data-value="4">Base 4</button>
+                                        <button class="dd__option" type="button" role="option" data-value="5">Base 5</button>
+                                        <button class="dd__option" type="button" role="option" data-value="6">Base 6</button>
+                                        <button class="dd__option" type="button" role="option" data-value="7">Base 7</button>
+                                        <button class="dd__option" type="button" role="option" data-value="8">Base 8 · octal</button>
+                                        <button class="dd__option" type="button" role="option" data-value="9">Base 9</button>
+                                        <button class="dd__option" type="button" role="option" data-value="10">Base 10 · decimal</button>
+                                        <button class="dd__option" type="button" role="option" data-value="11">Base 11</button>
+                                        <button class="dd__option" type="button" role="option" data-value="12">Base 12</button>
+                                        <button class="dd__option" type="button" role="option" data-value="13">Base 13</button>
+                                        <button class="dd__option" type="button" role="option" data-value="14">Base 14</button>
+                                        <button class="dd__option" type="button" role="option" data-value="15">Base 15</button>
+                                        <button class="dd__option" type="button" role="option" data-value="16">Base 16 · hex</button>
+                                        <button class="dd__option" type="button" role="option" data-value="17">Base 17</button>
+                                        <button class="dd__option" type="button" role="option" data-value="18">Base 18</button>
+                                        <button class="dd__option" type="button" role="option" data-value="19">Base 19</button>
+                                        <button class="dd__option" type="button" role="option" data-value="20">Base 20</button>
+                                        <button class="dd__option" type="button" role="option" data-value="21">Base 21</button>
+                                        <button class="dd__option" type="button" role="option" data-value="22">Base 22</button>
+                                        <button class="dd__option" type="button" role="option" data-value="23">Base 23</button>
+                                        <button class="dd__option" type="button" role="option" data-value="24">Base 24</button>
+                                        <button class="dd__option" type="button" role="option" data-value="25">Base 25</button>
+                                        <button class="dd__option" type="button" role="option" data-value="26">Base 26</button>
+                                        <button class="dd__option" type="button" role="option" data-value="27">Base 27</button>
+                                        <button class="dd__option" type="button" role="option" data-value="28">Base 28</button>
+                                        <button class="dd__option" type="button" role="option" data-value="29">Base 29</button>
+                                        <button class="dd__option" type="button" role="option" data-value="30">Base 30</button>
+                                        <button class="dd__option" type="button" role="option" data-value="31">Base 31</button>
+                                        <button class="dd__option" type="button" role="option" data-value="32">Base 32 · radix-32</button>
+                                        <button class="dd__option" type="button" role="option" data-value="33">Base 33</button>
+                                        <button class="dd__option" type="button" role="option" data-value="34">Base 34</button>
+                                        <button class="dd__option" type="button" role="option" data-value="35">Base 35</button>
+                                        <button class="dd__option" type="button" role="option" data-value="36">Base 36 · base36</button>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="int-error" id="int-error" role="alert" hidden></p>
+                        <dl class="int-stats" id="int-stats">
+                            <div><dt>Read as</dt><dd id="int-stat-base">—</dd></div>
+                            <div><dt>Sign</dt><dd id="int-stat-sign">—</dd></div>
+                            <div><dt>Bit length</dt><dd id="int-stat-bits">—</dd></div>
+                            <div><dt>Byte length</dt><dd id="int-stat-bytes">—</dd></div>
+                            <div><dt>Signed width</dt><dd id="int-stat-signed">—</dd></div>
+                        </dl>
+                    </section>
+
+                    <div class="int-section-head">
+                        <h2 class="int-section-title">Radix outputs</h2>
+                        <span class="int-section-hint">Edit any field to convert back</span>
+                        <div class="mode-switcher int-case" role="group" aria-label="Letter digits">
+                            <button class="segment-btn active" type="button" data-case="lower" aria-pressed="true">a–f</button>
+                            <button class="segment-btn" type="button" data-case="upper" aria-pressed="false">A–F</button>
+                        </div>
+                    </div>
+                    <div class="int-grid" id="int-outputs"></div>
+
+                    <div class="int-section-head">
+                        <h2 class="int-section-title">Grouped</h2>
+                    </div>
+                    <div class="int-grid" id="int-grouped"></div>
+
+                    <div class="int-section-head">
+                        <h2 class="int-section-title">Two&rsquo;s complement</h2>
+                        <div class="mode-switcher int-width" role="group" aria-label="Width in bits">
+                            <button class="segment-btn" type="button" data-width="8" aria-pressed="false">8</button>
+                            <button class="segment-btn" type="button" data-width="16" aria-pressed="false">16</button>
+                            <button class="segment-btn active" type="button" data-width="32" aria-pressed="true">32</button>
+                            <button class="segment-btn" type="button" data-width="64" aria-pressed="false">64</button>
+                            <button class="segment-btn" type="button" data-width="128" aria-pressed="false">128</button>
+                        </div>
+                    </div>
+                    <p class="int-range" id="twos-range"></p>
+                    <p class="int-warning" id="twos-warning" role="status" hidden></p>
+                    <div class="int-grid int-grid--3" id="int-twos"></div>
+                </div>
+            </div>
         </div>
 
         <div class="modal-overlay" id="schemaHelpModal" aria-hidden="true" data-modal>
@@ -183,6 +329,16 @@
                                 <div class="legend-desc">Legacy and Unix permissions. Use 3-digit groups for bytes.</div>
                             </div>
                         </div>
+                    </div>
+                    <div class="legend-intro int-help">
+                        <p><strong>Integer mode</strong></p>
+                        <ul class="tip-list">
+                            <li>Type one whole number in any base 2–36. With <em>Auto-detect</em>, <span class="hint-code">0x</span>, <span class="hint-code">0b</span> and <span class="hint-code">0o</span> prefixes pick the base; anything else is read as decimal.</li>
+                            <li><span class="hint-code">_</span> and spaces are digit separators, so <span class="hint-code">1_000_000</span> and <span class="hint-code">ff ff</span> both work.</li>
+                            <li>Values are arbitrary-precision (BigInt) — 2^200 converts exactly.</li>
+                            <li>Negative numbers are shown sign-magnitude (<span class="hint-code">-ff</span>); the two&rsquo;s complement view wraps them into the chosen width and warns when a value doesn&rsquo;t fit.</li>
+                            <li>Radix-32 here is plain base 32 (digits 0–9, a–v), not the RFC 4648 byte encoding.</li>
+                        </ul>
                     </div>
                 </div>
             </div>

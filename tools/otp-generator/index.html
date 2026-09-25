@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Generator</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">OTP Generator</h1>
+            </div>
+            <div class="header-right">
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="How it works" aria-label="How it works">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel settings-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Secret</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Insert sample" aria-label="Insert sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="field-row">
+                        <label class="field">
+                            <span class="field-label">Import otpauth:// URI</span>
+                            <input type="text" id="uri-input" spellcheck="false" autocomplete="off"
+                                   placeholder="otpauth://totp/Issuer:account?secret=…">
+                        </label>
+                        <button class="action-btn" type="button" data-action="paste-uri" data-tooltip="Paste URI" aria-label="Paste otpauth URI">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                    </div>
+
+                    <div class="field-row secret-row">
+                        <label class="field">
+                            <span class="field-label">Secret (Base32)</span>
+                            <input type="text" id="secret-input" class="secret-input" spellcheck="false" autocomplete="off"
+                                   placeholder="GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ">
+                        </label>
+                        <button class="btn" type="button" data-action="generate">Generate secret</button>
+                        <button class="action-btn" type="button" data-action="copy-secret" data-tooltip="Copy secret" aria-label="Copy secret">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                    <p class="result-line" id="secret-status" role="status"></p>
+
+                    <div class="field-row">
+                        <label class="field">
+                            <span class="field-label">Issuer</span>
+                            <input type="text" id="issuer-input" spellcheck="false" autocomplete="off" placeholder="Example Co">
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Account</span>
+                            <input type="text" id="account-input" spellcheck="false" autocomplete="off" placeholder="alice@example.com">
+                        </label>
+                    </div>
+
+                    <div class="option-grid">
+                        <div class="option">
+                            <span class="field-label" id="algo-label">Algorithm</span>
+                            <div class="segments" role="radiogroup" aria-labelledby="algo-label" data-option="algorithm">
+                                <button class="segment-btn active" type="button" role="radio" aria-checked="true" data-value="SHA1">SHA-1</button>
+                                <button class="segment-btn" type="button" role="radio" aria-checked="false" data-value="SHA256">SHA-256</button>
+                                <button class="segment-btn" type="button" role="radio" aria-checked="false" data-value="SHA512">SHA-512</button>
+                            </div>
+                        </div>
+                        <div class="option">
+                            <span class="field-label" id="digits-label">Digits</span>
+                            <div class="segments" role="radiogroup" aria-labelledby="digits-label" data-option="digits">
+                                <button class="segment-btn active" type="button" role="radio" aria-checked="true" data-value="6">6</button>
+                                <button class="segment-btn" type="button" role="radio" aria-checked="false" data-value="7">7</button>
+                                <button class="segment-btn" type="button" role="radio" aria-checked="false" data-value="8">8</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-row" data-mode-only="totp">
+                        <label class="field">
+                            <span class="field-label">Period (seconds)</span>
+                            <input type="number" id="period-input" inputmode="numeric" min="1" max="3600" value="30">
+                        </label>
+                    </div>
+                    <div class="field-row" data-mode-only="hotp" hidden>
+                        <label class="field">
+                            <span class="field-label">Counter</span>
+                            <input type="text" id="counter-input" inputmode="numeric" spellcheck="false" autocomplete="off" value="0">
+                        </label>
+                        <button class="btn" type="button" data-action="counter-down" aria-label="Decrement counter">−1</button>
+                        <button class="btn" type="button" data-action="counter-up" aria-label="Increment counter">+1</button>
+                    </div>
+                </div>
+            </section>
+
+            <div class="right-col">
+                <section class="panel code-panel">
+                    <div class="panel-header">
+                        <div class="mode-switcher" role="tablist" aria-label="OTP type">
+                            <button class="mode-btn active" type="button" role="tab" aria-selected="true" data-view="totp">TOTP</button>
+                            <button class="mode-btn" type="button" role="tab" aria-selected="false" data-view="hotp">HOTP</button>
+                        </div>
+                        <button class="action-btn" type="button" data-action="copy-code" data-tooltip="Copy code" aria-label="Copy code">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                    <div class="panel-body">
+                        <div class="code-hero">
+                            <div class="ring" id="ring" data-mode-only="totp" role="timer" aria-label="Seconds until the next code">
+                                <svg viewBox="0 0 64 64" aria-hidden="true">
+                                    <circle class="ring-track" cx="32" cy="32" r="28"></circle>
+                                    <circle class="ring-fill" id="ring-fill" cx="32" cy="32" r="28"></circle>
+                                </svg>
+                                <span class="ring-seconds" id="ring-seconds">30</span>
+                            </div>
+                            <button class="code-display" type="button" id="code" data-code="" aria-label="Current code, click to copy"></button>
+                        </div>
+                        <p class="code-meta" id="code-meta"></p>
+
+                        <dl class="neighbours" id="neighbours">
+                            <div class="neighbour">
+                                <dt id="prev-label">Previous</dt>
+                                <dd><button class="copy-value" type="button" id="prev-code"></button></dd>
+                            </div>
+                            <div class="neighbour">
+                                <dt id="next-label">Next</dt>
+                                <dd><button class="copy-value" type="button" id="next-code"></button></dd>
+                            </div>
+                        </dl>
+
+                        <label class="field">
+                            <span class="field-label">Validate a code</span>
+                            <input type="text" id="validate-input" inputmode="numeric" spellcheck="false" autocomplete="off" placeholder="Type a code to check it against a ±1 step window">
+                        </label>
+                        <p class="result-line" id="validate-result" role="status"></p>
+                    </div>
+                </section>
+
+                <section class="panel uri-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">Provisioning URI</h2>
+                        <button class="action-btn" type="button" data-action="copy-uri" data-tooltip="Copy URI" aria-label="Copy URI">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                    <div class="panel-body uri-body">
+                        <div class="qr" id="qr" aria-label="QR code of the provisioning URI"></div>
+                        <code class="uri-text" id="uri-output"></code>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How it works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Codes</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>HOTP</strong> (RFC 4226) signs an 8-byte counter with HMAC and truncates the result to a 6–8 digit code. Both sides advance the counter on every use.</li>
+                            <li><strong>TOTP</strong> (RFC 6238) is HOTP whose counter is the number of whole periods since the Unix epoch, <span class="hint-code">floor(time / 30)</span> by default.</li>
+                            <li>Previous and next show the neighbouring steps, which most servers also accept to absorb clock drift.</li>
+                        </ul>
+                        <p><strong>Secret</strong></p>
+                        <ul class="tip-list">
+                            <li>Secrets are Base32 (<span class="hint-code">A–Z</span> and <span class="hint-code">2–7</span>). Spaces, lower case and missing <span class="hint-code">=</span> padding are accepted.</li>
+                            <li><strong>Generate secret</strong> draws 20 random bytes (160 bits, the RFC 4226 recommendation) from the browser's cryptographic generator.</li>
+                            <li>Paste a full <span class="hint-code">otpauth://</span> URI to fill every field at once.</li>
+                        </ul>
+                        <p><strong>Provisioning</strong></p>
+                        <ul class="tip-list">
+                            <li>The URI follows the Google Authenticator key-uri format; scan the QR with an authenticator app to enrol.</li>
+                            <li>Some apps ignore the algorithm, digits and period parameters and always use SHA-1, 6 digits and 30 s.</li>
+                        </ul>
+                        <p>Everything is calculated in your browser with WebCrypto; the secret never leaves the page.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/qr-code-styling@1.6.0/lib/qr-code-styling.js" integrity="sha384-K7D1ZVqZVEPBKpQrjKR0/pDcFaWHQPzUBKNY5k8RRX5aGtd4WGHXEnO0qso4YowQ" crossorigin="anonymous"></script>
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

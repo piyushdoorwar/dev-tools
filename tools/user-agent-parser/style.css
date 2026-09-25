@@ -1,0 +1,446 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+:root {
+    --tok-browser: var(--accent-yellow);
+    --tok-engine: var(--accent-blue);
+    --tok-platform: var(--accent-green);
+    --tok-device: var(--accent-orange);
+    --tok-bot: var(--accent-pink);
+    --tok-compat: var(--text-disabled);
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.hint-code {
+    font-family: var(--font-mono);
+    color: var(--accent-yellow);
+}
+
+.legend-intro p {
+    margin-top: var(--space-4);
+}
+
+.legend-intro p:first-child {
+    margin-top: 0;
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+/* --- Panels ------------------------------------------------------------- */
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    min-height: 71px;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-4);
+}
+
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: minmax(340px, 1.1fr) minmax(320px, 1fr);
+    gap: var(--space-4);
+    align-items: start;
+}
+
+/* --- Tooltips ------------------------------------------------------------
+   main.css paints the bubble; placement and reveal are the tool's. Every
+   icon button here sits at the right edge of its row, so the bubble anchors
+   to the button's right edge and grows leftward.
+   ------------------------------------------------------------------------ */
+
+.action-btn[data-tooltip] {
+    position: relative;
+}
+
+.action-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: var(--z-dropdown);
+    transform: translateY(4px);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease,
+        visibility 0s linear 180ms;
+}
+
+.action-btn[data-tooltip]:hover::after,
+.action-btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition-delay: 0s;
+}
+
+/* --- UA input ----------------------------------------------------------- */
+
+.ua-input {
+    width: 100%;
+    min-height: 64px;
+    max-height: 40vh;
+    field-sizing: content;
+    resize: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-md);
+    line-height: var(--leading-normal);
+    overflow-wrap: anywhere;
+}
+
+/* Every token keeps its own box so a long UA wraps between tokens, and a
+   hover names the role the parser gave it. */
+.tokens {
+    padding: var(--space-3) var(--control-pad-x);
+    border: 1px dashed var(--border-light);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+    font-family: var(--font-mono);
+    font-size: var(--text-md);
+    line-height: var(--leading-code);
+    /* Break between tokens where possible, inside one only if it must. */
+    overflow-wrap: anywhere;
+}
+
+.tokens:empty {
+    display: none;
+}
+
+.tok {
+    color: var(--text-secondary);
+    cursor: help;
+}
+
+.tok-browser { color: var(--tok-browser); font-weight: 600; }
+.tok-engine { color: var(--tok-engine); }
+.tok-platform { color: var(--tok-platform); }
+.tok-device { color: var(--tok-device); }
+.tok-bot { color: var(--tok-bot); font-weight: 600; }
+.tok-compat { color: var(--tok-compat); }
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-family: var(--font-mono);
+}
+
+.status-bar.is-success .status-msg { color: var(--accent-green); }
+.status-bar.is-warning .status-msg { color: var(--accent-orange); }
+.status-bar.is-error .status-msg { color: var(--accent-pink); }
+
+.tok-legend {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    margin-left: var(--space-2);
+    border-radius: 50%;
+}
+
+.legend-dot.tok-browser { background: var(--tok-browser); }
+.legend-dot.tok-engine { background: var(--tok-engine); }
+.legend-dot.tok-platform { background: var(--tok-platform); }
+.legend-dot.tok-bot { background: var(--tok-bot); }
+.legend-dot.tok-compat { background: var(--tok-compat); }
+
+.samples {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    padding-top: var(--space-1);
+}
+
+.field-label {
+    flex: none;
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.sample-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.sample-chip {
+    padding: 4px 10px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-pill);
+    background: var(--surface-strong);
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+    font-size: var(--chrome-sm);
+    cursor: pointer;
+    transition: var(--transition-control);
+}
+
+.sample-chip:hover {
+    border-color: var(--accent-purple-light);
+    color: var(--text-primary);
+}
+
+.sample-chip.is-active {
+    border-color: var(--accent-purple-light);
+    background: rgba(var(--accent-purple-light-rgb), 0.18);
+    color: var(--text-primary);
+}
+
+/* --- Parsed ------------------------------------------------------------- */
+
+.panel-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.verdict {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.details {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: var(--space-2) var(--space-4);
+    font-size: var(--chrome-base);
+}
+
+.details:empty {
+    display: none;
+}
+
+.details dt {
+    padding-top: 3px;
+    color: var(--text-muted);
+}
+
+.details dd {
+    min-width: 0;
+    color: var(--text-secondary);
+    word-break: break-word;
+}
+
+.details dd.is-empty {
+    padding-top: 3px;
+    color: var(--text-disabled);
+}
+
+.copy-value {
+    max-width: 100%;
+    padding: 2px 6px;
+    margin-left: -6px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-primary);
+    font: inherit;
+    text-align: left;
+    word-break: break-word;
+    cursor: copy;
+    transition: var(--transition-control);
+}
+
+.copy-value.is-mono {
+    font-family: var(--font-mono);
+}
+
+.copy-value:hover {
+    border-color: var(--border-light);
+    background: var(--surface-strong);
+}
+
+.notes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border);
+    list-style: none;
+}
+
+.notes:empty {
+    display: none;
+}
+
+.notes li {
+    position: relative;
+    padding-left: var(--space-4);
+    color: var(--text-secondary);
+    font-size: var(--chrome-base);
+    line-height: var(--leading-normal);
+}
+
+.notes li::before {
+    content: "";
+    position: absolute;
+    top: 0.55em;
+    left: 2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-orange);
+}
+
+/* --- Client Hints ------------------------------------------------------- */
+
+.hints-note {
+    color: var(--text-muted);
+    font-size: var(--chrome-base);
+    line-height: var(--leading-normal);
+}
+
+.hints-note.is-absent {
+    padding: var(--space-3);
+    border: 1px dashed var(--border-light);
+    border-radius: var(--radius-control);
+    color: var(--text-secondary);
+}
+
+@media (max-width: 960px) {
+    .app-container {
+        padding: var(--space-4);
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .samples {
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+}
+}

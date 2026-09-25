@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Pair Generator</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Key Pair Generator</h1>
+            </div>
+            <div class="header-right">
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="How it works" aria-label="How it works">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel options-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Key</h2>
+                </div>
+                <div class="panel-body">
+                    <div class="field">
+                        <span class="field-label" id="algo-label">Algorithm</span>
+                        <div class="segment" id="algo-switch" role="group" aria-labelledby="algo-label">
+                            <button class="segment-btn" type="button" data-algo="rsa">RSA</button>
+                            <button class="segment-btn" type="button" data-algo="ec">ECDSA</button>
+                            <button class="segment-btn" type="button" data-algo="ed25519">Ed25519</button>
+                            <button class="segment-btn" type="button" data-algo="x25519">X25519</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <span class="field-label" id="param-label">Key size</span>
+                        <div class="segment" id="param-switch" role="group" aria-labelledby="param-label"></div>
+                    </div>
+
+                    <label class="field">
+                        <span class="field-label">OpenSSH comment</span>
+                        <input type="text" id="ssh-comment" spellcheck="false" autocomplete="off" value="user@devtools" placeholder="user@host (optional)">
+                    </label>
+
+                    <p class="field-note is-warning" id="support-note" hidden></p>
+
+                    <div class="generate-row">
+                        <button class="btn btn-primary" type="button" id="generate-btn">Generate key pair</button>
+                        <div class="status-bar" id="status" role="status">
+                            <span class="status-msg">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="key-summary" id="key-summary" role="status" aria-live="polite"></div>
+
+                    <dl class="details" id="details"></dl>
+
+                    <p class="caution">
+                        <strong>Handle the private key with care.</strong>
+                        It is generated in this tab and never sent anywhere, but anything on this page — extensions, screen sharing, the clipboard — can see it. Prefer <span class="hint-code">ssh-keygen</span> or an HSM for long-lived production keys, and clear the clipboard after pasting.
+                    </p>
+                </div>
+            </section>
+
+            <section class="panel output-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Output</h2>
+                    <span class="panel-hint">Public keys are safe to share; private keys are not</span>
+                </div>
+                <div class="panel-body outputs" id="outputs">
+                    <div class="output-block" data-output="ssh">
+                        <div class="output-head">
+                            <span class="field-label">OpenSSH public key</span>
+                            <div class="action-group">
+                                <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy" aria-label="Copy OpenSSH public key">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                                <button class="action-btn" type="button" data-action="download" data-tooltip="Download .pub" aria-label="Download OpenSSH public key">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="out-ssh" class="out-text is-oneline" readonly spellcheck="false" aria-label="OpenSSH public key"></textarea>
+                    </div>
+
+                    <div class="output-block" data-output="spki">
+                        <div class="output-head">
+                            <span class="field-label">Public key · SPKI PEM</span>
+                            <div class="action-group">
+                                <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy" aria-label="Copy public key PEM">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                                <button class="action-btn" type="button" data-action="download" data-tooltip="Download .pem" aria-label="Download public key PEM">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="out-spki" class="out-text" readonly spellcheck="false" aria-label="Public key PEM"></textarea>
+                    </div>
+
+                    <div class="output-block is-secret" data-output="pkcs8">
+                        <div class="output-head">
+                            <span class="field-label">Private key · PKCS#8 PEM</span>
+                            <div class="action-group">
+                                <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy" aria-label="Copy private key PEM">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                                <button class="action-btn" type="button" data-action="download" data-tooltip="Download .pem" aria-label="Download private key PEM">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="out-pkcs8" class="out-text" readonly spellcheck="false" aria-label="Private key PEM"></textarea>
+                    </div>
+
+                    <div class="output-block" data-output="jwk-public">
+                        <div class="output-head">
+                            <span class="field-label">Public JWK</span>
+                            <div class="action-group">
+                                <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy" aria-label="Copy public JWK">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                                <button class="action-btn" type="button" data-action="download" data-tooltip="Download .json" aria-label="Download public JWK">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="out-jwk-public" class="out-text" readonly spellcheck="false" aria-label="Public JWK"></textarea>
+                    </div>
+
+                    <div class="output-block is-secret" data-output="jwk-private">
+                        <div class="output-head">
+                            <span class="field-label">Private JWK</span>
+                            <div class="action-group">
+                                <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy" aria-label="Copy private JWK">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                                <button class="action-btn" type="button" data-action="download" data-tooltip="Download .json" aria-label="Download private JWK">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                                </button>
+                            </div>
+                        </div>
+                        <textarea id="out-jwk-private" class="out-text" readonly spellcheck="false" aria-label="Private JWK"></textarea>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How it works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Everything runs locally.</strong> Keys come from your browser's WebCrypto API and never leave this tab.</p>
+                        <p><strong>Algorithms</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>RSA</strong> uses e = 65537. The key is generated for signing (<span class="hint-code">RS256</span>), but the key material is the same for RSA-PSS or RSA-OAEP — only the JWK <span class="hint-code">alg</span> hint differs. Choose 3072 or larger for keys that must last past 2030; 4096 can take a few seconds.</li>
+                            <li><strong>ECDSA</strong> P-256, P-384 and P-521 map to <span class="hint-code">ES256</span>, <span class="hint-code">ES384</span> and <span class="hint-code">ES512</span>.</li>
+                            <li><strong>Ed25519</strong> is the modern default for SSH and signatures (<span class="hint-code">EdDSA</span>). <strong>X25519</strong> is for key agreement only, so it has no SSH form. Both need a recent browser; unsupported ones are disabled.</li>
+                        </ul>
+                        <p><strong>Formats</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>PKCS#8</strong> (<span class="hint-code">BEGIN PRIVATE KEY</span>) and <strong>SPKI</strong> (<span class="hint-code">BEGIN PUBLIC KEY</span>) are what OpenSSL, Node, Java and Go read.</li>
+                            <li><strong>JWK</strong> output carries a <span class="hint-code">kid</span> set to the RFC 7638 thumbprint: SHA-256 over the required members in sorted order, base64url encoded.</li>
+                            <li>The <strong>OpenSSH</strong> line goes straight into <span class="hint-code">authorized_keys</span>. The comment is only a label and can be edited without regenerating.</li>
+                            <li>The private key is not offered in OpenSSH's own format. OpenSSH reads the PKCS#8 PEM directly: save it as <span class="hint-code">id_ed25519</span> with <span class="hint-code">chmod 600</span>, or run <span class="hint-code">ssh-keygen -p -f key.pem</span> to add a passphrase and rewrite it. <span class="hint-code">ssh-keygen -y -f key.pem</span> prints its OpenSSH public key, and <span class="hint-code">ssh-keygen -i -m PKCS8 -f public.pem</span> converts an RSA or ECDSA SPKI PEM (older OpenSSH releases reject Ed25519 there).</li>
+                        </ul>
+                        <p><strong>Fingerprints</strong></p>
+                        <ul class="tip-list">
+                            <li>The SSH fingerprint matches <span class="hint-code">ssh-keygen -lf key.pub</span>: <span class="hint-code">SHA256:</span> plus unpadded Base64 of the key blob's SHA-256.</li>
+                            <li>The SPKI fingerprint is Base64 SHA-256 of the DER public key — the value used for certificate and HTTP public key pinning (<span class="hint-code">pin-sha256</span>).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

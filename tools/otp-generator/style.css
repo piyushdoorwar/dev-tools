@@ -1,0 +1,474 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.hint-code {
+    font-family: var(--font-mono);
+    color: var(--accent-yellow);
+}
+
+.legend-intro p {
+    margin-top: var(--space-4);
+}
+
+.legend-intro p:first-child {
+    margin-top: 0;
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+/* --- Panels ------------------------------------------------------------- */
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    min-height: 71px;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-4);
+}
+
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr);
+    gap: var(--space-4);
+    align-items: start;
+}
+
+.right-col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+}
+
+.mode-switcher,
+.segments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.segments {
+    align-self: flex-start;
+}
+
+/* --- Tooltips ------------------------------------------------------------
+   main.css paints the bubble; placement and reveal are the tool's. Every
+   icon button here sits at the right edge of its row, so the bubble anchors
+   to the button's right edge and grows leftward.
+   ------------------------------------------------------------------------ */
+
+.action-btn[data-tooltip] {
+    position: relative;
+}
+
+.action-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: var(--z-dropdown);
+    transform: translateY(4px);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease,
+        visibility 0s linear 180ms;
+}
+
+.action-btn[data-tooltip]:hover::after,
+.action-btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition-delay: 0s;
+}
+
+/* --- Fields ------------------------------------------------------------- */
+
+.field-row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.field {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 140px;
+}
+
+.field input {
+    width: 100%;
+    font-family: var(--font-mono);
+}
+
+.field input.is-invalid {
+    border-color: rgba(var(--accent-pink-rgb), 0.55);
+}
+
+.secret-input {
+    letter-spacing: 0.04em;
+}
+
+.field-label {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.option-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+}
+
+.option {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.result-line {
+    color: var(--text-secondary);
+    font-size: var(--chrome-base);
+    line-height: var(--leading-normal);
+}
+
+.result-line:empty {
+    display: none;
+}
+
+.result-line.is-success { color: var(--accent-green); }
+.result-line.is-warning { color: var(--accent-orange); }
+.result-line.is-error { color: var(--accent-pink); }
+
+/* --- Code --------------------------------------------------------------- */
+
+.code-hero {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+}
+
+.ring {
+    position: relative;
+    flex: none;
+    width: 72px;
+    height: 72px;
+}
+
+.ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.ring circle {
+    fill: none;
+    stroke-width: 5;
+}
+
+.ring-track {
+    stroke: var(--surface-strong);
+}
+
+.ring-fill {
+    stroke: var(--accent-purple-light);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 250ms linear, stroke 180ms ease;
+}
+
+.ring.is-ending .ring-fill {
+    stroke: var(--accent-orange);
+}
+
+.ring-seconds {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-lg);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+}
+
+.ring.is-ending .ring-seconds {
+    color: var(--accent-orange);
+}
+
+.code-display {
+    display: inline-flex;
+    gap: 0.35em;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    background: transparent;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: clamp(2.25rem, 6vw, 3.25rem);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    line-height: 1.1;
+    cursor: copy;
+    transition: var(--transition-control);
+}
+
+.code-display:hover {
+    border-color: var(--border-light);
+    background: var(--surface-strong);
+}
+
+.code-empty {
+    color: var(--text-disabled);
+}
+
+.code-meta {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+}
+
+.neighbours {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.neighbour {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.neighbour dt {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.copy-value {
+    align-self: flex-start;
+    padding: 2px 6px;
+    margin-left: -6px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    cursor: copy;
+    transition: var(--transition-control);
+}
+
+.copy-value:hover {
+    border-color: var(--border-light);
+    background: var(--surface-strong);
+    color: var(--text-primary);
+}
+
+/* --- Provisioning URI --------------------------------------------------- */
+
+.uri-body {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+/* White quiet zone: scanners need light modules around the code, and a
+   dark-themed QR is unreadable to most phone cameras. */
+.qr {
+    flex: none;
+    width: 224px;
+    height: 224px;
+    padding: 12px;
+    border-radius: var(--radius-control);
+    background: #ffffff;
+    color: #111111;
+    font-size: var(--chrome-sm);
+}
+
+.qr.is-empty {
+    opacity: 0.25;
+}
+
+.qr svg,
+.qr canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.uri-text {
+    flex: 1;
+    min-width: 200px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+    word-break: break-all;
+    user-select: all;
+}
+
+.uri-text.is-empty {
+    color: var(--text-muted);
+    user-select: auto;
+}
+
+@media (max-width: 960px) {
+    .app-container {
+        padding: var(--space-4);
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* On a phone the 32-character secret needs the whole row; the generate and
+   copy buttons drop beneath it rather than squeezing it to a sliver. */
+@media (max-width: 600px) {
+    .secret-row .field {
+        flex-basis: 100%;
+    }
+}
+}

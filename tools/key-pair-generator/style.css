@@ -1,0 +1,426 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.hint-code {
+    font-family: var(--font-mono);
+    color: var(--accent-yellow);
+}
+
+.legend-intro p {
+    margin-top: var(--space-4);
+}
+
+.legend-intro p:first-child {
+    margin-top: 0;
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+/* --- Panels ------------------------------------------------------------- */
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    min-height: 71px;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-hint {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-4);
+}
+
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.15fr);
+    gap: var(--space-4);
+    align-items: start;
+}
+
+.mode-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+/* --- Tooltips ------------------------------------------------------------
+   main.css paints the bubble; placement and reveal are the tool's. Every
+   icon button here sits at the right edge of its row, so the bubble anchors
+   to the button's right edge and grows leftward.
+   ------------------------------------------------------------------------ */
+
+.action-btn[data-tooltip] {
+    position: relative;
+}
+
+.action-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: var(--z-dropdown);
+    transform: translateY(4px);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 180ms ease,
+        transform 180ms ease,
+        visibility 0s linear 180ms;
+}
+
+.action-btn[data-tooltip]:hover::after,
+.action-btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition-delay: 0s;
+}
+
+
+/* --- Options ------------------------------------------------------------ */
+
+.segment {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.segment-btn {
+    flex: 1;
+}
+
+.segment-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.field input[type='text'] {
+    width: 100%;
+    font-family: var(--font-mono);
+}
+
+.field-label {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.field-note {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+.field-note.is-warning {
+    color: var(--accent-orange);
+}
+
+.generate-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.generate-row .btn {
+    min-width: 180px;
+    min-height: var(--control-h);
+}
+
+.generate-row .btn.is-busy {
+    cursor: progress;
+}
+
+.generate-row .btn.is-busy::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .generate-row .btn.is-busy::before { animation: none; }
+}
+
+.status-bar {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-family: var(--font-mono);
+}
+
+.status-bar.is-success .status-msg { color: var(--accent-green); }
+.status-bar.is-warning .status-msg { color: var(--accent-orange); }
+.status-bar.is-error .status-msg { color: var(--accent-pink); }
+
+/* --- Details ------------------------------------------------------------ */
+
+.key-summary {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-base);
+    line-height: var(--leading-normal);
+    overflow-wrap: anywhere;
+}
+
+.key-summary:empty {
+    display: none;
+}
+
+.details {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: var(--space-2) var(--space-4);
+    font-size: var(--chrome-base);
+}
+
+.details:empty {
+    display: none;
+}
+
+.details dt {
+    padding-top: 3px;
+    color: var(--text-muted);
+}
+
+.details dd {
+    min-width: 0;
+}
+
+.copy-value {
+    max-width: 100%;
+    padding: 2px 6px;
+    margin-left: -6px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-primary);
+    font: inherit;
+    font-family: var(--font-mono);
+    text-align: left;
+    word-break: break-all;
+    cursor: copy;
+    transition: var(--transition-control);
+}
+
+.copy-value:hover {
+    border-color: var(--border-light);
+    background: var(--surface-strong);
+}
+
+.caution {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid rgba(var(--accent-pink-rgb), 0.35);
+    border-radius: var(--radius-control);
+    background: rgba(var(--accent-pink-rgb), 0.06);
+    color: var(--text-secondary);
+    font-size: var(--chrome-sm);
+    line-height: var(--leading-normal);
+}
+
+.caution strong {
+    color: var(--accent-pink);
+}
+
+/* --- Outputs ------------------------------------------------------------ */
+
+.outputs {
+    gap: var(--space-4);
+}
+
+.output-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.output-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.output-block.is-secret .field-label {
+    color: var(--accent-pink);
+}
+
+.out-text {
+    width: 100%;
+    min-height: 88px;
+    resize: vertical;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    white-space: pre;
+    overflow: auto;
+}
+
+/* The SSH line is one long token; wrapping it keeps it readable without a
+   horizontal scrollbar, and copy/download still emit the single line. */
+.out-text.is-oneline {
+    min-height: 88px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.output-block[hidden] {
+    display: none;
+}
+
+@media (max-width: 960px) {
+    .app-container {
+        padding: var(--space-4);
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+}
+}

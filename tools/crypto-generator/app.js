@@ -2,7 +2,12 @@
   const modeTabs = Array.from(document.querySelectorAll('.mode-tab'));
   const modePanels = Array.from(document.querySelectorAll('.mode-panel'));
 
-  const setActiveMode = (mode) => {
+  const MODES = modeTabs.map((tab) => tab.dataset.mode);
+
+  // Unknown hashes (including a tool id the dashboard passes through) fall
+  // back to the generator, per the style guide's hash-state rules.
+  const setActiveMode = (requested) => {
+    const mode = MODES.includes(requested) ? requested : MODES[0];
     modeTabs.forEach((tab) => {
       const isActive = tab.dataset.mode === mode;
       tab.classList.toggle('active', isActive);
@@ -14,7 +19,10 @@
   };
 
   modeTabs.forEach((tab) => {
-    tab.addEventListener('click', () => setActiveMode(tab.dataset.mode));
+    tab.addEventListener('click', () => {
+      setActiveMode(tab.dataset.mode);
+      window.DevToolsMain.writeHashState(tab.dataset.mode);
+    });
   });
 
   const lengthSlider = document.getElementById('lengthSlider');
@@ -563,6 +571,136 @@
   hashInput.addEventListener('input', scheduleHashGeneration);
   saltInput.addEventListener('input', scheduleHashGeneration);
   algoSelect.addEventListener('change', runHashGeneration);
+
+  /* --- Strength analyser ------------------------------------------------ */
+
+  const analyseInput = document.getElementById('analyseInput');
+  const analyseToggleBtn = document.getElementById('analyseToggleBtn');
+  const analyseClearBtn = document.getElementById('analyseClearBtn');
+  const analyseGeneratedBtn = document.getElementById('analyseGeneratedBtn');
+  const analyseScore = document.getElementById('analyseScore');
+  const analyseLabel = document.getElementById('analyseLabel');
+  const analyseScoreValue = document.getElementById('analyseScoreValue');
+  const analyseMeter = document.getElementById('analyseMeter');
+  const analyseGuesses = document.getElementById('analyseGuesses');
+  const analyseGuessesHint = document.getElementById('analyseGuessesHint');
+  const analyseEntropy = document.getElementById('analyseEntropy');
+  const analyseCharset = document.getElementById('analyseCharset');
+  const analyseCrackTimes = document.getElementById('analyseCrackTimes');
+  const analyseWeaknesses = document.getElementById('analyseWeaknesses');
+
+  const formatGuesses = (log10) => {
+    if (log10 < 6) return Math.round(10 ** log10).toLocaleString('en-US');
+    const exponent = Math.floor(log10);
+    return `${(10 ** (log10 - exponent)).toFixed(1)} × 10^${exponent}`;
+  };
+
+  const renderCrackTimes = (result) => {
+    analyseCrackTimes.replaceChildren(...STRENGTH_ATTACKS.map((attack) => {
+      const row = document.createElement('li');
+      row.className = 'crack-row';
+      row.dataset.attack = attack.id;
+      const text = document.createElement('div');
+      const label = document.createElement('span');
+      label.className = 'crack-label';
+      label.textContent = attack.label;
+      const detail = document.createElement('span');
+      detail.className = 'crack-detail';
+      detail.textContent = attack.detail;
+      text.append(label, detail);
+      const time = document.createElement('span');
+      time.className = 'crack-time';
+      time.textContent = result ? result.crackTimes.find((t) => t.id === attack.id).display : '–';
+      row.append(text, time);
+      return row;
+    }));
+  };
+
+  const renderWeaknesses = (result) => {
+    if (!result) {
+      const empty = document.createElement('li');
+      empty.className = 'weakness-empty';
+      empty.textContent = 'Enter a password to see which patterns a cracker would exploit.';
+      analyseWeaknesses.replaceChildren(empty);
+      return;
+    }
+    if (!result.weaknesses.length) {
+      const none = document.createElement('li');
+      none.className = 'weakness-empty weakness-none';
+      none.textContent = 'No common patterns found. Its strength comes from length and randomness.';
+      analyseWeaknesses.replaceChildren(none);
+      return;
+    }
+    analyseWeaknesses.replaceChildren(...result.weaknesses.map((weakness) => {
+      const item = document.createElement('li');
+      item.className = 'weakness';
+      item.dataset.type = weakness.type;
+      const tag = document.createElement('span');
+      tag.className = 'weakness-tag';
+      tag.textContent = weakness.title;
+      const text = document.createElement('span');
+      text.className = 'weakness-text';
+      text.textContent = weakness.text;
+      item.append(tag, text);
+      return item;
+    }));
+  };
+
+  const renderAnalysis = () => {
+    const result = analysePassword(analyseInput.value);
+    analyseScore.dataset.score = result ? String(result.score) : '';
+    analyseMeter.setAttribute('aria-valuenow', result ? String(result.score) : '0');
+    analyseMeter.setAttribute('aria-valuetext', result ? `${result.score} of 4, ${result.label}` : 'No password');
+    analyseLabel.textContent = result ? result.label : 'Waiting for a password';
+    analyseScoreValue.textContent = result ? `${result.score} / 4` : '– / 4';
+    if (result) {
+      analyseGuesses.textContent = `10^${result.log10.toFixed(2)}`;
+      analyseGuessesHint.textContent = `≈ ${formatGuesses(result.log10)} guesses${result.truncated ? ` (first ${STRENGTH_MAX_LENGTH} characters)` : ''}`;
+      analyseEntropy.textContent = `${result.entropyBits.toFixed(1)} bits`;
+      analyseCharset.textContent = `Naive charset estimate: ${result.charsetBits.toFixed(1)} bits`;
+    } else {
+      analyseGuesses.textContent = '–';
+      analyseGuessesHint.textContent = 'log₁₀ of the guesses a smart cracker needs';
+      analyseEntropy.textContent = '–';
+      analyseCharset.textContent = 'Pattern-aware, from the guess estimate';
+    }
+    renderCrackTimes(result);
+    renderWeaknesses(result);
+  };
+
+  const setPasswordVisible = (visible) => {
+    analyseInput.type = visible ? 'text' : 'password';
+    analyseToggleBtn.setAttribute('aria-pressed', String(visible));
+    const label = visible ? 'Hide password' : 'Show password';
+    analyseToggleBtn.setAttribute('aria-label', label);
+    analyseToggleBtn.dataset.tooltip = label;
+  };
+
+  analyseInput.addEventListener('input', renderAnalysis);
+  analyseToggleBtn.addEventListener('click', () => {
+    setPasswordVisible(analyseInput.type === 'password');
+    analyseInput.focus();
+  });
+  analyseClearBtn.addEventListener('click', () => {
+    analyseInput.value = '';
+    renderAnalysis();
+    analyseInput.focus();
+  });
+  analyseGeneratedBtn.addEventListener('click', () => {
+    if (!passwordOutput.value) return;
+    analyseInput.value = passwordOutput.value;
+    renderAnalysis();
+    setActiveMode('analyse');
+    window.DevToolsMain.writeHashState('analyse');
+  });
+
+  // Seed with xkcd 936's example so the panel explains itself on arrival:
+  // it looks complex but scores only "Fair".
+  analyseInput.value = 'Tr0ub4dor&3';
+  renderAnalysis();
+
+  window.DevToolsMain.onHashState((value) => setActiveMode(value));
+  setActiveMode(window.DevToolsMain.readHashState());
 
   updateBulkButton();
   updateMinState();

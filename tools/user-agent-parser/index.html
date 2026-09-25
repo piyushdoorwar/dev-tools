@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User-Agent Parser</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">User-Agent Parser</h1>
+            </div>
+            <div class="header-right">
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="How it works" aria-label="How it works">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <section class="panel ua-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">User-Agent string</h2>
+                <div class="action-group">
+                    <button class="btn btn-secondary" type="button" data-action="mine">Use my browser</button>
+                    <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="copy-ua" data-tooltip="Copy User-Agent" aria-label="Copy User-Agent">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="panel-body">
+                <textarea id="ua-input" class="ua-input" rows="2" spellcheck="false" autocomplete="off"
+                          aria-label="User-Agent string" placeholder="Paste a User-Agent string, e.g. from a request log or the User-Agent header…"></textarea>
+                <div class="tokens" id="tokens" aria-label="User-Agent tokens"></div>
+                <div class="status-bar" id="status" role="status">
+                    <span class="status-msg">Ready</span>
+                    <span class="tok-legend" aria-hidden="true">
+                        <span class="legend-dot tok-browser"></span>browser
+                        <span class="legend-dot tok-engine"></span>engine
+                        <span class="legend-dot tok-platform"></span>platform
+                        <span class="legend-dot tok-bot"></span>bot
+                        <span class="legend-dot tok-compat"></span>compatibility
+                    </span>
+                </div>
+                <div class="samples">
+                    <span class="field-label">Samples</span>
+                    <div class="sample-list" id="samples"></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="main-content">
+            <section class="panel parsed-panel">
+                <div class="panel-header">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">Parsed</h2>
+                        <div class="verdict" id="verdict"></div>
+                    </div>
+                    <button class="btn btn-primary" type="button" data-action="copy-json">Copy JSON</button>
+                </div>
+                <div class="panel-body">
+                    <dl class="details" id="details"></dl>
+                    <ul class="notes" id="notes" aria-label="Notes"></ul>
+                </div>
+            </section>
+
+            <section class="panel hints-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Client Hints</h2>
+                    <span class="badge info">This browser only</span>
+                </div>
+                <div class="panel-body">
+                    <p class="hints-note" id="hints-note"></p>
+                    <dl class="details" id="hints"></dl>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How it works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Reading a User-Agent</strong></p>
+                        <ul class="tip-list">
+                            <li>A UA is a list of <span class="hint-code">product/version</span> tokens and <span class="hint-code">(comments)</span>. The first comment usually holds the OS, device and CPU.</li>
+                            <li>Most tokens are compatibility lies: every browser says <span class="hint-code">Mozilla/5.0</span>, Chromium browsers also claim <span class="hint-code">Safari/537.36</span>, and WebKit says <span class="hint-code">like Gecko</span>. The parser checks the most specific token first — <span class="hint-code">Edg/</span> before <span class="hint-code">Chrome/</span> before <span class="hint-code">Safari/</span>.</li>
+                            <li>Safari's version is in <span class="hint-code">Version/</span>; its <span class="hint-code">Safari/</span> token is the frozen WebKit build.</li>
+                            <li>Every browser on iOS and iPadOS uses WebKit, so <span class="hint-code">CriOS</span>, <span class="hint-code">FxiOS</span> and <span class="hint-code">EdgiOS</span> are Chrome, Firefox and Edge skins over Safari's engine.</li>
+                            <li>Brave, Arc and Vivaldi send exactly Chrome's UA. Nothing in the string tells them apart.</li>
+                        </ul>
+                        <p><strong>UA reduction and frozen values</strong></p>
+                        <ul class="tip-list">
+                            <li>Chromium froze most of its UA to cut fingerprinting: minor versions are always <span class="hint-code">.0.0.0</span>, Windows is always <span class="hint-code">NT 10.0</span> (so Windows 10 and 11 look the same), and Android is always <span class="hint-code">Android 10; K</span>.</li>
+                            <li>Safari, Chrome and Firefox all report macOS as <span class="hint-code">10_15_7</span> (Firefox: <span class="hint-code">10.15</span>) on every release since Catalina, and say <span class="hint-code">Intel</span> on Apple Silicon too.</li>
+                            <li>iPadOS Safari asks for desktop sites with a Mac UA by default, so an iPad can look like a Mac.</li>
+                        </ul>
+                        <p><strong>Why Client Hints are more reliable</strong></p>
+                        <ul class="tip-list">
+                            <li>User-Agent Client Hints (<span class="hint-code">navigator.userAgentData</span> and the <span class="hint-code">Sec-CH-UA-*</span> headers) give structured values rather than a string to sniff: real brands, platform version, architecture and model.</li>
+                            <li>High-entropy values are only sent when asked for, via <span class="hint-code">getHighEntropyValues()</span> or an <span class="hint-code">Accept-CH</span> response header. On Windows, a platform version of 13 or higher means Windows 11.</li>
+                            <li>Only Chromium browsers implement them. Firefox and Safari don't, so there the UA string is all there is. The Client Hints panel always describes <em>this</em> browser, not the string you pasted.</li>
+                        </ul>
+                        <p><strong>Bots</strong></p>
+                        <ul class="tip-list">
+                            <li>Known crawlers (Googlebot, Bingbot, GPTBot, ClaudeBot…), HTTP libraries (curl, python-requests, Go-http-client…) and headless browsers are flagged. Any client can send any UA, so verify real crawlers by reverse DNS or their published IP ranges.</li>
+                        </ul>
+                        <p>Everything is parsed in your browser; nothing is sent anywhere.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

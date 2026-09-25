@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Encrypt / Decrypt</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Text Encrypt / Decrypt</h1>
+            </div>
+            <div class="header-right">
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="How it works" aria-label="How it works">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="option-group">
+                    <span class="toolbar-label">Direction</span>
+                    <div class="segment" id="direction-switch" role="group" aria-label="Direction">
+                        <button class="segment-btn active" type="button" data-direction="encrypt" aria-pressed="true">Encrypt</button>
+                        <button class="segment-btn" type="button" data-direction="decrypt" aria-pressed="false">Decrypt</button>
+                    </div>
+                    <button class="action-btn" type="button" data-action="swap" data-tooltip="Swap input and output" aria-label="Swap input and output">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-swap"></use></svg>
+                    </button>
+                </div>
+                <div class="option-group">
+                    <span class="toolbar-label">Key</span>
+                    <div class="segment" id="key-mode-switch" role="group" aria-label="Key type">
+                        <button class="segment-btn active" type="button" data-key-mode="password" aria-pressed="true">Password</button>
+                        <button class="segment-btn" type="button" data-key-mode="raw" aria-pressed="false">Raw key</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="toolbar-right">
+                <div class="option-group" data-encrypt-only>
+                    <span class="toolbar-label">Format</span>
+                    <div class="segment" id="format-switch" role="group" aria-label="Output format">
+                        <button class="segment-btn active" type="button" data-format="compact" aria-pressed="true">Compact</button>
+                        <button class="segment-btn" type="button" data-format="json" aria-pressed="false">JSON</button>
+                    </div>
+                </div>
+                <div class="option-group" data-encrypt-only>
+                    <span class="toolbar-label">Encoding</span>
+                    <div class="segment" id="encoding-switch" role="group" aria-label="Base64 alphabet">
+                        <button class="segment-btn active" type="button" data-encoding="base64" aria-pressed="true">Base64</button>
+                        <button class="segment-btn" type="button" data-encoding="base64url" aria-pressed="false">Base64url</button>
+                    </div>
+                </div>
+                <span class="detect-note" id="detect-note" hidden>Format and encoding are detected from the input</span>
+            </div>
+        </div>
+
+        <div class="keybar">
+            <div class="key-group" id="password-group">
+                <label class="field-label" for="password">Password</label>
+                <div class="secret-row">
+                    <input type="password" id="password" spellcheck="false" autocomplete="off" placeholder="Passphrase" aria-describedby="password-strength">
+                    <button class="btn btn-ghost reveal-btn" type="button" id="toggle-password" aria-pressed="false" aria-controls="password">Show</button>
+                </div>
+                <span class="key-hint" id="password-strength" aria-live="polite"></span>
+            </div>
+
+            <div class="key-group" id="iterations-group" data-encrypt-only>
+                <span class="field-label" id="iterations-label">PBKDF2 iterations</span>
+                <div class="segment" id="iterations-switch" role="group" aria-labelledby="iterations-label">
+                    <button class="segment-btn" type="button" data-iterations="100000" aria-pressed="false">100k</button>
+                    <button class="segment-btn" type="button" data-iterations="310000" aria-pressed="false">310k</button>
+                    <button class="segment-btn active" type="button" data-iterations="600000" aria-pressed="true">600k</button>
+                    <button class="segment-btn" type="button" data-iterations="1000000" aria-pressed="false">1M</button>
+                </div>
+                <span class="key-hint" id="iterations-hint">OWASP 2023 minimum for PBKDF2-HMAC-SHA-256</span>
+            </div>
+
+            <div class="key-group key-group-wide" id="raw-key-group" hidden>
+                <label class="field-label" for="raw-key">256-bit key</label>
+                <div class="secret-row">
+                    <input type="text" id="raw-key" spellcheck="false" autocomplete="off" placeholder="64 hex characters, or Base64 of 32 bytes" aria-describedby="raw-key-hint">
+                    <button class="btn" type="button" data-action="generate-key">Generate key</button>
+                    <button class="action-btn" type="button" data-action="copy-key" data-tooltip="Copy key" aria-label="Copy key">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                    </button>
+                </div>
+                <span class="key-hint" id="raw-key-hint" aria-live="polite"></span>
+            </div>
+
+            <div class="run-group">
+                <button class="btn btn-primary" type="button" id="run-btn">Encrypt</button>
+                <span class="key-hint">Ctrl+Enter</span>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <section class="editor-panel left-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="input-title">Plain text</h2>
+                    <div class="action-bar">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Load sample" aria-label="Load sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea class="editor-textarea" id="input-editor" spellcheck="false" aria-label="Input" placeholder="Type or paste the text to encrypt..."></textarea>
+                    <div class="status-bar" id="input-status">
+                        <span class="status-text">Ready</span>
+                        <span class="char-count" id="input-count">0 chars</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="editor-panel right-panel" id="output-panel">
+                <div class="panel-header">
+                    <div class="segment" role="tablist" aria-label="Output view">
+                        <button class="segment-btn active" type="button" role="tab" aria-selected="true" data-view="output" id="output-title">Encrypted</button>
+                        <button class="segment-btn" type="button" role="tab" aria-selected="false" data-view="envelope">Envelope</button>
+                        <button class="segment-btn" type="button" role="tab" aria-selected="false" data-view="interop">Interop</button>
+                    </div>
+                    <div class="action-bar">
+                        <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy output" aria-label="Copy output">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="download" data-tooltip="Download output" aria-label="Download output">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea class="editor-textarea" id="output-editor" data-pane="output" spellcheck="false" readonly aria-label="Output" placeholder="Output appears here..."></textarea>
+
+                    <div class="pane-scroll" data-pane="envelope" hidden>
+                        <p class="pane-empty" id="envelope-empty">Encrypt something to see its parts.</p>
+                        <dl class="details" id="envelope-details" hidden></dl>
+                    </div>
+
+                    <div class="pane-scroll" data-pane="interop" hidden>
+                        <p class="pane-note">These decrypt the <strong>compact</strong> format (Base64 or Base64url). <span class="hint-code">openssl enc</span> cannot: it refuses AEAD modes such as GCM.</p>
+                        <div class="snippet">
+                            <div class="snippet-header">
+                                <span class="snippet-title">Python · cryptography</span>
+                                <button class="action-btn" type="button" data-action="copy-snippet" data-snippet="python" data-tooltip="Copy Python" aria-label="Copy Python snippet">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                            </div>
+                            <pre class="snippet-code" id="snippet-python"></pre>
+                        </div>
+                        <div class="snippet">
+                            <div class="snippet-header">
+                                <span class="snippet-title">Node.js · node:crypto</span>
+                                <button class="action-btn" type="button" data-action="copy-snippet" data-snippet="node" data-tooltip="Copy Node.js" aria-label="Copy Node.js snippet">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                </button>
+                            </div>
+                            <pre class="snippet-code" id="snippet-node"></pre>
+                        </div>
+                    </div>
+
+                    <div class="status-bar" id="output-status" role="status">
+                        <span class="status-text">Ready</span>
+                        <span class="char-count" id="output-count">0 chars</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How it works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Everything runs locally.</strong> Text, passwords and keys never leave this tab; encryption uses the browser's WebCrypto.</p>
+
+                        <p><strong>Algorithm</strong></p>
+                        <ul class="tip-list">
+                            <li><span class="hint-code">AES-256-GCM</span> with a random 12-byte IV and a 16-byte authentication tag. GCM is authenticated: a wrong password or a single changed byte is detected, never silently decrypted into garbage.</li>
+                            <li>The key comes from your password via <span class="hint-code">PBKDF2-HMAC-SHA-256</span> with a random 16-byte salt. 600,000 iterations is the OWASP 2023 recommendation; 310,000 was the 2021 figure. Every message gets a fresh salt and IV, so encrypting the same text twice gives different output.</li>
+                            <li>The password is encoded as UTF-8 exactly as typed (no Unicode normalisation).</li>
+                            <li><strong>Raw key</strong> skips PBKDF2 and uses a 256-bit key you supply as 64 hex characters or Base64. Use it when a machine holds the key; use a password when a person has to remember it.</li>
+                        </ul>
+
+                        <p><strong>Compact format, version 1</strong></p>
+                        <ul class="tip-list">
+                            <li>One Base64 or Base64url string of these bytes: <span class="hint-code">version (1) = 0x01</span> · <span class="hint-code">kdf id (1)</span> · <span class="hint-code">iterations (4, uint32 big-endian)</span> · <span class="hint-code">salt (16)</span> · <span class="hint-code">IV (12)</span> · <span class="hint-code">ciphertext</span> · <span class="hint-code">tag (16)</span>.</li>
+                            <li>kdf id <span class="hint-code">1</span> = PBKDF2-HMAC-SHA-256. kdf id <span class="hint-code">0</span> = raw key; its iterations are 0 and its salt is 16 zero bytes. Changing a header byte either changes the derived key or makes the header invalid, so tampering with it is caught too.</li>
+                            <li>The <strong>Envelope</strong> tab shows each part in hex, and <strong>Interop</strong> has Python and Node.js code that decrypts this format.</li>
+                        </ul>
+
+                        <p><strong>JSON envelope</strong></p>
+                        <ul class="tip-list">
+                            <li><span class="hint-code">{"v":1,"alg":"A256GCM","kdf":"PBKDF2-SHA256","iter":600000,"salt":…,"iv":…,"ct":…,"tag":…}</span>, with the binary fields in the chosen alphabet. A raw-key envelope has <span class="hint-code">"kdf":"none"</span> and no iter or salt.</li>
+                            <li>Decrypt detects the format (compact or JSON) and the alphabet (Base64 or Base64url, padded or not) on its own.</li>
+                        </ul>
+
+                        <p><strong>Errors</strong></p>
+                        <ul class="tip-list">
+                            <li><em>Authentication failed</em>: the password or key is wrong, or the data was changed. GCM cannot tell the two apart, by design.</li>
+                            <li><em>Truncated</em>: fewer bytes than the 50 a version-1 token needs, or Base64 whose length cannot be complete.</li>
+                            <li><em>Unknown version</em>: the first byte is not 1, so it was not made by this format.</li>
+                        </ul>
+
+                        <p><strong>Ciphers left out on purpose</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>RC4</strong>: its keystream is measurably biased and plaintext can be recovered; RFC 7465 bans it from TLS.</li>
+                            <li><strong>Rabbit</strong>: a stream cipher with little public cryptanalysis and no integrity check. It survives mainly because CryptoJS ships it.</li>
+                            <li><strong>Triple DES</strong>: its 64-bit block falls to birthday attacks such as Sweet32 once one key has encrypted a few tens of gigabytes, and NIST disallowed it for encryption after 2023.</li>
+                            <li><strong>AES-CBC without a MAC</strong>: an attacker can flip plaintext bits and use padding-oracle attacks, and a wrong password often "decrypts" to garbage instead of failing. CryptoJS's passphrase mode adds a one-round MD5 key derivation on top.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

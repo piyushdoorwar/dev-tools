@@ -13,12 +13,16 @@ const MODALS = {
   'fake-data-generator': ['#schemaHelpBtn', '#schemaHelpModal'],
   'http-status-codes':   ['#helpBtn', '#helpModal'],
   'json-formatter':      ['#helpBtn', '#helpModal'],
+  'key-pair-generator':  ['#helpBtn', '#helpModal'],
+  'otp-generator':       ['#helpBtn', '#helpModal'],
   'regex-cheatsheet':    ['#helpBtn', '#helpModal'],
   'regex-tester':        ['#openCheatSheetBtn', '#cheatSheetModal'],
   'string-escaper':      ['#helpBtn', '#helpModal'],
   'subnet-calculator':   ['#helpBtn', '#helpModal'],
+  'text-encryptor':      ['#helpBtn', '#helpModal'],
   'text-utilities':      ['#helpBtn', '#helpModal'],
   'timestamp-converter': ['#helpBtn', '#helpModal'],
+  'user-agent-parser':   ['#helpBtn', '#helpModal'],
 };
 
 for (const [tool, [trigger, modal]] of Object.entries(MODALS)) {

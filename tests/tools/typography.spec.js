@@ -3,8 +3,8 @@ import { openTool } from '../helpers.js';
 
 const TOOLS = ['base-converter','bcrypt-generator','certificate-decoder','chmod-calculator','color-converter','cron-expression-generator','crypto-generator','docker-compose-converter','encoder-decoder','env-json-shell-converter','fake-data-generator','file-compressor',
  'hash-generator','html-preview','http-status-codes','id-generator','image-toolkit','json-diff','json-formatter', 'json-toon-converter',
- 'json-xml-converter','json-yaml-toml-converter','jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester',
- 'sql-formatter','string-escaper','subnet-calculator','text-diff','text-utilities','timestamp-converter','unit-converter','url-parser'];
+ 'json-xml-converter','json-yaml-toml-converter','jwt-debugger','key-pair-generator','markdown-editor','otp-generator','qr-generator','regex-cheatsheet','regex-tester',
+ 'sql-formatter','string-escaper','subnet-calculator','text-diff','text-encryptor','text-utilities','timestamp-converter','unit-converter','url-parser','user-agent-parser'];
 
 const titleStyle = (page) => page.evaluate(() => {
   const h1 = document.querySelector('h1');

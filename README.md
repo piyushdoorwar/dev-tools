@@ -26,8 +26,10 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - JSON ⇄ XML Converter
 - JSON ⇄ YAML ⇄ TOML Converter
 - JWT Debugger
+- Key Pair Generator (RSA / ECDSA / Ed25519)
 - Lorem Ipsum Generator
 - Markdown Editor
+- OTP Generator (TOTP / HOTP)
 - QR Generator
 - Regex Cheat Sheet
 - Regex Tester
@@ -36,9 +38,11 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - Subnet Calculator (IPv4 / IPv6)
 - Text Cleaner
 - Text Diff
+- Text Encrypt / Decrypt (AES-256-GCM)
 - Timestamp Converter
 - Unit Converter
 - URL Parser
+- User-Agent Parser
 - Word & Character Counter
 
 ## Run locally

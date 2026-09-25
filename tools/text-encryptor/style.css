@@ -1,0 +1,558 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    position: relative;
+    display: block;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    background: rgba(26, 26, 26, 0.72);
+    backdrop-filter: blur(12px);
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.35rem 1.75rem;
+    background-color: rgba(0, 0, 0, 0.18);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.header-left,
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    flex: 1;
+    gap: 1.25rem;
+    padding: 1.25rem 1.25rem 1.5rem;
+    overflow: hidden;
+}
+
+.editor-panel {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(30, 30, 30, 0.7);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    background-color: rgba(37, 37, 37, 0.55);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-title {
+    margin: 0;
+}
+
+.action-bar {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+    padding: 0.375rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(0, 0, 0, 0.22);
+}
+
+.action-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background-color: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    min-height: 36px;
+    min-width: 36px;
+}
+
+.action-btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.action-btn.is-copied,
+.action-btn.is-downloaded,
+.action-btn.is-confirmed {
+    color: var(--accent-green);
+    border-color: rgba(0, 208, 156, 0.35);
+    background-color: rgba(0, 208, 156, 0.12);
+}
+
+.panel-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    overflow: hidden;
+}
+
+.editor-textarea {
+    flex: 1;
+    padding: 1.25rem;
+    background-color: rgba(0, 0, 0, 0.18);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    outline: none;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.7;
+    resize: none;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.editor-textarea:focus {
+    border-color: var(--accent-purple-light);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.16);
+}
+
+.editor-textarea.is-invalid {
+    border-color: rgba(255, 107, 157, 0.55);
+    box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.12);
+}
+
+.editor-textarea[readonly] {
+    color: var(--text-secondary);
+}
+
+.editor-textarea::placeholder {
+    color: var(--text-disabled);
+    font-style: italic;
+}
+
+/* Status Bar */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.9rem;
+    background-color: rgba(37, 37, 37, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+}
+
+.status-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-mono);
+}
+
+.status-text.success {
+    color: var(--accent-green);
+}
+
+.status-text.warning {
+    color: var(--accent-yellow);
+}
+
+.status-text.error {
+    color: var(--accent-pink);
+}
+
+
+/* Tooltips (custom; avoids native title popups) */
+.action-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    padding: 0.45rem 0.75rem;
+    background: rgba(37, 37, 37, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    z-index: 2000;
+    box-shadow: var(--shadow-md);
+}
+
+.action-btn[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.legend-intro p {
+    margin-top: var(--space-4);
+    color: var(--text-secondary);
+    font-size: var(--chrome-md);
+}
+
+.legend-intro p:first-child {
+    margin-top: 0;
+}
+
+.hint-code {
+    padding: 0.05rem 0.35rem;
+    border-radius: 6px;
+    background-color: rgba(255, 215, 0, 0.1);
+    color: var(--accent-yellow);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    overflow-wrap: anywhere;
+}
+
+/* --- Toolbar ------------------------------------------------------------ */
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3) var(--space-4);
+    flex-wrap: wrap;
+    padding: var(--space-3) 1.75rem;
+    background-color: rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid var(--border);
+}
+
+.toolbar-left,
+.toolbar-right,
+.option-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.toolbar-left,
+.toolbar-right {
+    column-gap: var(--space-5);
+}
+
+.segment {
+    display: flex;
+    gap: 0.2rem;
+    padding: 0.2rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.segment-btn {
+    padding: 0 0.85rem;
+}
+
+.detect-note {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+}
+
+/* --- Key bar ------------------------------------------------------------ */
+
+.keybar {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4) var(--space-6);
+    flex-wrap: wrap;
+    padding: var(--space-4) 1.75rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.key-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+#password-group {
+    flex: 1 1 320px;
+    max-width: 520px;
+}
+
+.key-group-wide {
+    flex: 1 1 480px;
+    max-width: 760px;
+}
+
+.secret-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.secret-row input {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-mono);
+}
+
+.secret-row input.is-invalid {
+    border-color: rgba(255, 107, 157, 0.55);
+}
+
+.reveal-btn {
+    min-width: 4.5rem;
+}
+
+.key-hint {
+    min-height: 1.2em;
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+}
+
+.key-hint.is-weak { color: var(--accent-pink); }
+.key-hint.is-fair { color: var(--accent-orange); }
+.key-hint.is-good { color: var(--accent-blue); }
+.key-hint.is-strong { color: var(--accent-green); }
+
+.run-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+    margin-left: auto;
+    /* Line the button up with the inputs, below their labels. */
+    padding-top: calc(var(--text-sm) * 1.5 + var(--space-2));
+}
+
+#run-btn {
+    min-width: 8.5rem;
+}
+
+/* --- Output panes ------------------------------------------------------- */
+
+.editor-panel.is-busy .editor-textarea[data-pane="output"] {
+    opacity: 0.55;
+}
+
+.char-count {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+    color: var(--text-muted);
+}
+
+.pane-scroll {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 0;
+    padding: var(--space-4);
+    overflow: auto;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+    background-color: rgba(0, 0, 0, 0.18);
+}
+
+.pane-empty,
+.pane-note {
+    color: var(--text-secondary);
+    font-size: var(--chrome-base);
+    line-height: var(--leading-normal);
+}
+
+.pane-empty.is-error {
+    color: var(--accent-pink);
+}
+
+.details {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: var(--space-3) var(--space-4);
+    font-size: var(--chrome-base);
+}
+
+.details dt {
+    color: var(--text-muted);
+}
+
+.details dd {
+    min-width: 0;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    word-break: break-all;
+}
+
+.details dd[data-part="salt"] { color: var(--accent-purple-light); }
+.details dd[data-part="iv"] { color: var(--accent-blue); }
+.details dd[data-part="ciphertext"] { color: var(--text-secondary); }
+.details dd[data-part="tag"] { color: var(--accent-green); }
+
+.snippet {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.snippet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.snippet-title {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.snippet-code {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background-color: rgba(0, 0, 0, 0.25);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+    line-height: 1.6;
+    white-space: pre;
+    tab-size: 4;
+}
+
+/* --- Responsive --------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+    .header,
+    .toolbar,
+    .keybar {
+        padding-left: 1.1rem;
+        padding-right: 1.1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Stacked, the editors no longer fit one screen, so the page scrolls
+       instead of the fixed-height desktop layout. */
+    body,
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .main-content {
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .editor-panel {
+        flex: none;
+        min-height: 60vh;
+    }
+
+    .run-group {
+        margin-left: 0;
+        padding-top: 0;
+    }
+
+    .secret-row {
+        flex-wrap: wrap;
+    }
+}
+}

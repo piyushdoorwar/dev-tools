@@ -8,6 +8,12 @@ const rightTitle = document.getElementById('right-title');
 const leftStatus = document.getElementById('left-status');
 const rightStatus = document.getElementById('right-status');
 const formatBtns = document.querySelectorAll('.mode-btn[data-format]');
+const taskBtns = document.querySelectorAll('.mode-btn[data-task]');
+const appContainer = document.querySelector('.app-container');
+const indentSelect = document.getElementById('format-indent');
+const indentOption = document.querySelector('.indent-option');
+const formatNote = document.getElementById('format-note');
+const commentWarning = document.getElementById('comment-warning');
 
 // smol-toml's CommonJS bundle fills the `exports` object index.html provides.
 const TOML = window.exports && typeof window.exports.parse === 'function' ? window.exports : null;
@@ -27,8 +33,14 @@ const FORMATS = {
 };
 
 // Current direction. The hash mirrors it as `from-to`, e.g. #yaml-json.
+// from === to is the Format task (#yaml-yaml): re-serialize in place.
 let fromFormat = 'json';
 let toFormat = 'yaml';
+
+// The output format to return to when leaving the Format task.
+let convertTarget = 'yaml';
+
+const isFormatting = () => fromFormat === toFormat;
 
 // Whether the output pane reflects the current input. Stale output is left in
 // place while the input is mid-edit and invalid, but must not be swapped in.
@@ -59,11 +71,13 @@ function init() {
     updateMode();
     setupEventListeners();
     saveToHistory();
+    // A formatter link (#yaml-yaml) should land on something to format.
+    if (isFormatting()) loadSample();
 }
 
 function parseHash(value) {
     const [from, to] = String(value || '').split('-');
-    if (FORMATS[from] && FORMATS[to] && from !== to) return { from, to };
+    if (FORMATS[from] && FORMATS[to]) return { from, to };
     return null;
 }
 
@@ -84,13 +98,22 @@ function setupEventListeners() {
         });
     });
 
+    taskBtns.forEach(btn => {
+        btn.addEventListener('click', () => setTask(btn.dataset.task));
+    });
+
+    indentSelect.addEventListener('change', () => {
+        if (isFormatting()) handleConvert();
+    });
+
     DevToolsMain.onHashState((value) => {
         const parsed = parseHash(value);
         if (!parsed || (parsed.from === fromFormat && parsed.to === toFormat)) return;
         fromFormat = parsed.from;
         toFormat = parsed.to;
         updateMode();
-        handleConvert();
+        if (isFormatting() && !leftEditor.value.trim()) loadSample();
+        else handleConvert();
     });
 
     document.querySelectorAll('.action-btn').forEach(btn => {
@@ -116,6 +139,11 @@ function setupEventListeners() {
  * pastes YAML before switching the input to YAML should not lose it. */
 function setFromFormat(format) {
     if (format === fromFormat) return;
+    if (isFormatting()) {
+        fromFormat = toFormat = format;
+        commitMode();
+        return;
+    }
     if (format === toFormat) {
         swapDirection();
         return;
@@ -136,6 +164,7 @@ function setToFormat(format) {
 
 // Swap direction, carrying the current output over as the new input.
 function swapDirection() {
+    if (isFormatting()) return;
     const output = rightEditor.value;
     [fromFormat, toFormat] = [toFormat, fromFormat];
     if (output && outputIsCurrent) {
@@ -145,10 +174,26 @@ function swapDirection() {
     commitMode();
 }
 
+/* Format pins the output to the input's format; Convert returns to the last
+ * output format used, or the next one along if that is the input's own. */
+function setTask(task) {
+    if ((task === 'format') === isFormatting()) return;
+    if (task === 'format') {
+        convertTarget = toFormat;
+        toFormat = fromFormat;
+    } else {
+        toFormat = convertTarget !== fromFormat
+            ? convertTarget
+            : Object.keys(FORMATS).find(format => format !== fromFormat);
+    }
+    commitMode();
+}
+
 function commitMode() {
     DevToolsMain.writeHashState(`${fromFormat}-${toFormat}`);
     updateMode();
-    handleConvert();
+    if (isFormatting() && !leftEditor.value.trim()) loadSample();
+    else handleConvert();
 }
 
 // Update Mode
@@ -160,13 +205,33 @@ function updateMode() {
         btn.setAttribute('aria-pressed', String(active));
     });
 
+    const formatting = isFormatting();
+    taskBtns.forEach(btn => {
+        const active = (btn.dataset.task === 'format') === formatting;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', String(active));
+    });
+    appContainer.classList.toggle('is-formatting', formatting);
+
     const from = FORMATS[fromFormat].label;
     const to = FORMATS[toFormat].label;
-    document.title = `${from} → ${to} Converter`;
     leftTitle.textContent = `${from} Input`;
-    rightTitle.textContent = `${to} Output`;
     leftEditor.placeholder = `Enter your ${from} here...`;
-    rightEditor.placeholder = `${to} output will appear here...`;
+    if (formatting) {
+        document.title = `${from} Formatter`;
+        rightTitle.textContent = `Formatted ${from}`;
+        rightEditor.placeholder = `Formatted ${from} will appear here...`;
+    } else {
+        document.title = `${from} → ${to} Converter`;
+        rightTitle.textContent = `${to} Output`;
+        rightEditor.placeholder = `${to} output will appear here...`;
+    }
+    // smol-toml's writer has no indent setting, and JSON has no comments.
+    indentOption.hidden = fromFormat === 'toml';
+    formatNote.textContent = fromFormat === 'json'
+        ? 'Key order is kept.'
+        : 'Key order is kept. Formatting re-serializes through a parser, so comments are not kept.';
+    updateCommentWarning();
 
     updateCharCounts();
     updateLineNumbers('left');
@@ -176,31 +241,63 @@ function updateMode() {
 /* ---------- Format layer ---------- */
 
 /* Returns every document in the input. Only YAML can hold more than one
- * (`---` separators, as in a multi-resource Kubernetes manifest). */
-function parseDocuments(format, text) {
+ * (`---` separators, as in a multi-resource Kubernetes manifest).
+ *
+ * options.preserveScalars (the Format task) loads YAML with the core schema:
+ * a date stays the string `2024-05-01` instead of becoming a Date that dumps
+ * back as `2024-05-01T00:00:00.000Z`, and `<<` merge keys stay literal rather
+ * than being expanded. Tags only the default schema knows (!!binary, !!set…)
+ * fall back to it. */
+function parseDocuments(format, text, options = {}) {
     switch (format) {
         case 'json':
             return [JSON.parse(text)];
-        case 'yaml':
-            return library('yaml').loadAll(text).filter(doc => doc !== undefined);
+        case 'yaml': {
+            const yaml = library('yaml');
+            const load = (schema) => yaml.loadAll(text, null, schema ? { schema } : undefined)
+                .filter(doc => doc !== undefined);
+            if (!options.preserveScalars) return load();
+            try {
+                return load(yaml.CORE_SCHEMA);
+            } catch (error) {
+                if (!/unknown tag/.test(error && error.message)) throw error;
+                return load();
+            }
+        }
         case 'toml':
             return [library('toml').parse(text)];
     }
     throw new Error(`Unknown format: ${format}`);
 }
 
-function stringifyDocuments(format, docs) {
-    if (format === 'yaml') return docs.map(doc => stringify('yaml', doc)).join('---\n');
-    return stringify(format, docs.length === 1 ? docs[0] : docs);
+// options: { indent } (spaces; JSON and YAML only), { preserveScalars } to
+// pair with parseDocuments' option of the same name.
+function stringifyDocuments(format, docs, options = {}) {
+    if (format === 'yaml') return docs.map(doc => stringify('yaml', doc, options)).join('---\n');
+    return stringify(format, docs.length === 1 ? docs[0] : docs, options);
 }
 
-function stringify(format, value) {
+function stringify(format, value, options = {}) {
+    const indent = options.indent || 2;
     switch (format) {
         case 'json':
-            return JSON.stringify(value, null, 2);
-        case 'yaml':
+            return JSON.stringify(value, null, indent);
+        case 'yaml': {
             // lineWidth -1: never fold long strings (URLs, commands) across lines.
-            return library('yaml').dump(value, { lineWidth: -1, noRefs: true });
+            const yaml = library('yaml');
+            const dumpOptions = { lineWidth: -1, noRefs: true, indent };
+            if (options.preserveScalars) {
+                // Dump with the schema parseDocuments loaded with, or the
+                // default schema would quote '2024-05-01' as a would-be date.
+                // A Date (from the !!tag fallback) needs the default schema.
+                try {
+                    return yaml.dump(value, { ...dumpOptions, schema: yaml.CORE_SCHEMA });
+                } catch (error) {
+                    return yaml.dump(value, dumpOptions);
+                }
+            }
+            return yaml.dump(value, dumpOptions);
+        }
         case 'toml':
             assertTomlCompatible(value);
             return library('toml').stringify(value).trimEnd() + '\n';
@@ -232,15 +329,96 @@ function firstLine(error) {
     return String(error && error.message || error).split('\n')[0].trim();
 }
 
+/* One-line parse error with a 1-based line and column where the parser gives
+ * one: js-yaml's mark is 0-based, smol-toml's TomlError is already 1-based,
+ * and V8's JSON.parse reports either "(line L column C)" or "at position N". */
+function describeParseError(format, error, text = '') {
+    if (format === 'yaml' && error && error.mark) {
+        return `Line ${error.mark.line + 1}, column ${error.mark.column + 1}: ${error.reason || firstLine(error)}`;
+    }
+    if (format === 'toml' && error && Number.isInteger(error.line)) {
+        const reason = firstLine(error).replace(/^Invalid TOML document:\s*/, '');
+        return `Line ${error.line}, column ${error.column}: ${reason}`;
+    }
+    if (format === 'json') {
+        const message = firstLine(error);
+        const lineCol = message.match(/\(line (\d+) column (\d+)\)/);
+        if (lineCol) return `Line ${lineCol[1]}, column ${lineCol[2]}: ${message.replace(/\s*\(line \d+ column \d+\)/, '')}`;
+        const position = message.match(/at position (\d+)/);
+        if (position) {
+            const before = text.slice(0, Number(position[1])).split('\n');
+            return `Line ${before.length}, column ${before[before.length - 1].length + 1}: ${message}`;
+        }
+        return message;
+    }
+    return firstLine(error);
+}
+
+/* True when YAML/TOML text has a `#` comment: a # outside quotes that starts
+ * the line or follows whitespace (YAML; TOML allows it anywhere unquoted).
+ * A heuristic, not a parse: a # inside a block scalar also counts, which errs
+ * on the side of warning. */
+function hasComments(format, text) {
+    if (format === 'json') return false;
+    for (const line of String(text).split('\n')) {
+        let quote = '';
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (quote) {
+                if (ch === '\\' && quote === '"') i++;
+                else if (ch === quote) quote = '';
+            } else if (ch === '"' || ch === "'") {
+                quote = ch;
+            } else if (ch === '#' && (format === 'toml' || i === 0 || /\s/.test(line[i - 1]))) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function updateCommentWarning() {
+    commentWarning.hidden = !(isFormatting() && hasComments(fromFormat, leftEditor.value));
+}
+
 function documentsLabel(format, docs) {
     const label = FORMATS[format].label;
     return docs.length > 1 ? `${label} (${docs.length} documents)` : label;
 }
 
+/* The Format task's sample is deliberately untidy so the first render shows
+ * what formatting does: YAML gets two documents, uneven indentation and a
+ * comment (which triggers the comment-loss warning); JSON arrives minified. */
+const MESSY_YAML_SAMPLE = `# Two documents, uneven indentation
+apiVersion: v1
+kind: Service
+metadata:
+      name: web
+      labels: {app: web, tier: frontend}
+spec:
+   ports:
+   -   port: 80
+       targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: web}
+spec:
+    replicas: 3
+    released: 2024-05-01
+`;
+
+function sampleText() {
+    if (!isFormatting()) return stringify(fromFormat, SAMPLE);
+    if (fromFormat === 'yaml') return MESSY_YAML_SAMPLE;
+    if (fromFormat === 'json') return JSON.stringify(SAMPLE);
+    return stringify(fromFormat, SAMPLE);
+}
+
 // Load Sample Data
 function loadSample() {
     try {
-        leftEditor.value = stringify(fromFormat, SAMPLE);
+        leftEditor.value = sampleText();
     } catch (error) {
         updateStatus('left', '✗ ' + firstLine(error), false, true);
         return;
@@ -318,7 +496,7 @@ function validateInput() {
         const docs = parseDocuments(fromFormat, content);
         updateStatus('left', `✓ Valid ${documentsLabel(fromFormat, docs)}`, true);
     } catch (error) {
-        updateStatus('left', '✗ ' + firstLine(error), false, true);
+        updateStatus('left', '✗ ' + describeParseError(fromFormat, error, content), false, true);
     }
 }
 
@@ -330,15 +508,15 @@ function rewriteInput(transform, message) {
         return;
     }
     try {
-        const docs = transform(parseDocuments(fromFormat, content));
-        leftEditor.value = stringifyDocuments(fromFormat, docs);
+        const docs = transform(parseDocuments(fromFormat, content, { preserveScalars: true }));
+        leftEditor.value = stringifyDocuments(fromFormat, docs, { preserveScalars: true });
         updateStatus('left', message, true);
         updateCharCount('left');
         updateLineNumbers('left');
         saveToHistory();
         handleConvert();
     } catch (error) {
-        updateStatus('left', '✗ ' + firstLine(error), false, true);
+        updateStatus('left', '✗ ' + describeParseError(fromFormat, error, content), false, true);
     }
 }
 
@@ -356,7 +534,9 @@ function sortObjectKeys(obj) {
 // Handle Convert
 function handleConvert() {
     const input = leftEditor.value.trim();
+    const formatting = isFormatting();
     outputIsCurrent = false;
+    updateCommentWarning();
 
     if (!input) {
         rightEditor.value = '';
@@ -369,15 +549,26 @@ function handleConvert() {
 
     let docs;
     try {
-        docs = parseDocuments(fromFormat, input);
+        docs = parseDocuments(fromFormat, input, { preserveScalars: formatting });
         updateStatus('left', `✓ Valid ${documentsLabel(fromFormat, docs)}`, true);
     } catch (error) {
-        updateStatus('left', '✗ ' + firstLine(error), false, true);
+        updateStatus('left', '✗ ' + describeParseError(fromFormat, error, input), false, true);
         updateStatus('right', 'Waiting for valid input', false);
         return;
     }
 
     try {
+        if (formatting) {
+            const indent = Number(indentSelect.value) || 2;
+            rightEditor.value = stringifyDocuments(toFormat, docs, { indent, preserveScalars: true });
+            outputIsCurrent = true;
+            const count = docs.length > 1 ? ` · ${docs.length} documents` : '';
+            const spacing = toFormat === 'toml' ? '' : ` · ${indent}-space indent`;
+            updateStatus('right', `✓ Formatted ${FORMATS[toFormat].label}${spacing}${count}`, true);
+            updateCharCount('right');
+            updateLineNumbers('right');
+            return;
+        }
         rightEditor.value = stringifyDocuments(toFormat, docs);
         outputIsCurrent = true;
         const note = docs.length > 1 && toFormat !== 'yaml' ? ` (${docs.length} documents → array)` : '';

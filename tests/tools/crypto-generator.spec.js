@@ -219,3 +219,198 @@ test('the security modal opens and closes', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(page.locator('#securityInfoModal')).toHaveAttribute('aria-hidden', 'true');
 });
+
+/* --- Strength analyser ----------------------------------------------------- */
+
+async function analyse(page, value) {
+  const input = page.locator('#analyseInput');
+  await input.fill(value);
+  await input.dispatchEvent('input');
+}
+
+const scoreOf = (page) => page.locator('#analyseScore').getAttribute('data-score');
+const weaknessTypes = (page) => page.locator('#analyseWeaknesses .weakness')
+  .evaluateAll((items) => items.map((item) => item.dataset.type));
+
+async function openAnalyser(page) {
+  await openTool(page, 'crypto-generator');
+  await page.locator('.mode-tab[data-mode="analyse"]').click();
+  await expect(page.locator('#mode-analyse')).toBeVisible();
+}
+
+test('the analyser tab is hash-linked and unknown hashes fall back', async ({ page }) => {
+  await openAnalyser(page);
+  await expect(page).toHaveURL(/#analyse$/);
+
+  await page.reload();
+  await expect(page.locator('#mode-analyse')).toBeVisible();
+  await expect(page.locator('.mode-tab[data-mode="analyse"]')).toHaveAttribute('aria-selected', 'true');
+
+  await page.evaluate(() => { window.location.hash = 'hashes'; });
+  await expect(page.locator('#mode-hashes')).toBeVisible();
+
+  await page.evaluate(() => { window.location.hash = 'nonsense'; });
+  await expect(page.locator('#mode-passwords')).toBeVisible();
+});
+
+test('the analyser arrives seeded and the password never reaches the URL', async ({ page }) => {
+  await openAnalyser(page);
+  await expect(page.locator('#analyseInput')).toHaveValue('Tr0ub4dor&3');
+  await expect(page.locator('#analyseScore')).not.toHaveAttribute('data-score', '');
+  await analyse(page, 'hunter2-secret');
+  expect(page.url()).not.toContain('hunter2');
+  await expect(page.locator('#analyseNote')).toContainText('never sent');
+});
+
+test('common passwords and their l33t spellings score 0', async ({ page }) => {
+  await openAnalyser(page);
+
+  await analyse(page, 'password');
+  expect(await scoreOf(page)).toBe('0');
+  await expect(page.locator('#analyseLabel')).toHaveText('Very weak');
+  expect(await weaknessTypes(page)).toContain('common');
+
+  await analyse(page, 'P@ssw0rd');
+  expect(await scoreOf(page)).toBe('0');
+  const types = await weaknessTypes(page);
+  expect(types).toContain('common');
+  expect(types).toContain('l33t');
+  await expect(page.locator('#analyseWeaknesses .weakness[data-type="l33t"]')).toContainText('password');
+});
+
+test('keyboard walks, sequences, repeats and dates are named', async ({ page }) => {
+  await openAnalyser(page);
+
+  await analyse(page, 'qwertyuiop');
+  expect(await weaknessTypes(page)).toContain('keyboard');
+  expect(Number(await scoreOf(page))).toBeLessThanOrEqual(1);
+
+  await analyse(page, 'zxcvfr4');
+  expect(await weaknessTypes(page)).toContain('keyboard');
+
+  for (const sequence of ['abcd', '1234', '9876']) {
+    await analyse(page, sequence);
+    expect(await weaknessTypes(page), sequence).toContain('sequence');
+  }
+
+  await analyse(page, 'abcabcabc');
+  expect(await scoreOf(page)).toBe('0');
+  expect(await weaknessTypes(page)).toContain('repeat');
+
+  await analyse(page, 'aaaa');
+  expect(await weaknessTypes(page)).toContain('repeat');
+
+  await analyse(page, '19871987');
+  expect(Number(await scoreOf(page))).toBeLessThanOrEqual(1);
+  const dateTypes = await weaknessTypes(page);
+  expect(dateTypes).toContain('repeat');
+  expect(dateTypes).toContain('date');
+
+  for (const date of ['2024', '12/05/1990']) {
+    await analyse(page, date);
+    expect(await weaknessTypes(page), date).toContain('date');
+  }
+});
+
+test('short passwords are called out; long ones are not', async ({ page }) => {
+  await openAnalyser(page);
+  await analyse(page, 'xK9#mQ2');
+  expect(await weaknessTypes(page)).toContain('length');
+  await analyse(page, 'xK9#mQ2$vL7!pR4@');
+  expect(await weaknessTypes(page)).not.toContain('length');
+});
+
+test('passphrases and random strings score high; Tr0ub4dor&3 is only moderate', async ({ page }) => {
+  await openAnalyser(page);
+
+  await analyse(page, 'correct horse battery staple');
+  expect(Number(await scoreOf(page))).toBeGreaterThanOrEqual(3);
+
+  await analyse(page, 'Tr0ub4dor&3');
+  const moderate = Number(await scoreOf(page));
+  expect(moderate).toBeGreaterThanOrEqual(1);
+  expect(moderate).toBeLessThanOrEqual(3);
+  expect(await weaknessTypes(page)).toContain('l33t');
+
+  await analyse(page, 'xK9#mQ2$vL7!pR4@nT8w');
+  expect(await scoreOf(page)).toBe('4');
+  await expect(page.locator('#analyseLabel')).toHaveText('Very strong');
+  await expect(page.locator('#analyseWeaknesses .weakness-none')).toBeVisible();
+  await expect(page.locator('#analyseMeter')).toHaveAttribute('aria-valuenow', '4');
+});
+
+test('guesses, entropy and every attack model get a crack time', async ({ page }) => {
+  await openAnalyser(page);
+
+  await analyse(page, 'password');
+  await expect(page.locator('#analyseGuesses')).toHaveText(/^10\^\d+\.\d\d$/);
+  await expect(page.locator('#analyseEntropy')).toHaveText(/bits$/);
+  const rows = page.locator('#analyseCrackTimes .crack-row');
+  await expect(rows).toHaveCount(4);
+  for (const id of ['onlineThrottled', 'onlineUnthrottled', 'offlineSlow', 'offlineFast']) {
+    await expect(rows.locator(`xpath=self::*[@data-attack="${id}"]`)).toHaveCount(1);
+  }
+  await expect(page.locator('[data-attack="offlineFast"] .crack-time')).toHaveText('less than a second');
+  await expect(page.locator('[data-attack="onlineThrottled"] .crack-time')).toHaveText(/minute/);
+
+  await analyse(page, 'xK9#mQ2$vL7!pR4@nT8w');
+  await expect(page.locator('[data-attack="offlineFast"] .crack-time')).toHaveText('centuries');
+});
+
+test('an empty password returns the analyser to its neutral state', async ({ page }) => {
+  await openAnalyser(page);
+  await analyse(page, 'password');
+  await analyse(page, '');
+
+  await expect(page.locator('#analyseScore')).toHaveAttribute('data-score', '');
+  await expect(page.locator('#analyseLabel')).toHaveText('Waiting for a password');
+  await expect(page.locator('#analyseGuesses')).toHaveText('–');
+  await expect(page.locator('#analyseWeaknesses .weakness')).toHaveCount(0);
+  await expect(page.locator('#analyseWeaknesses .weakness-empty')).toBeVisible();
+  await expect(page.locator('#analyseCrackTimes .crack-time').first()).toHaveText('–');
+
+  // The clear button does the same.
+  await analyse(page, 'password');
+  await page.locator('#analyseClearBtn').click();
+  await expect(page.locator('#analyseInput')).toHaveValue('');
+  await expect(page.locator('#analyseScore')).toHaveAttribute('data-score', '');
+});
+
+test('show/hide toggles the password field', async ({ page }) => {
+  await openAnalyser(page);
+  const input = page.locator('#analyseInput');
+  const toggle = page.locator('#analyseToggleBtn');
+  await expect(input).toHaveAttribute('type', 'password');
+
+  await toggle.click();
+  await expect(input).toHaveAttribute('type', 'text');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(toggle).toHaveAttribute('aria-label', 'Hide password');
+
+  await toggle.click();
+  await expect(input).toHaveAttribute('type', 'password');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+});
+
+test('a generated password can be sent to the analyser', async ({ page }) => {
+  await openTool(page, 'crypto-generator');
+  await page.locator('#lengthSlider').fill('32');
+  await page.locator('#lengthSlider').dispatchEvent('input');
+  const generated = await password(page);
+
+  await page.locator('#analyseGeneratedBtn').click();
+  await expect(page.locator('#mode-analyse')).toBeVisible();
+  await expect(page.locator('#analyseInput')).toHaveValue(generated);
+  expect(Number(await scoreOf(page))).toBe(4);
+});
+
+test('analysis stays fast on long input', async ({ page }) => {
+  await openAnalyser(page);
+  const elapsed = await page.evaluate(() => {
+    const start = performance.now();
+    analysePassword('aB3$'.repeat(8) + 'correcthorse'.repeat(4) + 'q1w2e3r4t5y6'.repeat(4));
+    analysePassword('x'.repeat(500));
+    return performance.now() - start;
+  });
+  expect(elapsed).toBeLessThan(1000);
+});

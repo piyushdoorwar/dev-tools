@@ -404,6 +404,69 @@ body {
     justify-content: flex-end;
 }
 
+/* Format options (Format task only) */
+.options-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    flex-wrap: wrap;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.option-label {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
+}
+
+.option .dd {
+    min-width: 120px;
+}
+
+.option .dd__trigger {
+    flex: 1;
+}
+
+.format-note {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+}
+
+.format-warning {
+    flex-basis: 100%;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--accent-yellow);
+    border-radius: var(--radius-control);
+    background: rgba(255, 215, 0, 0.08);
+    color: var(--accent-yellow);
+    font-size: var(--chrome-sm);
+    font-weight: 600;
+}
+
+.format-warning[hidden] {
+    display: none;
+}
+
+/* Both selectors carry a class so `.options-bar { display: flex }` and the
+   switcher's own display rule cannot out-rank the hidden state. */
+.app-container .format-only,
+.app-container.is-formatting .convert-only {
+    display: none;
+}
+
+.app-container.is-formatting .format-only {
+    display: flex;
+}
+
 .swap-btn {
     border-color: var(--border);
     border-radius: 999px;

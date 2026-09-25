@@ -50,17 +50,17 @@ const TOOL_ROUTES = [
   'json-toon-converter',
   'json-xml-converter',
   'json-yaml-toml-converter',
-  'jwt-debugger',
-  'markdown-editor',
+  'jwt-debugger','key-pair-generator',
+  'markdown-editor','otp-generator',
   'qr-generator',
   'regex-cheatsheet',
   'regex-tester',
   'sql-formatter',
   'string-escaper',
   'subnet-calculator',
-  'text-diff','text-utilities','timestamp-converter',
+  'text-diff','text-encryptor','text-utilities','timestamp-converter',
   'unit-converter',
-  'url-parser',
+  'url-parser','user-agent-parser',
 ];
 
 test('quick launch and recently used cards open their tools', async ({ page }) => {
