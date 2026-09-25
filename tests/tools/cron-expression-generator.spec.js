@@ -244,3 +244,71 @@ test('a schedule with no upcoming run says so instead of hanging', async ({ page
   await expect(page.locator('#runs')).toContainText('No run found');
   await expect(page.locator('#summary')).toContainText('in February');
 });
+
+const dowValues = (page) => page.locator('#breakdown .result-row').nth(4).locator('.result-value').textContent();
+
+test('7 as a day-of-week range end means Sunday after Saturday', async ({ page }) => {
+  await openTool(page, 'cron-expression-generator');
+
+  // 0-7 used to collapse to Sunday alone.
+  await setExpression(page, '0 0 * * 0-7');
+  await expect(page.locator('#error')).toBeHidden();
+  expect(await dowValues(page)).toBe('Sun, Mon, Tue, Wed, Thu, Fri, Sat');
+
+  await setExpression(page, '0 0 * * 5-7');
+  expect(await dowValues(page)).toBe('Sun, Fri, Sat');
+});
+
+test('only real day and month names are accepted', async ({ page }) => {
+  await openTool(page, 'cron-expression-generator');
+
+  await setExpression(page, '0 9 * * MONKEY');
+  await expect(page.locator('#error')).toBeVisible();
+
+  await setExpression(page, '0 9 * * monday');
+  await expect(page.locator('#error')).toBeHidden();
+  await expect(page.locator('#summary')).toContainText('Monday');
+
+  await setExpression(page, '0 9 1 JULY *');
+  await expect(page.locator('#error')).toBeHidden();
+  await expect(page.locator('#summary')).toContainText('July');
+});
+
+test('a space typed inside a field editor does not add a field', async ({ page }) => {
+  await openTool(page, 'cron-expression-generator');
+
+  await typeInto(page, '#f-minute', '1, 2');
+  await expect(page.locator('#cron-input')).toHaveValue('1,2 9-17 * * MON-FRI');
+  await expect(page.locator('#detected')).toHaveText('Standard 5-field cron');
+});
+
+test('the run list rolls forward once its first run has passed', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-09-18T09:02:30Z') });
+  await openTool(page, 'cron-expression-generator');
+  await setExpression(page, '*/5 * * * *');
+
+  expect((await runTimes(page))[0]).toBe('2026-09-18 09:05:00 Fri');
+  await page.clock.runFor(3 * 60 * 1000);
+  await expect.poll(async () => (await runTimes(page))[0]).toBe('2026-09-18 09:10:00 Fri');
+});
+
+test('the five field editors share one row on desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openTool(page, 'cron-expression-generator');
+  const tops = await page.locator('#field-grid .field-cell').evaluateAll(
+    (els) => els.map((el) => Math.round(el.getBoundingClientRect().top)),
+  );
+  expect(tops).toHaveLength(5);
+  expect(new Set(tops).size).toBe(1);
+});
+
+test('the toolbar does not break labels or the clock on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'cron-expression-generator');
+  const clock = await page.locator('#live-clock').boundingBox();
+  const label = await page.locator('.toolbar-right .toolbar-label').boundingBox();
+  // One line each.
+  expect(clock.height).toBeLessThan(26);
+  expect(label.height).toBeLessThan(26);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

@@ -151,3 +151,54 @@ test('copy puts the converted reading on the clipboard', async ({ page }) => {
   expect(copied).toBeTruthy();
   expect(copied).not.toBe('-');
 });
+
+test('switching category rewrites the hash without adding history entries', async ({ page }) => {
+  await openTool(page, 'unit-converter');
+  const before = await page.evaluate(() => history.length);
+
+  await page.locator('.category-chip', { hasText: 'Temperature' }).click();
+  await page.locator('.category-chip', { hasText: 'Speed' }).click();
+
+  // Assigning location.hash pushed one entry per click, hijacking the
+  // dashboard shell's back button.
+  expect(await page.evaluate(() => history.length)).toBe(before);
+  expect(await page.evaluate(() => location.hash)).toBe('#speed');
+});
+
+test('a hash change selects that category', async ({ page }) => {
+  await openTool(page, 'unit-converter');
+  await page.evaluate(() => { location.hash = 'temperature'; });
+  await expect(page.locator('.category-chip.active')).toHaveText('Temperature');
+  expect(await page.evaluate(() => selectedCategoryKey)).toBe('temperature');
+});
+
+test('a temperature below absolute zero is an error, not a negative kelvin', async ({ page }) => {
+  await openTool(page, 'unit-converter');
+  await page.locator('.category-chip', { hasText: 'Temperature' }).click();
+
+  await typeInto(page, '#value-input', '-300');
+  await expect(page.locator('#error')).toContainText('absolute zero');
+  await expect(page.locator('#result')).toHaveText('-');
+
+  await typeInto(page, '#value-input', '-273.15');
+  await expect(page.locator('#error')).toBeHidden();
+});
+
+test('copy reports when there is nothing to copy', async ({ page }) => {
+  await openTool(page, 'unit-converter');
+  await typeInto(page, '#value-input', '');
+  await page.locator('#copy-result').click();
+  await expect(page.locator('.toast', { hasText: 'Nothing to copy' })).toBeVisible();
+});
+
+test('every unit chip is visible without a nested scroll on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'unit-converter');
+
+  // The pickers were 130px scroll boxes, hiding half the units on a phone.
+  const clipped = await page.locator('#from-unit-list, #to-unit-list').evaluateAll(
+    (lists) => lists.some((list) => list.scrollHeight > list.clientHeight + 1),
+  );
+  expect(clipped).toBe(false);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

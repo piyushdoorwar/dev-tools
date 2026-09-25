@@ -36,8 +36,8 @@ const DAY_ALIASES = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 const MINUTE_DEF = { key: "minute", label: "Minute", min: 0, max: 59 };
 const HOUR_DEF = { key: "hour", label: "Hour", min: 0, max: 23 };
 const DOM_DEF = { key: "dom", label: "Day of month", min: 1, max: 31, blank: true };
-const MONTH_DEF = { key: "month", label: "Month", min: 1, max: 12, aliases: MONTH_ALIASES, aliasOffset: 1 };
-const DOW_DEF = { key: "dow", label: "Day of week", min: 0, max: 6, aliases: DAY_ALIASES, aliasOffset: 0, wrap: 7, blank: true };
+const MONTH_DEF = { key: "month", label: "Month", min: 1, max: 12, aliases: MONTH_ALIASES, aliasOffset: 1, names: MONTH_NAMES };
+const DOW_DEF = { key: "dow", label: "Day of week", min: 0, max: 6, aliases: DAY_ALIASES, aliasOffset: 0, wrap: 7, blank: true, names: DAY_NAMES };
 const SECOND_DEF = { key: "second", label: "Second", min: 0, max: 59 };
 
 const FIVE_FIELDS = [MINUTE_DEF, HOUR_DEF, DOM_DEF, MONTH_DEF, DOW_DEF];
@@ -75,6 +75,7 @@ const state = {
   zone: "UTC",
   spec: null,      // last successful parse
   source: "",      // which control last wrote the expression
+  nextRunMs: null, // first listed run, so the list can roll forward past it
 };
 
 /* --- Parsing ------------------------------------------------------------ */
@@ -114,7 +115,9 @@ function parseTerm(term, def) {
     const dash = body.indexOf("-", 1);
     if (dash !== -1) {
       const low = readValue(body.slice(0, dash), def);
-      const high = readValue(body.slice(dash + 1), def);
+      // As a range end, 7 is Sunday *after* Saturday: `0-7` and `1-7` mean the
+      // whole week, not Sunday alone / a wrap back to Sunday.
+      const high = readValue(body.slice(dash + 1), def, { rangeEnd: true });
       if (low === null) return fail(unknownValue(body.slice(0, dash), def));
       if (high === null) return fail(unknownValue(body.slice(dash + 1), def));
       start = low;
@@ -135,7 +138,9 @@ function parseTerm(term, def) {
   }
 
   const values = [];
-  for (let value = start; value <= end; value += step) values.push(value);
+  for (let value = start; value <= end; value += step) {
+    values.push(def.wrap !== undefined && value === def.wrap ? def.min : value);
+  }
   return { ok: true, values, wildcard: false };
 }
 
@@ -144,17 +149,24 @@ function unknownValue(text, def) {
   return `${def.label}: "${text}" is not a value in ${def.min}-${def.max}${named}.`;
 }
 
-function readValue(text, def) {
+function readValue(text, def, { rangeEnd = false } = {}) {
   const token = text.trim();
   if (token === "") return null;
   if (/^\d+$/.test(token)) {
     let value = Number(token);
     // Sunday is both 0 and 7.
-    if (def.wrap !== undefined && value === def.wrap) value = def.min;
+    if (def.wrap !== undefined && value === def.wrap) {
+      if (rangeEnd) return value;
+      value = def.min;
+    }
     return value >= def.min && value <= def.max ? value : null;
   }
   if (!def.aliases) return null;
-  const index = def.aliases.indexOf(token.slice(0, 3).toUpperCase());
+  // Three-letter names, or the full English name. Only the first three
+  // letters used to be read, so "MONKEY" parsed as Monday.
+  const upper = token.toUpperCase();
+  let index = def.aliases.indexOf(upper);
+  if (index === -1 && def.names) index = def.names.findIndex((name) => name.toUpperCase() === upper);
   return index === -1 ? null : index + def.aliasOffset;
 }
 
@@ -259,12 +271,24 @@ function zoneList() {
   return [...new Set(["UTC", LOCAL_ZONE, ...all])];
 }
 
+// Building a DateTimeFormat is far costlier than using one, and the scheduler
+// calls this several times per candidate run, so keep one per zone.
+const formatters = new Map();
+function formatterFor(zone) {
+  let fmt = formatters.get(zone);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat("en-CA", {
+      timeZone: zone, hour12: false,
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+    });
+    formatters.set(zone, fmt);
+  }
+  return fmt;
+}
+
 function partsIn(ms, zone) {
-  const fmt = new Intl.DateTimeFormat("en-CA", {
-    timeZone: zone, hour12: false,
-    year: "numeric", month: "2-digit", day: "2-digit",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
-  });
+  const fmt = formatterFor(zone);
   const out = {};
   for (const part of fmt.formatToParts(new Date(ms))) {
     if (part.type !== "literal") out[part.type] = Number(part.value);
@@ -477,6 +501,7 @@ function breakdownRow(field) {
 function runRow(run, index) {
   const row = document.createElement("div");
   row.className = "result-row run-row";
+  row.dataset.ms = String(run.ms);
 
   const position = document.createElement("span");
   position.className = "run-index";
@@ -533,6 +558,7 @@ function showError(message, fieldKey = "") {
 }
 
 function renderEmpty(message) {
+  state.nextRunMs = null;
   summaryNode.textContent = message;
   summaryNode.classList.remove("is-set");
   breakdownNode.innerHTML = "";
@@ -557,6 +583,7 @@ function render() {
   for (const def of spec.defs) breakdownNode.appendChild(breakdownRow(spec.fields[def.key]));
 
   const runs = nextRuns(spec, state.zone, Date.now());
+  state.nextRunMs = runs.length ? runs[0].ms : null;
   if (runs.length === 0) {
     runsNode.innerHTML = `<p class="empty-state">No run found in the next ${Math.round(SEARCH_DAYS / 365)} years. Check the day-of-month and month combination.</p>`;
     return;
@@ -622,7 +649,11 @@ function syncFieldGrid(spec) {
 }
 
 function writeFromFields() {
-  const values = [...fieldGrid.querySelectorAll(".field-input")].map((input) => input.value.trim() || "*");
+  // A field is one token; a space typed inside it ("1, 2") would otherwise
+  // split into an extra field and shift everything after it — five fields
+  // silently became a six-field expression with seconds.
+  const values = [...fieldGrid.querySelectorAll(".field-input")]
+    .map((input) => input.value.replace(/\s+/g, "") || "*");
   state.source = "fields";
   cronInput.value = values.join(" ");
   readExpression();
@@ -800,8 +831,26 @@ document.querySelectorAll("[data-action]").forEach((button) => {
 helpBtn.addEventListener("click", () => window.DevToolsMain.openModal(helpModal));
 
 function tickClock() {
-  const p = partsIn(Date.now(), state.zone);
+  const now = Date.now();
+  const p = partsIn(now, state.zone);
   liveClock.textContent = `${p.year}-${pad(p.month)}-${pad(p.day)} ${pad(p.hour)}:${pad(p.minute)}:${pad(p.second)}`;
+  refreshRuns(now);
+}
+
+// The list was computed once, so it went stale while the page sat open: the
+// first "next run" slid into the past and every "in N minutes" froze. Roll the
+// list forward once its head has passed, and otherwise just refresh the
+// relative labels in place, so focus on a row's copy button is not lost.
+function refreshRuns(now) {
+  if (!state.spec || state.spec.reboot || state.nextRunMs === null) return;
+  if (now >= state.nextRunMs) {
+    render();
+    return;
+  }
+  runsNode.querySelectorAll(".run-row").forEach((row) => {
+    const label = row.querySelector(".run-relative");
+    if (label && row.dataset.ms) label.textContent = relativeTo(Number(row.dataset.ms));
+  });
 }
 
 function init() {

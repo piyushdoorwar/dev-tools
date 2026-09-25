@@ -163,6 +163,9 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
+    /* Both panel headers hold the same rule line, but only one has an icon
+       button in it; reserve its height so the two headers line up. */
+    min-height: calc(var(--control-h) + 2 * var(--space-4) + 1px);
     padding: var(--space-4);
     border-bottom: 1px solid var(--border);
 }
@@ -281,6 +284,9 @@ body {
 @media (max-width: 900px) {
     .main-content {
         grid-template-columns: 1fr;
+        /* main-content flexes to fill the page; stacked, that spare height was
+           shared out between the two grid rows as a gap between the panels. */
+        align-content: start;
     }
 
     .app-container {

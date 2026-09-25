@@ -482,6 +482,14 @@ body {
   .toolbar-select {
     min-width: 160px;
   }
+
+  /* Stacked, the page scrolls as a whole; a 130px scroll box inside it hid
+     half of each unit list (Foot, Yard, Mile… on a phone) behind a second,
+     nested scrollbar. */
+  .unit-picker {
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 @media (max-width: 640px) {
@@ -507,9 +515,21 @@ body {
     width: 100%;
   }
 
+  /* The group caption sat beside its chips and took a third of the width,
+     so every group wrapped into a narrow column. Put it on its own line. */
+  .category-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    width: 100%;
+    padding: 0.5rem 0.65rem;
+  }
+
+  /* One line per unit (name, symbol, value) instead of three stacked lines. */
   .result-row {
-    grid-template-columns: 1fr;
-    gap: 0.25rem;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 0.5rem;
+    overflow-wrap: anywhere;
   }
 }
 }

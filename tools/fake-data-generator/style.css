@@ -849,7 +849,9 @@ body {
     background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(37, 37, 37, 0.95) 100%);
     border: 1px solid rgba(139, 92, 246, 0.3);
     border-radius: 20px;
-    min-width: 480px;
+    /* No 480px floor: on a phone it pushed the close button off-screen. */
+    min-width: 0;
+    max-width: calc(100vw - 2rem);
     max-height: 90vh;
     overflow: hidden;
     box-shadow: 
@@ -1313,7 +1315,9 @@ body {
 
 .field-row {
     display: grid;
-    grid-template-columns: minmax(160px, 1.3fr) minmax(140px, 1fr) minmax(180px, 1.2fr);
+    /* Zero floors: the 480px of minimums overflowed the schema panel (which
+       clips horizontally) between the 900px stack point and ~1150px. */
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1.2fr);
     gap: 0.75rem;
     padding: 0.85rem;
     padding-left: 2.4rem;
@@ -1678,5 +1682,95 @@ input[type="number"] {
     .field-row {
         grid-template-columns: 1fr;
     }
+}
+
+/* ==================== Stacked layout ====================
+   The page is locked to 100vh with every container clipping. Side by side
+   that is right, but the two panels only stacked at 480px, and even then each
+   got half a phone screen: the schema showed one field, cut off mid-row, and
+   the header actions (sample, clear) were pushed off the right edge. Below
+   900px let the page scroll, give each panel its natural / a usable height,
+   and wrap the header actions under the title. */
+@media (max-width: 900px) {
+    body {
+        height: auto;
+        overflow: auto;
+    }
+
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .main-content {
+        flex-direction: column;
+        overflow: visible;
+        padding: 1rem;
+    }
+
+    .editor-panel {
+        flex: none;
+        min-height: 0;
+    }
+
+    .schema-body,
+    .field-list {
+        overflow: visible;
+    }
+
+    .schema-body {
+        padding-right: 0.9rem;
+    }
+
+    .editor-panel.right-panel .panel-body {
+        height: min(70vh, 560px);
+        min-height: 320px;
+    }
+
+    .panel-header {
+        flex-wrap: wrap;
+        gap: 0.65rem;
+    }
+
+    .action-bar {
+        overflow: visible;
+        max-width: 100%;
+    }
+
+    .action-group {
+        width: auto;
+        max-width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .record-control {
+        width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    /* The title and the single info button fit on one line. */
+    .header {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .header-right {
+        width: auto;
+    }
+}
+
+/* The info button sits at the page's right edge, so a tooltip centred under
+   it hung ~50px past the viewport; once the stacked page could scroll, that
+   invisible box produced a horizontal scrollbar. Anchor it to the right. */
+.info-btn[data-tooltip]::after {
+    left: auto;
+    right: 0;
+    transform: translateY(4px);
+}
+
+.info-btn[data-tooltip]:hover::after {
+    transform: translateY(0);
 }
 }

@@ -255,6 +255,9 @@ function addFieldRow(field = {}, { focusNew = true } = {}) {
     if (event.target.matches(".field-name-input")) {
       updateRowValidation(row);
       updateStats();
+      // Renaming a field changes every record's keys; without this the JSON
+      // kept the old names until some other control happened to regenerate.
+      scheduleGenerate();
     }
     if (event.target.matches(".option-input")) {
       scheduleGenerate();
@@ -388,7 +391,7 @@ function createOptionInput(label, key, value, type = "number") {
   wrapper.className = "option-field";
   wrapper.innerHTML = `
     <label class="option-label">${label}</label>
-    <input class="option-input" data-option="${key}" type="${type}" value="${value}">
+    <input class="option-input" data-option="${key}" type="${type}" value="${escapeAttr(value ?? "")}">
   `;
   return wrapper;
 }
@@ -756,8 +759,14 @@ function formatDateInput(date) {
   return `${year}-${month}-${day}`;
 }
 
+// The range bounds are "YYYY-MM-DD" strings, which Date parses as UTC
+// midnight. Reading the result back with local getters shifted it a day early
+// west of Greenwich, so a date equal to the start bound came out *before* it.
 function formatDateOutput(date) {
-  return formatDateInput(date);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function setOutput(value) {
