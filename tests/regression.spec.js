@@ -33,9 +33,10 @@ test('Cloudflare Analytics uses the configured token on the dashboard', async ({
 
 const TOOL_ROUTES = [
   'base-converter',
+  'bcrypt-generator',
   'chmod-calculator',
   'cron-expression-generator',
-  'crypto-generator','encoder-decoder',
+  'crypto-generator','docker-compose-converter','encoder-decoder',
   'env-json-shell-converter',
   'fake-data-generator',
   'file-compressor',
@@ -56,6 +57,7 @@ const TOOL_ROUTES = [
   'regex-tester',
   'sql-formatter',
   'string-escaper',
+  'subnet-calculator',
   'text-diff','text-utilities','timestamp-converter',
   'unit-converter',
   'url-parser',

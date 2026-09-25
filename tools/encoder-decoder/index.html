@@ -22,6 +22,7 @@
                     <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="base64url">Base64url</button>
                     <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="url">URL</button>
                     <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="html">HTML Entities</button>
+                    <button class="mode-btn" type="button" role="tab" aria-selected="false" data-mode="file">File</button>
                 </div>
             </div>
         </header>
@@ -67,6 +68,13 @@
                         <button class="segment-btn" type="button" data-value="all">All non-ASCII</button>
                     </div>
                 </div>
+                <div class="option-group" data-for="file" hidden>
+                    <span class="toolbar-label">Output</span>
+                    <div class="segment" data-option="fileFormat" role="group" aria-label="File output format">
+                        <button class="segment-btn active" type="button" data-value="datauri">Data URI</button>
+                        <button class="segment-btn" type="button" data-value="base64">Raw Base64</button>
+                    </div>
+                </div>
                 <button class="action-btn" type="button" id="helpBtn" data-tooltip="Encoding reference">
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
                 </button>
@@ -94,6 +102,13 @@
                 </div>
                 <div class="panel-body">
                     <textarea class="editor-textarea" id="input-editor" spellcheck="false" placeholder="Type or paste text to encode..."></textarea>
+                    <input type="file" id="file-input" hidden>
+                    <button class="dropzone" type="button" id="dropzone" hidden>
+                        <img class="dropzone-preview" id="dropzone-preview" alt="" hidden>
+                        <svg class="dropzone-icon" id="dropzone-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-upload"></use></svg>
+                        <span class="dropzone-title" id="file-name">Drop a file here or click to choose</span>
+                        <span class="dropzone-meta" id="file-meta">Any type. The file never leaves your browser.</span>
+                    </button>
                     <div class="status-bar" id="input-status">
                         <span class="status-text">Ready</span>
                         <span class="char-count" id="input-count">0 chars</span>
@@ -115,6 +130,10 @@
                 </div>
                 <div class="panel-body">
                     <textarea class="editor-textarea" id="output-editor" spellcheck="false" readonly placeholder="Output appears here..."></textarea>
+                    <div class="file-result" id="file-result" hidden>
+                        <div class="file-preview" id="file-preview"></div>
+                        <dl class="file-details" id="file-details"></dl>
+                    </div>
                     <div class="status-bar" id="output-status">
                         <span class="status-text">Ready</span>
                         <span class="char-count" id="output-count">0 chars</span>
@@ -152,6 +171,10 @@
                         <div class="legend-row">
                             <div class="legend-title">URL — Full URL</div>
                             <div class="legend-desc"><span class="hint-code">encodeURI</span>. Leaves the characters that give a URL its structure intact, so use it when escaping a whole address.</div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-title">File</div>
+                            <div class="legend-desc">Encode drops a file into a <span class="hint-code">data:</span> URI (with its MIME type) or raw Base64, ready for CSS, HTML or JSON. Decode takes either one, previews images and text, and downloads the bytes. Without a <span class="hint-code">data:</span> prefix the type is detected from the file's signature — PNG, JPEG, GIF, WebP, PDF, ZIP and more.</div>
                         </div>
                         <div class="legend-row">
                             <div class="legend-title">HTML Entities</div>

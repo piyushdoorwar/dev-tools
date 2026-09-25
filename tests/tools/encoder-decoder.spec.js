@@ -183,3 +183,126 @@ test('panel titles and visible options follow the mode and direction', async ({ 
   await expect(page.locator('#input-title')).toHaveText('URL Encoded');
   await expect(page.locator('#output-title')).toHaveText('Plain Text');
 });
+
+/* --- File mode ------------------------------------------------------------ */
+
+// The eight-byte PNG signature plus a little padding is enough to sniff.
+const PNG_HEAD = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13]);
+
+async function chooseFile(page, file) {
+  await page.setInputFiles('#file-input', file);
+}
+
+test('File mode encodes a chosen file to a data: URI or raw Base64', async ({ page }) => {
+  const { errors } = await openTool(page, 'encoder-decoder');
+  await selectMode(page, 'file');
+  await expect(page.locator('#dropzone')).toBeVisible();
+  await expect(page.locator(input)).toBeHidden();
+
+  await chooseFile(page, { name: 'hello.txt', mimeType: 'text/plain', buffer: Buffer.from('Hello, world!') });
+  await expect(page.locator(output)).toHaveValue('data:text/plain;base64,SGVsbG8sIHdvcmxkIQ==');
+  await expect(page.locator('#output-title')).toHaveText('Data URI');
+  await expect(page.locator('#file-name')).toHaveText('hello.txt');
+  await expect(page.locator('#file-meta')).toContainText('13 bytes');
+
+  await selectOption(page, 'fileFormat', 'base64');
+  await expect(page.locator(output)).toHaveValue('SGVsbG8sIHdvcmxkIQ==');
+  await expect(page.locator('#output-title')).toHaveText('Base64');
+  expect(errors).toEqual([]);
+});
+
+test('File mode detects the type from the bytes when the browser gives none', async ({ page }) => {
+  await openTool(page, 'encoder-decoder');
+  await selectMode(page, 'file');
+  await chooseFile(page, { name: 'mystery', mimeType: '', buffer: PNG_HEAD });
+  await expect(page.locator(output)).toHaveValue(`data:image/png;base64,${PNG_HEAD.toString('base64')}`);
+  await expect(page.locator('#input-status .status-text')).toContainText('detected image/png');
+});
+
+test('File mode decodes a data: URI with a preview, details and download', async ({ page }) => {
+  await openTool(page, 'encoder-decoder');
+  await selectMode(page, 'file');
+  await selectDirection(page, 'decode');
+  await expect(page.locator('#file-result')).toBeVisible();
+  await expect(page.locator(output)).toBeHidden();
+  // The output-format option only applies when encoding.
+  await expect(page.locator('.option-group[data-for="file"]')).toBeHidden();
+
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"/>';
+  await typeInto(page, input, `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`);
+  await expect(page.locator('#file-preview img')).toBeVisible();
+  const details = page.locator('#file-details dd');
+  await expect(details).toHaveText(['image/svg+xml', `${svg.length} bytes`, 'data URI', 'decoded.svg']);
+
+  const download = await captureDownload(page, () => page.click('[data-action="download-output"]'));
+  expect(download.suggestedFilename()).toBe('decoded.svg');
+  expect(await downloadText(download)).toBe(svg);
+});
+
+test('File mode decodes raw Base64 by sniffing the signature, and percent-encoded data: URIs', async ({ page }) => {
+  await openTool(page, 'encoder-decoder');
+  await selectMode(page, 'file');
+  await selectDirection(page, 'decode');
+  const details = page.locator('#file-details dd');
+
+  await typeInto(page, input, PNG_HEAD.toString('base64'));
+  await expect(details.nth(0)).toHaveText('image/png');
+  await expect(details.nth(2)).toHaveText('file signature');
+  await expect(details.nth(3)).toHaveText('decoded.png');
+
+  await typeInto(page, input, Buffer.from('{"ok":true}').toString('base64'));
+  await expect(details.nth(0)).toHaveText('application/json');
+  await expect(page.locator('#file-preview pre')).toHaveText('{"ok":true}');
+
+  // RFC 2397: no ;base64 means percent-encoded, and no type means text/plain.
+  await typeInto(page, input, 'data:,caf%C3%A9%20%F0%9F%8C%8D');
+  await expect(details.nth(0)).toHaveText('text/plain');
+  await expect(page.locator('#file-preview pre')).toHaveText('café 🌍');
+
+  await typeInto(page, input, 'data:image/png;base64');
+  await expect(page.locator('#input-status .status-text')).toContainText('needs a comma');
+  await typeInto(page, input, 'not*base64');
+  await expect(page.locator('#input-status .status-text')).toContainText('unexpected character "*"');
+});
+
+test('File mode swap round-trips decoded bytes back into a file to encode', async ({ page }) => {
+  await openTool(page, 'encoder-decoder');
+  await selectMode(page, 'file');
+  await chooseFile(page, { name: 'a.txt', mimeType: 'text/plain', buffer: Buffer.from('round trip') });
+  const encoded = await page.inputValue(output);
+
+  await page.click('[data-action="swap"]');
+  await expect(page.locator(input)).toHaveValue(encoded);
+  await expect(page.locator('#file-details dd').nth(1)).toHaveText('10 bytes');
+
+  await page.click('[data-action="swap"]');
+  await expect(page.locator('#dropzone')).toBeVisible();
+  await expect(page.locator('#file-name')).toHaveText('decoded.txt');
+  await expect(page.locator(output)).toHaveValue(encoded);
+});
+
+test('dropping a file on the input switches to File mode from any mode', async ({ page }) => {
+  await openTool(page, 'encoder-decoder');
+  await selectMode(page, 'url');
+  const transfer = await page.evaluateHandle(() => {
+    const data = new DataTransfer();
+    data.items.add(new File(['dropped'], 'drop.txt', { type: 'text/plain' }));
+    return data;
+  });
+  await page.dispatchEvent('.left-panel', 'drop', { dataTransfer: transfer });
+  await expect(page.locator('.mode-btn[data-mode="file"]')).toHaveClass(/active/);
+  await expect(page.locator(output)).toHaveValue(`data:text/plain;base64,${Buffer.from('dropped').toString('base64')}`);
+});
+
+test('File mode sample loads an SVG and clear removes the file', async ({ page }) => {
+  await openTool(page, 'encoder-decoder');
+  await selectMode(page, 'file');
+  await page.click('[data-action="load-sample"]');
+  await expect(page.locator('#file-name')).toHaveText('sample.svg');
+  await expect(page.locator('#dropzone-preview')).toBeVisible();
+  await expect(page.locator(output)).toHaveValue(/^data:image\/svg\+xml;base64,/);
+
+  await page.click('[data-action="clear-input"]');
+  await expect(page.locator('#file-name')).toHaveText('Drop a file here or click to choose');
+  await expect(page.locator(output)).toHaveValue('');
+});

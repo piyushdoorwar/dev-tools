@@ -74,6 +74,11 @@ export const EXTERNAL_ASSETS = [
     integrity: 'sha384-7L46T4Kl2EnzUo/gQTjxNfalcv8uvTUmtMfBDjO7Cxef+mWAUErtpikKl3Qnsg4M',
   },
   {
+    source: 'https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js',
+    output: 'vendor/bcryptjs/2.4.3/bcrypt.min.js',
+    integrity: 'sha384-qGFE4FIJLgCFuYs3nzg39XpCtvT5AZUhaBdjB3e1+vpKQa03AkyWOyBSFb9OcQ/g',
+  },
+  {
     source: 'https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js',
     output: 'vendor/js-yaml/4.1.0/js-yaml.min.js',
     integrity: 'sha384-+pxiN6T7yvpryuJmE1gM9PX7yQit15auDb+ZwwvJOd/4be2Cie5/IuVXgQb/S9du',

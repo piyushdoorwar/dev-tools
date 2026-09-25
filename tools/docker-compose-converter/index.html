@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker Run to Compose Converter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" integrity="sha384-+pxiN6T7yvpryuJmE1gM9PX7yQit15auDb+ZwwvJOd/4be2Cie5/IuVXgQb/S9du" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Docker Run → Compose</h1>
+            </div>
+            <div class="header-right">
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="What gets converted" aria-label="What gets converted">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="editor-panel left-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">docker run</h2>
+                    <div class="action-bar">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Load sample" aria-label="Load sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea class="editor-textarea" id="input-editor" spellcheck="false" aria-label="docker run commands"
+                              placeholder="Paste one or more docker run commands. Line continuations with \, ` or ^ are fine."></textarea>
+                    <div class="status-bar" id="input-status">
+                        <span class="status-text">Ready</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="editor-panel right-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">compose.yaml</h2>
+                    <div class="action-bar">
+                        <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy" aria-label="Copy compose file">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="download" data-tooltip="Download" aria-label="Download compose file">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea class="editor-textarea" id="output-editor" spellcheck="false" readonly aria-label="Compose file" placeholder="The compose file appears here..."></textarea>
+                    <div class="notes" id="notes-panel" hidden>
+                        <div class="notes-header">
+                            <span class="notes-title">Conversion notes</span>
+                            <span class="notes-count" id="notes-count"></span>
+                        </div>
+                        <ul class="notes-list" id="notes-list"></ul>
+                    </div>
+                    <div class="status-bar" id="output-status">
+                        <span class="status-text">Ready</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">What gets converted</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Input</strong></p>
+                        <ul class="tip-list">
+                            <li>Paste any number of <span class="hint-code">docker run</span>, <span class="hint-code">docker container run</span>, <span class="hint-code">docker create</span> or <span class="hint-code">podman run</span> commands. Each becomes a service, named after <span class="hint-code">--name</span> or the image.</li>
+                            <li>Commands are read the way a shell would read them: quotes, escapes, and line continuations with <span class="hint-code">\</span> (Bash), <span class="hint-code">`</span> (PowerShell) or <span class="hint-code">^</span> (cmd).</li>
+                            <li>Other commands such as <span class="hint-code">docker network create</span> are skipped.</li>
+                        </ul>
+                        <p><strong>Output</strong></p>
+                        <ul class="tip-list">
+                            <li>The file follows the current Compose Specification, so it has no <span class="hint-code">version:</span> line. Docker Compose v2 ignores that key.</li>
+                            <li>Named volumes and user-defined networks are declared at the top level. <span class="hint-code">--link</span>, <span class="hint-code">--volumes-from</span> and <span class="hint-code">--network container:</span> between converted services become <span class="hint-code">depends_on</span>.</li>
+                            <li><span class="hint-code">$VAR</span> stays as it is, and Compose fills it in from your environment or <span class="hint-code">.env</span>, just as the shell did. A <span class="hint-code">$</span> the shell would have kept literal (inside single quotes, or escaped) becomes <span class="hint-code">$$</span>.</li>
+                            <li><span class="hint-code">$PWD</span> in a bind mount becomes <span class="hint-code">.</span>, because Compose resolves relative paths from the compose file's folder.</li>
+                            <li><span class="hint-code">--gpus</span> becomes a <span class="hint-code">deploy.resources</span> device reservation.</li>
+                        </ul>
+                        <p><strong>Conversion notes</strong></p>
+                        <ul class="tip-list">
+                            <li>Flags with no Compose equivalent, such as <span class="hint-code">-P</span> or <span class="hint-code">--cidfile</span>, and flags the converter does not recognise are listed below the output. They are never dropped silently.</li>
+                            <li>Flags that only affect your terminal (<span class="hint-code">-d</span>, <span class="hint-code">--rm</span>, <span class="hint-code">--attach</span>) are left out on purpose.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

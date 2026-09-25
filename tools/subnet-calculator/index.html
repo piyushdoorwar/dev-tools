@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subnet Calculator</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Subnet Calculator</h1>
+            </div>
+            <div class="header-right">
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="How it works" aria-label="How it works">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <section class="panel block-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">CIDR Block</h2>
+                <div class="action-group">
+                    <button class="action-btn" type="button" data-action="sample" data-tooltip="Insert sample" aria-label="Insert sample">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                    </button>
+                    <button class="action-btn" type="button" data-action="copy-cidr" data-tooltip="Copy network" aria-label="Copy network">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="panel-body">
+                <input type="text" id="cidr-input" class="cidr-input" spellcheck="false" autocomplete="off"
+                       aria-label="CIDR block" placeholder="10.0.0.0/16, 192.168.1.10 255.255.255.0, or 2001:db8::/48">
+                <div class="bits" id="bits" role="img"></div>
+                <div class="status-bar" id="status" role="status">
+                    <span class="status-msg">Ready</span>
+                    <span class="bits-legend" aria-hidden="true">
+                        <span class="legend-dot is-net"></span>network
+                        <span class="legend-dot is-host"></span>host
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <div class="main-content">
+            <section class="panel details-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Details</h2>
+                    <span class="panel-hint">Click a value to copy it</span>
+                </div>
+                <div class="panel-body">
+                    <dl class="details" id="details"></dl>
+                </div>
+            </section>
+
+            <section class="panel tools-panel">
+                <div class="panel-header">
+                    <div class="mode-switcher" role="tablist" aria-label="Tool">
+                        <button class="mode-btn active" type="button" role="tab" aria-selected="true" data-view="split">Split</button>
+                        <button class="mode-btn" type="button" role="tab" aria-selected="false" data-view="contains">Contains</button>
+                        <button class="mode-btn" type="button" role="tab" aria-selected="false" data-view="range">Range → CIDR</button>
+                    </div>
+                </div>
+
+                <div class="panel-body" data-pane="split">
+                    <div class="field-row">
+                        <label class="field">
+                            <span class="field-label">New prefix</span>
+                            <input type="number" id="split-prefix" inputmode="numeric" min="1" max="32" aria-label="New prefix length">
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Or hosts per subnet</span>
+                            <input type="number" id="split-hosts" inputmode="numeric" min="1" placeholder="e.g. 50" aria-label="Hosts needed per subnet">
+                        </label>
+                        <button class="action-btn" type="button" data-action="copy-split" data-tooltip="Copy subnets" aria-label="Copy subnets">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                    <p class="result-line" id="split-summary"></p>
+                    <div class="table-wrap">
+                        <table class="split-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Subnet</th>
+                                    <th scope="col">Usable range</th>
+                                    <th scope="col" id="split-last-col">Last</th>
+                                </tr>
+                            </thead>
+                            <tbody id="split-body"></tbody>
+                        </table>
+                    </div>
+                    <p class="split-note" id="split-note" hidden></p>
+                </div>
+
+                <div class="panel-body" data-pane="contains" hidden>
+                    <label class="field">
+                        <span class="field-label">Address or block to check</span>
+                        <input type="text" id="contains-input" spellcheck="false" autocomplete="off" placeholder="192.168.10.100 or 192.168.10.96/28">
+                    </label>
+                    <p class="result-line" id="contains-result"></p>
+                </div>
+
+                <div class="panel-body" data-pane="range" hidden>
+                    <div class="field-row">
+                        <label class="field">
+                            <span class="field-label">First address</span>
+                            <input type="text" id="range-start" spellcheck="false" autocomplete="off" placeholder="10.0.0.5">
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Last address</span>
+                            <input type="text" id="range-end" spellcheck="false" autocomplete="off" placeholder="10.0.0.20">
+                        </label>
+                        <button class="action-btn" type="button" data-action="copy-range" data-tooltip="Copy blocks" aria-label="Copy CIDR blocks">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                    <p class="result-line" id="range-result"></p>
+                    <ul class="cidr-list" id="range-list"></ul>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How it works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Input</strong></p>
+                        <ul class="tip-list">
+                            <li>Type a block as <span class="hint-code">10.0.0.0/16</span>, an address with a netmask as <span class="hint-code">10.1.2.3 255.255.0.0</span> or <span class="hint-code">10.1.2.3/255.255.0.0</span>, or an IPv6 block such as <span class="hint-code">2001:db8::/48</span>.</li>
+                            <li>An address with host bits set is fine: the tool shows the network it belongs to.</li>
+                            <li>A bare address is read as a single host, <span class="hint-code">/32</span> or <span class="hint-code">/128</span>.</li>
+                            <li>IPv4 octets with leading zeros such as <span class="hint-code">010</span> are rejected, because some systems read them as octal and others as decimal.</li>
+                        </ul>
+                        <p><strong>Usable hosts</strong></p>
+                        <ul class="tip-list">
+                            <li>IPv4 subnets reserve the first address (network) and the last (broadcast), so a <span class="hint-code">/24</span> has 254 usable hosts.</li>
+                            <li>A <span class="hint-code">/31</span> is the exception: on point-to-point links both addresses are usable (RFC 3021). A <span class="hint-code">/32</span> is a single host route.</li>
+                            <li>IPv6 has no broadcast, so every address in the block counts.</li>
+                        </ul>
+                        <p><strong>Tools</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>Split</strong> divides the block into equal subnets by prefix length, or by the number of hosts each one needs.</li>
+                            <li><strong>Contains</strong> checks whether an address or a smaller block falls inside the block.</li>
+                            <li><strong>Range → CIDR</strong> turns a first and last address into the smallest list of CIDR blocks that covers exactly that range. Click a block to open it.</li>
+                        </ul>
+                        <p>Everything is calculated in your browser.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

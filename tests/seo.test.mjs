@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { HOME_DESCRIPTION, SITE_URL, TOOL_CATALOG, toolTitle, toolURL } from '../scripts/seo.mjs';
+import { HOME_DESCRIPTION, SITE_URL, TOOL_CATALOG, renderToolRoutePage, toolTitle, toolURL } from '../scripts/seo.mjs';
 
 const readDist = (asset) => readFile(new URL(`../dist/${asset}`, import.meta.url), 'utf8');
 
@@ -13,7 +13,7 @@ const escapeHtml = (value) => String(value)
   .replaceAll('"', '&quot;');
 
 test('SEO catalog has unique logical routes with complete metadata', () => {
-  assert.equal(TOOL_CATALOG.length, 36);
+  assert.equal(TOOL_CATALOG.length, 39);
   assert.equal(new Set(TOOL_CATALOG.map((tool) => tool.id)).size, TOOL_CATALOG.length);
   assert.equal(new Set(TOOL_CATALOG.map((tool) => tool.route)).size, TOOL_CATALOG.length);
   for (const tool of TOOL_CATALOG) {
@@ -85,4 +85,28 @@ test('social preview is a 1200 by 630 PNG', async () => {
   assert.equal(image.subarray(1, 4).toString(), 'PNG');
   assert.equal(image.readUInt32BE(16), 1200);
   assert.equal(image.readUInt32BE(20), 630);
+});
+
+test('catalog text containing $ patterns is inserted literally into route pages', () => {
+  // String.replace reads `$1`, `$&` and `$'` in a replacement string as
+  // patterns, which once truncated the bcrypt description at "$2a$".
+  const template = [
+    '<meta charset="UTF-8" />',
+    '<title>x</title>',
+    '<meta name="description" content="x" />',
+    '<meta property="og:description" content="x" />',
+    '<meta name="twitter:description" content="x" />',
+    '<script id="seoStructuredData" type="application/ld+json">{}</script>',
+  ].join('\n');
+  const description = "Verify $2a$, $2b$ and $2y$ hashes; also $1, $& and $' stay put.";
+  const tool = { ...TOOL_CATALOG[0], name: 'Price $5 Tool', description };
+  const html = renderToolRoutePage(template, tool);
+
+  const escaped = escapeHtml(description);
+  assert.equal(html.match(/<meta name="description" content="([^"]*)"/)[1], escaped);
+  assert.equal(html.match(/<meta property="og:description" content="([^"]*)"/)[1], escaped);
+  assert.equal(html.match(/<meta name="twitter:description" content="([^"]*)"/)[1], escaped);
+  assert.match(html, /<title>Price \$5 Tool/);
+  const json = JSON.parse(html.match(/<script id="seoStructuredData" type="application\/ld\+json">([^<]+)<\/script>/)[1]);
+  assert.ok(JSON.stringify(json).includes(description));
 });

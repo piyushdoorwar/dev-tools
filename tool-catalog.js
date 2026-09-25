@@ -7,6 +7,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["UTF-8 text and byte conversion", "Binary, hexadecimal, decimal, and octal output", "Live bidirectional conversion"],
   },
   {
+    id: "bcrypt-generator",
+    name: "Bcrypt Hash Generator",
+    route: "bcrypt-generator",
+    description: "Hash passwords with bcrypt at a chosen cost and verify a password against any $2a$, $2b$, or $2y$ hash, entirely in your browser.",
+    capabilities: ["Bcrypt hashing with cost 4–15 and $2a$/$2b$/$2y$ prefixes", "Password verification against an existing hash", "Hash anatomy and 72-byte limit warnings"],
+  },
+  {
     id: "certificate-decoder",
     name: "Certificate Decoder",
     route: "certificate-decoder",
@@ -49,11 +56,18 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["CSV-to-JSON and JSON-to-CSV conversion", "Delimiter auto-detection and type inference", "Sortable, filterable table viewer"],
   },
   {
+    id: "docker-compose-converter",
+    name: "Docker Run to Compose Converter",
+    route: "docker-compose-converter",
+    description: "Convert docker run commands into a docker-compose.yml with ports, volumes, environment, networks, healthchecks, and limits mapped, locally in your browser.",
+    capabilities: ["Multiple docker run commands to one compose file", "Volumes, networks, healthchecks, GPUs, and resource limits", "Notes for every flag without a Compose equivalent"],
+  },
+  {
     id: "encoder-decoder",
     name: "Encoder / Decoder",
     route: "encoder-decoder",
-    description: "Encode and decode text with Base64, Base64url, URL percent-encoding, and HTML entities locally in your browser.",
-    capabilities: ["Base64 and Base64url encoding", "URL component and full-URL escaping", "HTML entity escaping and unescaping"],
+    description: "Encode and decode text with Base64, Base64url, URL percent-encoding, and HTML entities, and turn files into Base64 or data: URIs and back, locally in your browser.",
+    capabilities: ["Base64 and Base64url encoding", "URL component and full-URL escaping", "HTML entity escaping and unescaping", "File to Base64 and data: URI conversion with preview"],
   },
   {
     id: "env-json-shell-converter",
@@ -216,6 +230,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     route: "string-escaper",
     description: "Generate URL slugs and escape or unescape strings for JSON, SQL, shell, regex, and HTML attributes locally in your browser.",
     capabilities: ["URL slugs with transliteration and length limits", "JSON, SQL, shell, regex, and HTML attribute escaping", "Unescaping literals back to plain text"],
+  },
+  {
+    id: "subnet-calculator",
+    name: "Subnet Calculator",
+    route: "subnet-calculator",
+    description: "Calculate IPv4 and IPv6 subnets from CIDR notation: network, broadcast, netmask, usable host range, and address type, then split blocks and convert ranges to CIDR.",
+    capabilities: ["IPv4 and IPv6 CIDR and netmask breakdown", "Subnet splitting by prefix or host count", "Address containment and range-to-CIDR conversion"],
   },
   {
     id: "text-case-converter",

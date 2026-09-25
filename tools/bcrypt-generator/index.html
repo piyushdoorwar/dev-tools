@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bcrypt Hash Generator</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js" integrity="sha384-qGFE4FIJLgCFuYs3nzg39XpCtvT5AZUhaBdjB3e1+vpKQa03AkyWOyBSFb9OcQ/g" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Bcrypt Hash Generator</h1>
+            </div>
+            <div class="header-right">
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="About bcrypt" aria-label="About bcrypt">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel hash-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Hash</h2>
+                    <div class="segment" id="version-switch" role="group" aria-label="Hash version prefix">
+                        <button class="segment-btn" type="button" data-version="2a">$2a$</button>
+                        <button class="segment-btn active" type="button" data-version="2b">$2b$</button>
+                        <button class="segment-btn" type="button" data-version="2y">$2y$</button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <label class="field">
+                        <span class="field-label">Password</span>
+                        <input type="text" id="hash-password" spellcheck="false" autocomplete="off" placeholder="Text to hash">
+                    </label>
+                    <p class="field-note" id="hash-password-note" hidden></p>
+
+                    <div class="field">
+                        <div class="field-label-row">
+                            <label class="field-label" for="cost">Cost factor</label>
+                            <span class="cost-value"><strong id="cost-value">10</strong> · <span id="cost-rounds">1,024 rounds</span></span>
+                        </div>
+                        <input type="range" id="cost" min="4" max="15" step="1" value="10" aria-describedby="cost-estimate">
+                        <span class="field-note" id="cost-estimate">Each step doubles the work.</span>
+                    </div>
+
+                    <div class="generate-row">
+                        <button class="btn btn-primary" type="button" id="generate-btn">Generate hash</button>
+                        <progress id="hash-progress" max="1" value="0" hidden></progress>
+                    </div>
+
+                    <div class="field">
+                        <span class="field-label">Hash</span>
+                        <div class="output-row">
+                            <input type="text" id="hash-output" readonly spellcheck="false" placeholder="Generated hash appears here" aria-label="Generated hash">
+                            <button class="action-btn" type="button" data-action="copy-hash" data-tooltip="Copy hash" aria-label="Copy hash">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                            </button>
+                            <button class="action-btn" type="button" data-action="send-to-verify" data-tooltip="Verify this hash" aria-label="Verify this hash">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-check"></use></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="status-bar" id="hash-status" role="status">
+                        <span class="status-msg">Pick a cost and generate a hash</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel verify-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Verify</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="paste-hash" data-tooltip="Paste hash" aria-label="Paste hash">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear-verify" data-tooltip="Clear" aria-label="Clear verify fields">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <label class="field">
+                        <span class="field-label">Password</span>
+                        <input type="text" id="verify-password" spellcheck="false" autocomplete="off" placeholder="Plain text to check">
+                    </label>
+                    <label class="field">
+                        <span class="field-label">Bcrypt hash</span>
+                        <input type="text" id="verify-hash" spellcheck="false" autocomplete="off" placeholder="$2b$10$…">
+                    </label>
+
+                    <div class="verdict" id="verdict" role="status" aria-live="polite">
+                        <span class="verdict-icon" aria-hidden="true"></span>
+                        <span class="verdict-text" id="verdict-text">Enter a password and a hash to compare them.</span>
+                    </div>
+
+                    <div class="anatomy" id="anatomy" hidden>
+                        <p class="anatomy-hash" id="anatomy-hash"></p>
+                        <dl class="details" id="anatomy-details"></dl>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">About bcrypt</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Everything runs locally.</strong> Passwords and hashes never leave this tab.</p>
+                        <p><strong>Cost factor</strong></p>
+                        <ul class="tip-list">
+                            <li>The cost is a power of two: cost 12 runs 2<sup>12</sup> = 4,096 rounds of the key schedule, and each step up doubles the time.</li>
+                            <li>OWASP recommends at least 10. Pick the highest cost your login path can afford — typically a few hundred milliseconds on your server. This page runs in JavaScript, so a native library will be several times faster than the time shown here.</li>
+                        </ul>
+                        <p><strong>Versions</strong></p>
+                        <ul class="tip-list">
+                            <li><span class="hint-code">$2b$</span> is the current OpenBSD prefix and the default in most libraries.</li>
+                            <li><span class="hint-code">$2a$</span> is the older prefix, still produced by Java and Node's bcryptjs. <span class="hint-code">$2y$</span> is PHP's. For any password under 255 bytes, all three compute the same hash, so the prefix only affects which systems accept it.</li>
+                        </ul>
+                        <p><strong>The 72-byte limit</strong></p>
+                        <ul class="tip-list">
+                            <li>Bcrypt only uses the first 72 bytes of the password (in UTF-8). Anything after that is ignored, so two long passwords that share a 72-byte prefix have the same hash. The tool warns you when this happens.</li>
+                        </ul>
+                        <p><strong>Hash layout</strong></p>
+                        <ul class="tip-list">
+                            <li><span class="hint-code">$2b$10$</span> then 22 characters of salt, then 31 characters of hash — 60 characters in total, in bcrypt's own Base64 alphabet (<span class="hint-code">./A–Za–z0–9</span>).</li>
+                            <li>The salt is random for every hash, so hashing the same password twice gives two different strings. Both verify.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

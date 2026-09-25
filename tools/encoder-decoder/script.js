@@ -1,8 +1,10 @@
-// Encoder / Decoder — Base64, Base64url, URL escaping, HTML entities.
+// Encoder / Decoder — Base64, Base64url, URL escaping, HTML entities, and
+// files to and from Base64 / data: URIs.
 //
-// Every mode round-trips UTF-8: text is encoded to bytes before Base64, and
-// decoded back with a fatal TextDecoder so malformed input fails loudly rather
-// than turning into replacement characters.
+// Every text mode round-trips UTF-8: text is encoded to bytes before Base64,
+// and decoded back with a fatal TextDecoder so malformed input fails loudly
+// rather than turning into replacement characters. File mode skips the text
+// step entirely and works on the raw bytes.
 
 const inputEditor = document.getElementById("input-editor");
 const outputEditor = document.getElementById("output-editor");
@@ -15,6 +17,16 @@ const outputStatusText = document.querySelector("#output-status .status-text");
 const directionSwitch = document.getElementById("direction-switch");
 const helpBtn = document.getElementById("helpBtn");
 const helpModal = document.getElementById("helpModal");
+const leftPanel = document.querySelector(".left-panel");
+const fileInput = document.getElementById("file-input");
+const dropzone = document.getElementById("dropzone");
+const dropzonePreview = document.getElementById("dropzone-preview");
+const dropzoneIcon = document.getElementById("dropzone-icon");
+const fileNameLabel = document.getElementById("file-name");
+const fileMetaLabel = document.getElementById("file-meta");
+const fileResult = document.getElementById("file-result");
+const filePreview = document.getElementById("file-preview");
+const fileDetails = document.getElementById("file-details");
 
 const state = {
   mode: "base64",
@@ -23,6 +35,14 @@ const state = {
   padding: "off",
   urlScope: "component",
   htmlScope: "minimal",
+  fileFormat: "datauri",
+  // The file being encoded, and the bytes most recently decoded.
+  file: null,
+  decoded: null,
+  // Bumped on every run so a slow file read cannot overwrite newer output.
+  fileToken: 0,
+  // Object URLs for the two previews, revoked when replaced.
+  previewUrls: { input: null, output: null },
 };
 
 const MODE_LABELS = {
@@ -30,6 +50,7 @@ const MODE_LABELS = {
   base64url: "Base64url",
   url: "URL Encoded",
   html: "HTML Entities",
+  file: "Base64",
 };
 
 const PLACEHOLDERS = {
@@ -38,6 +59,7 @@ const PLACEHOLDERS = {
   base64url: "Paste Base64url to decode...",
   url: "Paste percent-encoded text to decode...",
   html: "Paste text with HTML entities to decode...",
+  file: "Paste a data: URI or raw Base64 to turn it back into a file...",
 };
 
 const SAMPLES = {
@@ -46,6 +68,8 @@ const SAMPLES = {
   url: { encode: "https://example.com/search?q=hello world&lang=en", decode: "https%3A%2F%2Fexample.com%2Fsearch%3Fq%3Dhello%20world" },
   html: { encode: '<a href="/docs">Tips & tricks</a>', decode: "&lt;a href=&quot;/docs&quot;&gt;Tips &amp; tricks&lt;/a&gt;" },
 };
+
+const SAMPLE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#6739B7"/><circle cx="32" cy="32" r="14" fill="#FFD700"/></svg>';
 
 const textEncoder = new TextEncoder();
 const strictTextDecoder = new TextDecoder("utf-8", { fatal: true });
@@ -94,12 +118,10 @@ function encodeBase64(text, urlSafe) {
   return { output: state.wrap === "on" ? wrapLines(encoded, 76) : encoded };
 }
 
-function decodeBase64(text, urlSafe) {
-  // Whitespace is stripped either way: wrapped Base64 is common in PEM blocks
-  // and mail headers, and pasting it should not be an error.
+// Whitespace is stripped: wrapped Base64 is common in PEM blocks and mail
+// headers, and pasting it should not be an error. Either alphabet is read.
+function base64Bytes(text) {
   const compact = text.replace(/\s+/g, "");
-  if (!compact) return { output: "" };
-
   const usedUrlAlphabet = /[-_]/.test(compact);
   const normalized = compact.replaceAll("-", "+").replaceAll("_", "/");
   const body = normalized.replace(/=+$/, "");
@@ -113,12 +135,18 @@ function decodeBase64(text, urlSafe) {
   }
 
   const padded = body.padEnd(Math.ceil(body.length / 4) * 4, "=");
-  let bytes;
   try {
-    bytes = base64ToBytes(padded);
+    return { bytes: base64ToBytes(padded), usedUrlAlphabet };
   } catch {
     return { error: "Not valid Base64" };
   }
+}
+
+function decodeBase64(text, urlSafe) {
+  if (!text.replace(/\s+/g, "")) return { output: "" };
+  const decoded = base64Bytes(text);
+  if (decoded.error) return decoded;
+  const { bytes, usedUrlAlphabet } = decoded;
 
   let output;
   try {
@@ -209,6 +237,307 @@ function decodeHtml(text) {
   return { output, note, resolved };
 }
 
+/* --- Files --------------------------------------------------------------- */
+
+// Magic numbers for the formats people actually paste. Checked in order, so
+// longer signatures come before the short ones they could be mistaken for.
+const SIGNATURES = [
+  ["89504e470d0a1a0a", "image/png"],
+  ["ffd8ff", "image/jpeg"],
+  ["474946383761", "image/gif"],
+  ["474946383961", "image/gif"],
+  ["255044462d", "application/pdf"],
+  ["504b0304", "application/zip"],
+  ["1f8b", "application/gzip"],
+  ["377abcaf271c", "application/x-7z-compressed"],
+  ["0061736d", "application/wasm"],
+  ["774f4646", "font/woff"],
+  ["774f4632", "font/woff2"],
+  ["49492a00", "image/tiff"],
+  ["4d4d002a", "image/tiff"],
+  ["00000100", "image/x-icon"],
+  ["494433", "audio/mpeg"],
+  ["4f676753", "audio/ogg"],
+  ["664c6143", "audio/flac"],
+  ["1a45dfa3", "video/webm"],
+];
+
+const EXTENSIONS = {
+  "image/png": "png", "image/jpeg": "jpg", "image/gif": "gif", "image/webp": "webp", "image/avif": "avif",
+  "image/heic": "heic", "image/svg+xml": "svg", "image/bmp": "bmp", "image/tiff": "tif", "image/x-icon": "ico",
+  "application/pdf": "pdf", "application/zip": "zip", "application/gzip": "gz", "application/x-7z-compressed": "7z",
+  "application/wasm": "wasm", "application/json": "json", "font/woff": "woff", "font/woff2": "woff2",
+  "font/ttf": "ttf", "font/otf": "otf", "audio/mpeg": "mp3", "audio/ogg": "ogg", "audio/flac": "flac",
+  "audio/wav": "wav", "video/mp4": "mp4", "video/webm": "webm", "video/quicktime": "mov",
+  "video/x-msvideo": "avi", "text/plain": "txt", "text/html": "html", "text/css": "css",
+  "text/csv": "csv", "text/javascript": "js", "application/javascript": "js", "application/xml": "xml",
+  "text/xml": "xml",
+};
+
+function bytesToHex(bytes, start, end) {
+  return [...bytes.subarray(start, end)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function asciiAt(bytes, start, length) {
+  return String.fromCharCode(...bytes.subarray(start, start + length));
+}
+
+// Best guess at a MIME type from the bytes alone, for Base64 that arrives
+// without a data: prefix.
+function sniffMime(bytes) {
+  const head = bytesToHex(bytes, 0, 16);
+  for (const [signature, mime] of SIGNATURES) {
+    if (head.startsWith(signature)) return mime;
+  }
+  if (asciiAt(bytes, 0, 4) === "RIFF") {
+    const kind = asciiAt(bytes, 8, 4);
+    if (kind === "WEBP") return "image/webp";
+    if (kind === "WAVE") return "audio/wav";
+    if (kind === "AVI ") return "video/x-msvideo";
+  }
+  if (asciiAt(bytes, 4, 4) === "ftyp") {
+    const brand = asciiAt(bytes, 8, 4);
+    if (brand === "avif" || brand === "avis") return "image/avif";
+    if (/^(heic|heix|mif1)$/.test(brand)) return "image/heic";
+    if (brand === "qt  ") return "video/quicktime";
+    return "video/mp4";
+  }
+  if (asciiAt(bytes, 0, 2) === "BM" && bytes.length >= 26) return "image/bmp";
+  if (bytesToHex(bytes, 0, 4) === "00010000" || asciiAt(bytes, 0, 4) === "true") return "font/ttf";
+  if (asciiAt(bytes, 0, 4) === "OTTO") return "font/otf";
+
+  let text;
+  try {
+    text = strictTextDecoder.decode(bytes.subarray(0, 4096));
+  } catch {
+    return "application/octet-stream";
+  }
+  const start = text.replace(/^\uFEFF/, "").trimStart().slice(0, 512).toLowerCase();
+  if (start.startsWith("<svg") || (start.startsWith("<?xml") && start.includes("<svg"))) return "image/svg+xml";
+  if (start.startsWith("<!doctype html") || start.startsWith("<html")) return "text/html";
+  if (start.startsWith("<?xml")) return "application/xml";
+  if (start.startsWith("{") || start.startsWith("[")) {
+    try {
+      JSON.parse(strictTextDecoder.decode(bytes));
+      return "application/json";
+    } catch {
+      // Not JSON after all; plain text below.
+    }
+  }
+  return "text/plain";
+}
+
+// A data: URI that is not Base64 carries percent-encoded bytes (RFC 2397).
+function percentBytes(text) {
+  const bytes = [];
+  for (let index = 0; index < text.length; index += 1) {
+    if (text[index] === "%" && /^[0-9a-fA-F]{2}$/.test(text.slice(index + 1, index + 3))) {
+      bytes.push(parseInt(text.slice(index + 1, index + 3), 16));
+      index += 2;
+    } else {
+      // Step by code point so an emoji is not split into surrogate halves.
+      const character = String.fromCodePoint(text.codePointAt(index));
+      bytes.push(...textEncoder.encode(character));
+      index += character.length - 1;
+    }
+  }
+  return new Uint8Array(bytes);
+}
+
+// Reads either a data: URI or bare Base64 into bytes plus a MIME type.
+function parseFilePayload(text) {
+  const trimmed = text.trim();
+  if (!trimmed) return { empty: true };
+
+  if (/^data:/i.test(trimmed)) {
+    const comma = trimmed.indexOf(",");
+    if (comma < 0) return { error: "A data: URI needs a comma between its type and its data" };
+    const params = trimmed.slice(5, comma).split(";").map((part) => part.trim());
+    const payload = trimmed.slice(comma + 1);
+    const isBase64 = params.slice(1).some((part) => part.toLowerCase() === "base64");
+    const nameParam = params.find((part) => /^name=/i.test(part));
+    // RFC 2397: with no type given, the data is US-ASCII text.
+    const mime = (params[0] || "text/plain").toLowerCase();
+    if (!isBase64) {
+      let bytes;
+      try {
+        bytes = percentBytes(payload);
+      } catch {
+        return { error: "The data: URI contains characters that cannot be read" };
+      }
+      return { bytes, mime, source: "data URI", name: nameParam ? decodeURIComponent(nameParam.slice(5)) : null };
+    }
+    const decoded = base64Bytes(payload);
+    if (decoded.error) return decoded;
+    return { bytes: decoded.bytes, mime, source: "data URI", name: nameParam ? decodeURIComponent(nameParam.slice(5)) : null };
+  }
+
+  const decoded = base64Bytes(trimmed);
+  if (decoded.error) return decoded;
+  return { bytes: decoded.bytes, mime: sniffMime(decoded.bytes), source: "file signature", name: null };
+}
+
+function formatBytes(count) {
+  if (count < 1024) return `${count} ${count === 1 ? "byte" : "bytes"}`;
+  const units = ["KB", "MB", "GB"];
+  let value = count / 1024;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unit]} (${count.toLocaleString("en-US")} bytes)`;
+}
+
+function extensionFor(mime) {
+  return EXTENSIONS[mime.split(";")[0]] || "bin";
+}
+
+function setPreviewUrl(slot, url) {
+  if (state.previewUrls[slot]) URL.revokeObjectURL(state.previewUrls[slot]);
+  state.previewUrls[slot] = url;
+}
+
+function renderDropzone() {
+  const file = state.file;
+  dropzone.classList.toggle("has-file", Boolean(file));
+  fileNameLabel.textContent = file ? file.name : "Drop a file here or click to choose";
+  fileMetaLabel.textContent = file
+    ? `${file.type || "Unknown type"} · ${formatBytes(file.size)} · click to replace`
+    : "Any type. The file never leaves your browser.";
+  const isImage = Boolean(file && file.type.startsWith("image/"));
+  setPreviewUrl("input", isImage ? URL.createObjectURL(file) : null);
+  dropzonePreview.hidden = !isImage;
+  dropzoneIcon.hidden = isImage;
+  if (isImage) dropzonePreview.src = state.previewUrls.input;
+  else dropzonePreview.removeAttribute("src");
+}
+
+function renderFileResult(decoded) {
+  filePreview.replaceChildren();
+  fileDetails.replaceChildren();
+  setPreviewUrl("output", null);
+  if (!decoded) {
+    filePreview.textContent = "Paste a data: URI or Base64 on the left.";
+    filePreview.className = "file-preview is-empty";
+    return;
+  }
+
+  const blob = new Blob([decoded.bytes], { type: decoded.mime });
+  filePreview.className = "file-preview";
+  if (decoded.mime.startsWith("image/")) {
+    // An <img> never runs script, so decoded SVG is safe to show this way.
+    setPreviewUrl("output", URL.createObjectURL(blob));
+    const img = document.createElement("img");
+    img.alt = "Decoded image preview";
+    img.src = state.previewUrls.output;
+    filePreview.append(img);
+  } else if (/^text\/|json|xml|javascript/.test(decoded.mime)) {
+    const pre = document.createElement("pre");
+    const text = new TextDecoder().decode(decoded.bytes.subarray(0, 4000));
+    pre.textContent = decoded.bytes.length > 4000 ? `${text}\n…` : text;
+    filePreview.append(pre);
+  } else {
+    filePreview.className = "file-preview is-empty";
+    filePreview.textContent = "No preview for this type. Download it to open it.";
+  }
+
+  const rows = [
+    ["Type", decoded.mime],
+    ["Size", formatBytes(decoded.bytes.length)],
+    ["Detected from", decoded.source],
+    ["File name", decodedFileName(decoded)],
+  ];
+  for (const [term, value] of rows) {
+    const dt = document.createElement("dt");
+    dt.textContent = term;
+    const dd = document.createElement("dd");
+    dd.textContent = value;
+    fileDetails.append(dt, dd);
+  }
+}
+
+function decodedFileName(decoded) {
+  return decoded.name || `decoded.${extensionFor(decoded.mime)}`;
+}
+
+async function encodeFile(file) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const base64 = bytesToBase64(bytes);
+  // application/octet-stream is what some systems report for "unknown", so it
+  // is no better than no type at all.
+  const given = file.type === "application/octet-stream" ? "" : file.type;
+  const mime = given || sniffMime(bytes);
+  const output = state.fileFormat === "datauri" ? `data:${mime};base64,${base64}` : base64;
+  const note = given ? null : `The browser gave no type for this file; detected ${mime} from its contents`;
+  return { output, note, bytes: bytes.length };
+}
+
+function runFile() {
+  const token = ++state.fileToken;
+
+  if (state.direction === "decode") {
+    const input = inputEditor.value;
+    inputCount.textContent = `${input.length} chars`;
+    const result = parseFilePayload(input);
+    state.decoded = result.bytes ? result : null;
+    renderFileResult(state.decoded);
+    outputCount.textContent = state.decoded ? formatBytes(state.decoded.bytes.length).split(" (")[0] : "0 bytes";
+    if (result.empty) {
+      inputEditor.classList.remove("is-invalid");
+      setStatus(inputStatusText, "Ready");
+      setStatus(outputStatusText, "Ready");
+      return;
+    }
+    if (result.error) {
+      inputEditor.classList.add("is-invalid");
+      setStatus(inputStatusText, result.error, "error");
+      setStatus(outputStatusText, "No output", "error");
+      return;
+    }
+    inputEditor.classList.remove("is-invalid");
+    setStatus(inputStatusText, result.source === "data URI" ? "Valid data: URI" : "Valid Base64", "success");
+    setStatus(outputStatusText, `Decoded ${formatBytes(result.bytes.length).split(" (")[0]} of ${result.mime}`, "success");
+    return;
+  }
+
+  renderDropzone();
+  inputEditor.classList.remove("is-invalid");
+  const file = state.file;
+  inputCount.textContent = file ? formatBytes(file.size).split(" (")[0] : "0 bytes";
+  if (!file) {
+    outputEditor.value = "";
+    outputCount.textContent = "0 chars";
+    setStatus(inputStatusText, "Choose or drop a file");
+    setStatus(outputStatusText, "Ready");
+    return;
+  }
+
+  setStatus(outputStatusText, "Reading file…");
+  encodeFile(file)
+    .then((result) => {
+      if (token !== state.fileToken) return;
+      outputEditor.value = result.output;
+      outputCount.textContent = `${result.output.length.toLocaleString("en-US")} chars`;
+      setStatus(inputStatusText, result.note || `${file.name}`, result.note ? "warning" : "success");
+      setStatus(outputStatusText, `Encoded ${formatBytes(result.bytes).split(" (")[0]}`, "success");
+    })
+    .catch(() => {
+      if (token !== state.fileToken) return;
+      outputEditor.value = "";
+      setStatus(inputStatusText, "The file could not be read", "error");
+      setStatus(outputStatusText, "No output", "error");
+    });
+}
+
+function loadFile(file) {
+  if (!file) return;
+  state.file = file;
+  if (state.mode !== "file") selectMode("file");
+  if (state.direction !== "encode") setDirection("encode");
+  run();
+}
+
 /* --- Conversion ----------------------------------------------------------- */
 
 function convert(text) {
@@ -245,6 +574,10 @@ function describeResult(input, result) {
 }
 
 function run() {
+  if (state.mode === "file") {
+    runFile();
+    return;
+  }
   const input = inputEditor.value;
   const result = convert(input);
 
@@ -276,12 +609,29 @@ function run() {
 function syncLabels() {
   const label = MODE_LABELS[state.mode];
   const encoding = state.direction === "encode";
-  inputTitle.textContent = encoding ? "Plain Text" : label;
-  outputTitle.textContent = encoding ? label : "Plain Text";
+  const fileMode = state.mode === "file";
+  if (fileMode) {
+    inputTitle.textContent = encoding ? "File" : "Data URI / Base64";
+    outputTitle.textContent = encoding ? (state.fileFormat === "datauri" ? "Data URI" : "Base64") : "File";
+  } else {
+    inputTitle.textContent = encoding ? "Plain Text" : label;
+    outputTitle.textContent = encoding ? label : "Plain Text";
+  }
   inputEditor.placeholder = encoding ? PLACEHOLDERS.encode : PLACEHOLDERS[state.mode];
 
+  // File mode swaps the input textarea for a drop zone when encoding, and the
+  // output textarea for a preview and download when decoding.
+  inputEditor.hidden = fileMode && encoding;
+  dropzone.hidden = !(fileMode && encoding);
+  outputEditor.hidden = fileMode && !encoding;
+  fileResult.hidden = !(fileMode && !encoding);
+  document.querySelectorAll('[data-action="paste-input"], [data-action="copy-input"]').forEach((button) => {
+    button.hidden = fileMode && encoding;
+  });
+  document.querySelector('[data-action="copy-output"]').hidden = fileMode && !encoding;
+
   document.querySelectorAll(".option-group").forEach((group) => {
-    group.hidden = group.dataset.for !== state.mode;
+    group.hidden = group.dataset.for !== state.mode || (group.dataset.for === "file" && !encoding);
   });
 }
 
@@ -339,12 +689,31 @@ function pasteIntoInput(button) {
 
 function clearInput(button) {
   inputEditor.value = "";
+  if (state.mode === "file") state.file = null;
   run();
   flashButton(button, "is-confirmed");
   showToast("Input cleared", "info");
 }
 
 function downloadOutput(button) {
+  if (state.mode === "file" && state.direction === "decode") {
+    if (!state.decoded) {
+      showToast("Nothing to download", "error");
+      return;
+    }
+    const blob = new Blob([state.decoded.bytes], { type: state.decoded.mime });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = decodedFileName(state.decoded);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    flashButton(button, "is-downloaded");
+    showToast(`${link.download} downloaded`, "success");
+    return;
+  }
   const value = outputEditor.value;
   if (!value) {
     showToast("Nothing to download", "error");
@@ -364,6 +733,17 @@ function downloadOutput(button) {
 }
 
 function swap(button) {
+  if (state.mode === "file" && state.direction === "decode") {
+    // The decoded bytes become the file to encode, so a round trip needs no
+    // download and re-upload.
+    if (state.decoded) {
+      state.file = new File([state.decoded.bytes], decodedFileName(state.decoded), { type: state.decoded.mime });
+    }
+    setDirection("encode");
+    run();
+    flashButton(button, "is-confirmed");
+    return;
+  }
   const carried = outputEditor.value;
   setDirection(state.direction === "encode" ? "decode" : "encode");
   inputEditor.value = carried;
@@ -372,6 +752,14 @@ function swap(button) {
 }
 
 function loadSample(button, { announce = true } = {}) {
+  if (state.mode === "file") {
+    if (state.direction === "encode") state.file = new File([SAMPLE_SVG], "sample.svg", { type: "image/svg+xml" });
+    else inputEditor.value = `data:image/svg+xml;base64,${btoa(SAMPLE_SVG)}`;
+    run();
+    flashButton(button, "is-confirmed");
+    if (announce) showToast("Loaded sample file", "success");
+    return;
+  }
   inputEditor.value = SAMPLES[state.mode][state.direction];
   run();
   flashButton(button, "is-confirmed");
@@ -389,12 +777,17 @@ function setDirection(direction) {
 
 inputEditor.addEventListener("input", run);
 
+function selectMode(mode) {
+  const button = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+  state.mode = mode;
+  setActive(button.parentElement, button);
+  syncLabels();
+}
+
 document.querySelectorAll(".mode-btn[data-mode]").forEach((button) => {
   button.addEventListener("click", () => {
     if (state.mode === button.dataset.mode) return;
-    state.mode = button.dataset.mode;
-    setActive(button.parentElement, button);
-    syncLabels();
+    selectMode(button.dataset.mode);
     run();
   });
 });
@@ -414,6 +807,7 @@ document.querySelectorAll(".segment[data-option]").forEach((group) => {
       if (state[option] === button.dataset.value) return;
       state[option] = button.dataset.value;
       setActive(group, button);
+      syncLabels();
       run();
     });
   });
@@ -433,6 +827,31 @@ document.querySelectorAll("[data-action]").forEach((button) => {
 });
 
 helpBtn.addEventListener("click", () => window.DevToolsMain.openModal(helpModal));
+
+dropzone.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", () => {
+  loadFile(fileInput.files[0]);
+  fileInput.value = "";
+});
+
+// Dropping a file anywhere on the input side switches to File mode, whatever
+// mode was showing.
+leftPanel.addEventListener("dragover", (event) => {
+  if (!event.dataTransfer?.types.includes("Files")) return;
+  event.preventDefault();
+  leftPanel.classList.add("is-dragging");
+});
+leftPanel.addEventListener("dragleave", (event) => {
+  if (!leftPanel.contains(event.relatedTarget)) leftPanel.classList.remove("is-dragging");
+});
+leftPanel.addEventListener("drop", (event) => {
+  const file = event.dataTransfer?.files?.[0];
+  leftPanel.classList.remove("is-dragging");
+  if (!file) return;
+  event.preventDefault();
+  loadFile(file);
+});
 
 function init() {
   syncLabels();

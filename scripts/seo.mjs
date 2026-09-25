@@ -106,17 +106,21 @@ function renderToolAbout(tool) {
           <!-- SEO_TOOL_ABOUT_END -->`;
 }
 
+// Replaces the text between a regex's two capture groups. The value goes in
+// through a function, not a replacement string, so catalog text such as
+// "$2b$ hash" is inserted literally instead of being read as `$2` patterns.
+function replaceBetween(html, pattern, value) {
+  return html.replace(pattern, (match, open, close) => `${open}${value}${close}`);
+}
+
 function replaceStructuredData(html, data) {
   const json = JSON.stringify(data).replaceAll('<', '\\u003c');
-  return html.replace(
-    /(<script id="seoStructuredData" type="application\/ld\+json">)[\s\S]*?(<\/script>)/,
-    `$1${json}$2`,
-  );
+  return replaceBetween(html, /(<script id="seoStructuredData" type="application\/ld\+json">)[\s\S]*?(<\/script>)/, json);
 }
 
 export function renderHomePage(template) {
   return replaceStructuredData(
-    template.replace('<!-- SEO_TOOL_LINKS -->', renderToolLinks()),
+    template.replace('<!-- SEO_TOOL_LINKS -->', () => renderToolLinks()),
     structuredData(),
   );
 }
@@ -125,33 +129,24 @@ export function renderToolRoutePage(homePage, tool) {
   let html = homePage.replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n    <base href="../" />');
   const title = toolTitle(tool);
   const url = toolURL(tool);
-  html = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${escapeHtml(title)}</title>`);
-  html = html.replace(
-    /(<meta name="description" content=")[^"]*(" \/>)/,
-    `$1${escapeHtml(tool.description)}$2`,
-  );
-  html = html.replace(/(<meta property="og:title" content=")[^"]*(" \/>)/, `$1${escapeHtml(title)}$2`);
-  html = html.replace(
-    /(<meta property="og:description" content=")[^"]*(" \/>)/,
-    `$1${escapeHtml(tool.description)}$2`,
-  );
-  html = html.replace(/(<meta property="og:url" content=")[^"]*(" \/>)/, `$1${escapeHtml(url)}$2`);
-  html = html.replace(/(<meta name="twitter:title" content=")[^"]*(" \/>)/, `$1${escapeHtml(title)}$2`);
-  html = html.replace(
-    /(<meta name="twitter:description" content=")[^"]*(" \/>)/,
-    `$1${escapeHtml(tool.description)}$2`,
-  );
-  html = html.replace(/(<link rel="canonical" href=")[^"]*(" \/>)/, `$1${escapeHtml(url)}$2`);
+  html = html.replace(/<title>[\s\S]*?<\/title>/i, () => `<title>${escapeHtml(title)}</title>`);
+  html = replaceBetween(html, /(<meta name="description" content=")[^"]*(" \/>)/, escapeHtml(tool.description));
+  html = replaceBetween(html, /(<meta property="og:title" content=")[^"]*(" \/>)/, escapeHtml(title));
+  html = replaceBetween(html, /(<meta property="og:description" content=")[^"]*(" \/>)/, escapeHtml(tool.description));
+  html = replaceBetween(html, /(<meta property="og:url" content=")[^"]*(" \/>)/, escapeHtml(url));
+  html = replaceBetween(html, /(<meta name="twitter:title" content=")[^"]*(" \/>)/, escapeHtml(title));
+  html = replaceBetween(html, /(<meta name="twitter:description" content=")[^"]*(" \/>)/, escapeHtml(tool.description));
+  html = replaceBetween(html, /(<link rel="canonical" href=")[^"]*(" \/>)/, escapeHtml(url));
   html = html.replace(
     /<!-- SEO_TOOL_ABOUT_START -->[\s\S]*?<!-- SEO_TOOL_ABOUT_END -->/,
-    renderToolAbout(tool),
+    () => renderToolAbout(tool),
   );
   return replaceStructuredData(html, structuredData(tool));
 }
 
 export function markInternalToolPage(html, canonicalTool) {
   const tags = `    <meta name="robots" content="noindex, follow" />\n    <link rel="canonical" href="${escapeHtml(toolURL(canonicalTool))}" />\n`;
-  return html.replace(/(<meta name="viewport"[^>]*>\s*)/i, `$1${tags}`);
+  return html.replace(/(<meta name="viewport"[^>]*>\s*)/i, (match) => `${match}${tags}`);
 }
 
 export function renderSitemap() {

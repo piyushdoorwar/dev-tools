@@ -5,11 +5,13 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 ## Available tools
 
 - Base Converter
+- Bcrypt Hash Generator
 - Chmod Calculator
 - Color Converter
 - Cron Expression Generator
 - Crypto Generator
-- Encoder / Decoder
+- Docker Run to Compose Converter
+- Encoder / Decoder (text and files)
 - .env ⇄ JSON ⇄ Shell Converter
 - Fake Data Generator
 - File Compressor
@@ -31,6 +33,7 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - Regex Tester
 - Slug Generator / String Escaper
 - SQL Formatter
+- Subnet Calculator (IPv4 / IPv6)
 - Text Cleaner
 - Text Diff
 - Timestamp Converter
