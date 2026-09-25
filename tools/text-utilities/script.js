@@ -369,7 +369,9 @@ function setMode(mode, { pushHash = true } = {}) {
   }
 
   document.title = MODES[mode].title;
-  if (pushHash && window.location.hash.slice(1) !== mode) window.location.hash = mode;
+  // replaceState via the shared helper: assigning location.hash pushed a
+  // history entry per tab click, which hijacks the dashboard's back button.
+  if (pushHash) window.DevToolsMain.writeHashState(mode);
 }
 
 /* --- Actions ------------------------------------------------------------ */
@@ -401,7 +403,13 @@ const ACTIONS = {
 
   async paste() {
     try {
-      input.value = await navigator.clipboard.readText();
+      const text = await navigator.clipboard.readText();
+      // An empty clipboard used to wipe the input silently.
+      if (!text) {
+        window.DevToolsMain.showToast("Clipboard is empty", "error");
+        return;
+      }
+      input.value = text;
       render();
     } catch {
       input.focus();
@@ -489,8 +497,7 @@ document.querySelectorAll(".mode-btn").forEach((tab) => {
   tab.addEventListener("click", () => setMode(tab.dataset.mode));
 });
 
-window.addEventListener("hashchange", () => {
-  const mode = window.location.hash.slice(1);
+window.DevToolsMain.onHashState((mode) => {
   if (MODES[mode] && mode !== state.mode) setMode(mode, { pushHash: false });
 });
 
@@ -501,7 +508,7 @@ document.querySelectorAll("[data-action]").forEach((button) => {
 helpBtn.addEventListener("click", () => window.DevToolsMain.openModal(helpModal));
 
 function init() {
-  const hash = window.location.hash.slice(1);
+  const hash = window.DevToolsMain.readHashState();
   setMode(MODES[hash] ? hash : "clean", { pushHash: false });
   render();
 }

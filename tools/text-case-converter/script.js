@@ -108,7 +108,13 @@ const ACTIONS = {
 
   async paste() {
     try {
-      input.value = await navigator.clipboard.readText();
+      const text = await navigator.clipboard.readText();
+      // An empty clipboard used to wipe the input silently.
+      if (!text) {
+        window.DevToolsMain.showToast("Clipboard is empty", "error");
+        return;
+      }
+      input.value = text;
       render();
     } catch {
       input.focus();
@@ -124,8 +130,18 @@ const ACTIONS = {
   },
 
   "copy-all"() {
-    if (!copyGuard(input.value)) return;
-    const text = CASES.map((key) => `${CASE_LABELS[key]}: ${outputs[key].value}`).join("\n");
+    if (!CASES.some((key) => outputs[key].value.trim())) {
+      copyGuard("");
+      return;
+    }
+    // Multi-line (line-by-line) results go under their label as a block;
+    // "label: first\nsecond" made every line after the first look unlabelled.
+    const text = CASES.map((key) => {
+      const value = outputs[key].value;
+      return value.includes("\n")
+        ? `${CASE_LABELS[key]}:\n${value}\n`
+        : `${CASE_LABELS[key]}: ${value}`;
+    }).join("\n").trimEnd();
     window.DevToolsMain.copyText(text);
     window.DevToolsMain.showToast("All cases copied", "success");
   },

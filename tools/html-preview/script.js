@@ -165,6 +165,10 @@ const copyBtn = document.getElementById('copy-btn');
 copyBtn.addEventListener('click', async () => {
   const editor = getCurrentEditor();
   const code = editor.getValue();
+  if (!code) {
+    showToast('Nothing to copy', 'error');
+    return;
+  }
   try {
     await navigator.clipboard.writeText(code);
     copyBtn.style.color = '#FFD700';
@@ -174,7 +178,7 @@ copyBtn.addEventListener('click', async () => {
     }, 1000);
   } catch (err) {
     console.error('Failed to copy:', err);
-    showToast('Failed to copy');
+    showToast('Failed to copy', 'error');
   }
 });
 
@@ -183,6 +187,11 @@ const pasteBtn = document.getElementById('paste-btn');
 pasteBtn.addEventListener('click', async () => {
   try {
     const text = await navigator.clipboard.readText();
+    // An empty clipboard used to wipe the active pane silently.
+    if (!text) {
+      showToast('Clipboard is empty', 'error');
+      return;
+    }
     const editor = getCurrentEditor();
     editor.setValue(text);
     pasteBtn.style.color = '#FFD700';
@@ -192,7 +201,7 @@ pasteBtn.addEventListener('click', async () => {
     }, 1000);
   } catch (err) {
     console.error('Failed to paste:', err);
-    showToast('Failed to paste');
+    showToast('Failed to paste', 'error');
   }
 });
 

@@ -282,6 +282,29 @@ body {
     gap: var(--space-3);
 }
 
+/* On wide screens a single column of cards left most of each card empty;
+   pair them up, with category headings still spanning the full row. */
+@media (min-width: 1280px) {
+    .pattern-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+
+    .pattern-list > .section-title,
+    .pattern-list > .empty-state {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Touch screens have no hover, so the hover-revealed copy button was
+   unreachable on tablets wider than the 860px breakpoint. */
+@media (hover: none) {
+    .syntax-copy {
+        opacity: 1;
+    }
+}
+
 .pattern-card {
     display: flex;
     flex-direction: column;

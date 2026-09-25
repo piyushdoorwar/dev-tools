@@ -285,6 +285,27 @@ test('paste, sample, clear and the counts copy work together', async ({ page }) 
   await expect(page.locator('#output')).toHaveValue('');
 });
 
+test('switching modes replaces the history entry instead of pushing one', async ({ page }) => {
+  await openTool(page, 'text-utilities');
+  const before = await page.evaluate(() => history.length);
+
+  await page.click('#tab-count');
+  await page.click('#tab-lorem');
+  await page.click('#tab-clean');
+  await expect(page).toHaveURL(/#clean$/);
+  expect(await page.evaluate(() => history.length)).toBe(before);
+});
+
+test('pasting an empty clipboard leaves the input untouched', async ({ page }) => {
+  await openTool(page, 'text-utilities');
+  await setInput(page, 'keep this');
+
+  await setClipboardText(page, '');
+  await page.click('[data-action="paste"]');
+  await expect(page.locator('.toast')).toContainText('Clipboard is empty');
+  await expect(page.locator('#input')).toHaveValue('keep this');
+});
+
 test('copying with nothing to copy warns instead of copying empty text', async ({ page }) => {
   await openTool(page, 'text-utilities');
 

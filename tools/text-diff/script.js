@@ -171,6 +171,28 @@ function setValue(side, value) {
   updateStatus(side);
 }
 
+// User actions (paste, clear, normalize, sample) go through the editing
+// pipeline rather than assigning .value, so the Undo button can roll them back.
+function replaceValue(side, value) {
+  const editor = editors[side];
+  let applied = false;
+  try {
+    editor.focus();
+    editor.select();
+    applied = value
+      ? document.execCommand("insertText", false, value)
+      : document.execCommand("delete");
+  } catch {
+    applied = false;
+  }
+  if (!applied || editor.value !== value) {
+    editor.value = value;
+  }
+  updateLineNumbers(side);
+  updateHighlights(side);
+  updateStatus(side);
+}
+
 function normalizeLineEndings(value) {
   return value.replace(/\r\n?/g, "\n");
 }
@@ -215,7 +237,7 @@ function normalizeText(side) {
     .map((line) => line.replace(/[ \t]+$/g, ""))
     .join("\n");
 
-  setValue(side, normalized);
+  replaceValue(side, normalized);
   showToast("Whitespace normalized", "success");
   scheduleCompare();
 }
@@ -270,7 +292,7 @@ function pasteText(side) {
       showToast("Clipboard is empty", "error");
       return;
     }
-    setValue(side, text);
+    replaceValue(side, text);
     showToast("Pasted from clipboard", "success");
     scheduleCompare();
   }).catch(() => {
@@ -283,7 +305,7 @@ function clearText(side) {
     showToast("Already empty", "info");
     return;
   }
-  setValue(side, "");
+  replaceValue(side, "");
   showToast("Editor cleared", "success");
   scheduleCompare();
 }
@@ -391,6 +413,10 @@ function applyLineOps(ops) {
       const ins = pendingInserts[p];
       const charDiff = buildCharDiff(del.line, ins.line);
       if (charDiff) {
+        // Mark the whole line too, so the gutter and row tint agree with the
+        // "Modified" stat and legend rather than only the changed characters.
+        addDiffHighlight("left", del.index, "modified");
+        addDiffHighlight("right", ins.index, "modified");
         setInlineDiffHighlight("left", del.index, charDiff.leftHtml);
         setInlineDiffHighlight("right", ins.index, charDiff.rightHtml);
         stats.modified += 1;
@@ -566,15 +592,13 @@ document.querySelectorAll(".action-btn[data-action]").forEach((btn) => {
   editor.addEventListener("keydown", (e) => {
     if (e.key === "Tab") {
       e.preventDefault();
-      const start = editor.selectionStart;
-      const end = editor.selectionEnd;
-      const indent = "\t";
-
-      editor.value = editor.value.substring(0, start) + indent + editor.value.substring(end);
-      editor.selectionStart = editor.selectionEnd = start + indent.length;
-
-      updateLineNumbers(side);
-      updateHighlights(side);
+      // insertText keeps the native undo stack intact and fires `input`, so the
+      // status bar and diff refresh like any other edit. Assigning .value
+      // wiped undo history and left the diff stale.
+      if (!document.execCommand("insertText", false, "\t")) {
+        editor.setRangeText("\t", editor.selectionStart, editor.selectionEnd, "end");
+        editor.dispatchEvent(new Event("input", { bubbles: true }));
+      }
     }
   });
 });

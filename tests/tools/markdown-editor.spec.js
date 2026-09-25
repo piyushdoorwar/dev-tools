@@ -163,3 +163,63 @@ test('line numbers follow the document length', async ({ page }) => {
 
   await expect.poll(() => page.locator('#line-numbers').innerText()).toMatch(/1[\s\S]*4/);
 });
+
+test('fenced code blocks get syntax-highlight markup for their language', async ({ page }) => {
+  await openTool(page, 'markdown-editor');
+  await write(page, '```javascript\nconst answer = 42;\n```\n');
+
+  const code = preview(page).locator('pre code');
+  await expect(code).toHaveClass(/hljs/);
+  await expect(code.locator('.hljs-keyword').first()).toHaveText('const');
+  await expect(preview(page).locator('.code-language-label')).toHaveText('javascript');
+});
+
+test('the first edit after an undo is recorded, so undo can reach it', async ({ page }) => {
+  await openTool(page, 'markdown-editor');
+  const editor = page.locator('#editor');
+
+  await editor.click();
+  await page.keyboard.type('ab');
+  await page.locator('[data-action="undo"]').click();
+  await expect(editor).toHaveValue('a');
+
+  await editor.press('End');
+  await page.keyboard.type('X');
+  await page.keyboard.type('Y');
+  await expect(editor).toHaveValue('aXY');
+
+  // Previously the X keystroke was swallowed by a leftover undo flag, so one
+  // undo jumped straight from "aXY" back to "a".
+  await page.locator('[data-action="undo"]').click();
+  await expect(editor).toHaveValue('aX');
+});
+
+test('inserting with no selection selects the placeholder text', async ({ page }) => {
+  await openTool(page, 'markdown-editor');
+  await page.locator('#editor').click();
+
+  await page.locator('[data-action="bold"]').click();
+  await expect(page.locator('#editor')).toHaveValue('**bold text**');
+  const selection = await page.evaluate(() => {
+    const editor = document.getElementById('editor');
+    return editor.value.slice(editor.selectionStart, editor.selectionEnd);
+  });
+  expect(selection).toBe('bold text');
+
+  await page.keyboard.type('strong');
+  await expect(page.locator('#editor')).toHaveValue('**strong**');
+});
+
+test('on a phone the toolbar fits and both panes keep a usable height', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'markdown-editor');
+
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+  for (const selector of ['#editor', '#preview']) {
+    const box = await page.locator(selector).boundingBox();
+    expect(box.height).toBeGreaterThan(200);
+  }
+  const source = await page.locator('.workspace > .panel').first().boundingBox();
+  const rendered = await page.locator('.workspace > .right-panel').boundingBox();
+  expect(rendered.y).toBeGreaterThanOrEqual(source.y + source.height + 8);
+});

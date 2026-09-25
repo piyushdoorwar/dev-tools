@@ -1928,5 +1928,20 @@ textarea::selection {
   .search-field input {
     width: 100%;
   }
+
+  /* Stacked, the results panels had flex:1 of nothing and collapsed until
+     even the empty state was clipped. */
+  .results-panel {
+    flex: none;
+    min-height: 300px;
+  }
+
+  .flags {
+    flex-wrap: wrap;
+  }
+
+  .output-template {
+    min-width: 0;
+  }
 }
 }

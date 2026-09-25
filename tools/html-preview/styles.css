@@ -417,9 +417,56 @@ body {
     flex-direction: column !important;
   }
   
+  /* body kept its locked 100vh with overflow hidden, so once the panes
+     stacked the preview ran off the bottom of the screen and could not be
+     scrolled to. */
+  body {
+    height: auto;
+    overflow: auto;
+  }
+
   .app-shell {
     height: auto;
     min-height: 100vh;
+  }
+
+  .panels {
+    gap: 1rem;
+    overflow: visible;
+  }
+
+  /* A 320px floor plus the shell padding was wider than a phone. Stacked,
+     each pane gets a fixed share of the viewport instead of flex:1 of an
+     auto-height column, which left the editor a few lines tall. */
+  .editor-panel,
+  .preview-panel {
+    flex: none;
+    min-width: 0;
+    height: 60vh;
+    min-height: 340px;
+  }
+
+  .toolbar-divider {
+    display: none;
+  }
+
+  .toolbar-group {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-shell {
+    padding: 1rem;
+  }
+
+  .toolbar {
+    padding: 0.75rem;
+  }
+
+  .editor-panel,
+  .preview-panel {
+    padding: 1rem;
   }
 }
 }
