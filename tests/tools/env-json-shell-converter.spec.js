@@ -298,3 +298,32 @@ test('every input format has a sample that converts cleanly', async ({ page }) =
     GREETING: 'Hello, world',
   });
 });
+
+test('fish output reads back: \\\' and \\\\ inside fish single quotes are escapes', async ({ page }) => {
+  await openTool(page, TOOL);
+  await pick(page, 'from', 'json');
+  await pick(page, 'to', 'shell');
+  await page.fill('#input', JSON.stringify(TRICKY));
+  await chooseDialect(page, 'fish');
+  await expect(page.locator('#output')).toHaveValue(/set -gx SINGLE 'it\\'s'/);
+
+  // Swap carries the fish text over as the input; it used to fail with
+  // "unterminated ' quote" at the first \'.
+  await page.locator('[data-action="swap"]').click();
+  await expect(page.locator('#input-status')).not.toHaveClass(/is-error/);
+  expect(await outputJson(page)).toEqual(TRICKY);
+});
+
+test('fish set keeps values that start with a dash; only leading flags are options', async ({ page }) => {
+  await openTool(page, TOOL);
+  await pick(page, 'from', 'shell');
+  await page.fill('#input', "set -gx --export A '-----BEGIN-----'\nset -x B two words");
+  expect(await outputJson(page)).toEqual({ A: '-----BEGIN-----', B: 'two words' });
+});
+
+test('POSIX single quotes still treat backslashes literally', async ({ page }) => {
+  await openTool(page, TOOL);
+  await pick(page, 'from', 'shell');
+  await page.fill('#input', "export A='C:\\dir\\'\nexport B='x'");
+  expect(await outputJson(page)).toEqual({ A: 'C:\\dir\\', B: 'x' });
+});

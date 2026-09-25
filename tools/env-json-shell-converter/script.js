@@ -292,7 +292,7 @@ function writeEnvValue(value) {
 /* Splits POSIX-ish shell text into commands of words, applying quoting. Each
  * word keeps `prefix`: its leading unquoted literal text, which is where an
  * assignment's `NAME=` has to be for the shell to treat it as one. */
-function lexShell(src) {
+function lexShell(src, { fish = false } = {}) {
   const commands = [];
   let words = [];
   let word = null;
@@ -352,6 +352,23 @@ function lexShell(src) {
     if (ch === "\\") {
       literal(src[i + 1] ?? "");
       i += 2;
+    } else if (ch === "'" && fish) {
+      // fish single quotes honour exactly two escapes, \' and \\, which is
+      // how this tool's own fish output quotes them. POSIX rules ended the
+      // string at the \' and reported an unterminated quote.
+      let text = "";
+      let j = i + 1;
+      while (j < src.length && src[j] !== "'") {
+        if (src[j] === "\\" && (src[j + 1] === "'" || src[j + 1] === "\\")) {
+          text += src[j + 1];
+          j += 2;
+        } else {
+          text += src[j++];
+        }
+      }
+      if (j >= src.length) throw new Error(`Line ${lineOf(src, i)}: unterminated ' quote`);
+      literal(text);
+      i = j + 1;
     } else if (ch === "'") {
       const close = src.indexOf("'", i + 1);
       if (close === -1) throw new Error(`Line ${lineOf(src, i)}: unterminated ' quote`);
@@ -410,14 +427,18 @@ function asAssignment(word) {
   return { name: match[1], segments };
 }
 
-function parsePosixShell(src, ctx) {
-  for (const words of lexShell(src)) {
+function parsePosixShell(src, ctx, { fish = false } = {}) {
+  for (const words of lexShell(src, { fish })) {
     const command = plainWord(words[0]);
     let rest = words;
 
     if (command === "set") {
       // fish: set [-gx | --export ...] NAME value...
-      const args = words.slice(1).filter((w) => !/^-/.test(plainWord(w) ?? ""));
+      // Only leading, unquoted words are flags. Filtering every word that
+      // began with "-" dropped values such as '-----BEGIN KEY-----'.
+      let first = 1;
+      while (first < words.length && /^-/.test(words[first].prefix)) first++;
+      const args = words.slice(first);
       const name = plainWord(args[0]);
       if (!name || !SHELL_NAME.test(name)) {
         ctx.skipped++;
@@ -506,7 +527,13 @@ function parseShell(text, { expand }) {
   const src = text.replace(/\r\n?/g, "\n");
   const ctx = createContext(expand);
   if (/^[ \t]*\$(?:env:|\{env:)/im.test(src)) parsePowerShell(src, ctx);
-  else parsePosixShell(src, ctx);
+  else {
+    // A script of `set` lines with no POSIX assignments is fish, whose
+    // single quotes differ (see lexShell).
+    const fish = /^[ \t]*set[ \t]/m.test(src)
+      && !/^[ \t]*(?:export|declare|typeset)[ \t]|^[ \t]*[A-Za-z_][A-Za-z0-9_]*=/m.test(src);
+    parsePosixShell(src, ctx, { fish });
+  }
   return ctx.finish();
 }
 

@@ -469,96 +469,84 @@ function addDiffHighlight(side, lineIndex, status) {
   }
 }
 
-function parsePath(path) {
-  const parts = [];
-  const regex = /([^.[\]]+)|\[(\d+)\]/g;
-  let match;
-  while ((match = regex.exec(path)) !== null) {
-    if (match[1] !== undefined) parts.push(match[1]);
-    else parts.push(Number(match[2]));
+// Map every value's diff path (the same spelling diffObjects produces:
+// `a.b`, `list[0]`, `[0]` at the root) to the zero-based line it starts on.
+// Searching the text for the key's name instead lit up the first line that
+// mentioned it, so a change to `b.id` highlighted `a.id` whenever both existed.
+function buildLineMap(text) {
+  const lines = new Map();
+  const stack = [];
+  let line = 0;
+
+  const beginValue = () => {
+    const frame = stack[stack.length - 1];
+    if (!frame) return "";
+    if (frame.type === "array") {
+      const path = `${frame.path}[${frame.index}]`;
+      frame.index++;
+      lines.set(path, line);
+      return path;
+    }
+    const path = frame.path ? `${frame.path}.${frame.key}` : frame.key;
+    lines.set(path, frame.keyLine);
+    return path;
+  };
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === "\n") {
+      line++;
+    } else if (ch === '"') {
+      let end = i + 1;
+      while (end < text.length && text[end] !== '"') end += text[end] === "\\" ? 2 : 1;
+      const frame = stack[stack.length - 1];
+      if (frame && frame.type === "object" && frame.expectKey) {
+        frame.key = JSON.parse(text.slice(i, end + 1));
+        frame.keyLine = line;
+        frame.expectKey = false;
+      } else {
+        beginValue();
+      }
+      i = end;
+    } else if (ch === "{" || ch === "[") {
+      const path = beginValue();
+      stack.push({ type: ch === "{" ? "object" : "array", path, index: 0, expectKey: ch === "{" });
+    } else if (ch === "}" || ch === "]") {
+      stack.pop();
+    } else if (ch === ",") {
+      const frame = stack[stack.length - 1];
+      if (frame && frame.type === "object") frame.expectKey = true;
+    } else if (/[-0-9tfn]/.test(ch)) {
+      beginValue();
+      while (i + 1 < text.length && !/[\s,\]}]/.test(text[i + 1])) i++;
+    }
   }
-  return parts;
+  return lines;
 }
 
-function getLastKeyFromPath(path) {
-  const parts = parsePath(path);
-  if (parts.length > 0 && typeof parts[parts.length - 1] === "number") {
-    return null;
-  }
-  for (let i = parts.length - 1; i >= 0; i--) {
-    if (typeof parts[i] === "string") return parts[i];
-  }
-  return null;
-}
-
-function findBestLineForKeyAndValue(content, key, value) {
-  const lines = content.split("\n");
-  const keyToken = key ? `"${key}"` : null;
-  
-  const isPrimitive = (v) => v === null || ["string", "number", "boolean"].includes(typeof v);
-  const valueToken = isPrimitive(value) ? JSON.stringify(value) : null;
-  
-  if (keyToken && valueToken) {
-    const keyValueRegex = new RegExp(`"${escapeRegex(key)}"\\s*:\\s*${escapeRegex(valueToken)}(\\s*[,\\]}]|\\s*$)`);
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (keyValueRegex.test(line)) return i;
-    }
-  }
-
-  if (!keyToken && valueToken) {
-    const valueRegex = new RegExp(`(^|\\s)${escapeRegex(valueToken)}(\\s*[,\\]}]|\\s*$)`);
-    for (let i = 0; i < lines.length; i++) {
-      if (valueRegex.test(lines[i])) return i;
-    }
-  }
-  
-  if (keyToken && !valueToken) {
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (!line.includes(keyToken)) continue;
-      if (line.includes("{") || line.includes("[")) return i;
-    }
-  }
-  
-  if (keyToken) {
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes(keyToken)) return i;
-    }
-  }
-  
-  return null;
-}
-
-function escapeRegex(text) {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function lineForPath(lineMap, path) {
+  if (path === "$") return 0;
+  return lineMap.has(path) ? lineMap.get(path) : null;
 }
 
 function applyDiffHighlightsFromEntries(entries, leftContent, rightContent) {
   clearDiffHighlights("left");
   clearDiffHighlights("right");
-  
+
+  const leftLines = buildLineMap(leftContent);
+  const rightLines = buildLineMap(rightContent);
+
   entries.forEach((entry) => {
-    const key = getLastKeyFromPath(entry.path);
-    
-    if (entry.status === "missing") {
-      const line = findBestLineForKeyAndValue(leftContent, key, entry.oldValue);
-      if (line !== null) addDiffHighlight("left", line, "missing");
-      return;
+    if (entry.status !== "addition") {
+      const line = lineForPath(leftLines, entry.path);
+      if (line !== null) addDiffHighlight("left", line, entry.status);
     }
-    
-    if (entry.status === "addition") {
-      const line = findBestLineForKeyAndValue(rightContent, key, entry.newValue);
-      if (line !== null) addDiffHighlight("right", line, "addition");
-      return;
+    if (entry.status !== "missing") {
+      const line = lineForPath(rightLines, entry.path);
+      if (line !== null) addDiffHighlight("right", line, entry.status);
     }
-    
-    const leftLine = findBestLineForKeyAndValue(leftContent, key, entry.oldValue);
-    const rightLine = findBestLineForKeyAndValue(rightContent, key, entry.newValue);
-    if (leftLine !== null) addDiffHighlight("left", leftLine, entry.status);
-    if (rightLine !== null) addDiffHighlight("right", rightLine, entry.status);
   });
-  
+
   updateLineNumbers("left");
   updateLineNumbers("right");
   updateHighlights("left");
@@ -752,38 +740,20 @@ document.querySelectorAll(".action-btn[data-action]").forEach((btn) => {
   editor.addEventListener("keydown", (e) => {
     if (e.key === "Tab") {
       e.preventDefault();
-      const start = editor.selectionStart;
-      const end = editor.selectionEnd;
       const indent = getIndentString();
-      
-      editor.value = editor.value.substring(0, start) + indent + editor.value.substring(end);
-      editor.selectionStart = editor.selectionEnd = start + indent.length;
-      
-      updateLineNumbers(side);
-      updateHighlights(side);
+      // insertText keeps the edit on the native undo stack and fires `input`,
+      // so the status and diff refresh. Assigning `value` did neither.
+      if (!document.execCommand("insertText", false, indent)) {
+        const start = editor.selectionStart;
+        editor.setRangeText(indent, start, editor.selectionEnd, "end");
+        editor.dispatchEvent(new Event("input"));
+      }
     }
   });
 });
 
-// Settings modal handlers
-if (settingsCloseBtn) {
-  settingsCloseBtn.addEventListener("click", closeSettingsModal);
-}
-
-if (settingsModal) {
-  settingsModal.addEventListener("click", (event) => {
-    if (event.target.matches("[data-modal-close]") || event.target === settingsModal) {
-      closeSettingsModal();
-    }
-  });
-}
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") {
-    if (settingsModal?.classList.contains("is-open")) closeSettingsModal();
-    if (diffLegendModal?.classList.contains("is-open")) closeDiffLegendModal();
-  }
-});
+// Close buttons, scrim clicks and Escape are handled by the shared modal
+// component (data-modal / data-modal-close); these only open and close.
 
 function openSettingsModal() {
   if (!settingsModal) return;
@@ -809,17 +779,7 @@ if (diffLegendBtn) {
   diffLegendBtn.addEventListener("click", openDiffLegendModal);
 }
 
-if (diffLegendCloseBtn) {
-  diffLegendCloseBtn.addEventListener("click", closeDiffLegendModal);
-}
 
-if (diffLegendModal) {
-  diffLegendModal.addEventListener("click", (event) => {
-    if (event.target.matches("[data-modal-close]") || event.target === diffLegendModal) {
-      closeDiffLegendModal();
-    }
-  });
-}
 
 // Indent settings change handlers
 [indentSizeInput, indentTypeSelect].filter(Boolean).forEach((control) => {

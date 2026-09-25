@@ -267,3 +267,87 @@ test('formatter validate and download treat both panes as XML', async ({ page })
   expect(download.suggestedFilename()).toBe('formatted.xml');
   expect(await downloadText(download)).toContain('<catalog');
 });
+
+test('emptying the input empties the output instead of leaving it stale', async ({ page }) => {
+  await openTool(page, 'json-xml-converter');
+  await typeInto(page, '#left-editor', '{"a":1}');
+  await expect(page.locator('#right-editor')).toHaveValue(/<a>1<\/a>/);
+
+  await typeInto(page, '#left-editor', '');
+  await expect(page.locator('#right-editor')).toHaveValue('');
+  await expect(page.locator('#right-status .char-count')).toHaveText('0 characters');
+});
+
+test('nested and empty arrays survive the conversion to XML', async ({ page }) => {
+  await openTool(page, 'json-xml-converter');
+  const xml = await page.evaluate(() => jsonToXML({ grid: [[1, 2], [3]], none: [] }));
+  expect(xml).toContain('<none />');
+  // Each inner array is its own <grid> element, so [[1,2],[3]] is not flattened.
+  const back = await page.evaluate((text) => xmlToJSON(text), xml);
+  expect(back.root.grid).toEqual([{ item: ['1', '2'] }, { item: '3' }]);
+});
+
+test('CDATA and text beside comments are kept when converting XML to JSON', async ({ page }) => {
+  await openTool(page, 'json-xml-converter');
+  const result = await page.evaluate(() => xmlToJSON('<r><a><![CDATA[x < y]]></a><b>kept<!-- note --></b><c/></r>'));
+  expect(result).toEqual({ r: { a: 'x < y', b: 'kept', c: {} } });
+});
+
+test('undo steps back over beautify one edit at a time and re-converts', async ({ page }) => {
+  await openTool(page, 'json-xml-converter');
+  await typeInto(page, '#left-editor', '{"a":1}');
+  await page.locator('[data-action="beautify-left"]').click();
+  await expect(page.locator('#left-editor')).toHaveValue('{\n  "a": 1\n}');
+
+  await page.locator('[data-action="undo-left"]').click();
+  await expect(page.locator('#left-editor')).toHaveValue('{"a":1}');
+
+  await page.locator('[data-action="undo-left"]').click();
+  await expect(page.locator('#left-editor')).toHaveValue('');
+  await expect(page.locator('#right-editor')).toHaveValue('');
+});
+
+test("switching modes resets undo so the other mode's input cannot come back", async ({ page }) => {
+  await openTool(page, 'json-xml-converter');
+  await typeInto(page, '#left-editor', '{"a":1}');
+  await page.locator('.mode-btn[data-mode="xml-json"]').click();
+  await page.locator('[data-action="undo-left"]').click();
+  await expect(page.locator('#left-editor')).toHaveValue('');
+  await expect(page.locator('#left-status .status-text')).toHaveText('Nothing to undo');
+});
+
+test('a paste error stays on screen instead of reverting to Ready', async ({ page }) => {
+  await page.clock.install();
+  await openTool(page, 'json-xml-converter');
+  await setClipboardText(page, '{"broken":');
+  await page.locator('[data-action="paste-left"]').click();
+  await expect(page.locator('#left-status .status-text')).toHaveClass(/error/);
+  await page.clock.runFor(3000);
+  await expect(page.locator('#left-status .status-text')).toHaveClass(/error/);
+});
+
+for (const width of [375, 800]) {
+  test(`fits a ${width}px viewport with every toolbar button inside its panel`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 812 });
+    await openTool(page, 'json-xml-converter');
+    await page.locator('[data-action="load-sample"]').click();
+
+    await expect.poll(() => page.evaluate(() =>
+      document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+
+    for (const side of ['left', 'right']) {
+      const panel = await page.locator(`.${side}-panel`).boundingBox();
+      const buttons = await page.locator(`#${side}-actions .action-btn`).evaluateAll((els) =>
+        els.filter((el) => el.offsetParent).map((el) => el.getBoundingClientRect().right));
+      for (const right of buttons) expect(right).toBeLessThanOrEqual(panel.x + panel.width);
+      expect((await page.locator(`#${side}-editor`).boundingBox()).height).toBeGreaterThan(250);
+    }
+
+    // The case menu opens un-clipped (the toolbar used to be an overflow scroller).
+    await page.locator('[data-action="change-case"]').click();
+    await expect(page.locator('#left-actions .dd__menu')).toBeVisible();
+    const menu = await page.locator('#left-actions .dd__menu').boundingBox();
+    expect(menu.height).toBeGreaterThan(100);
+    expect(menu.x + menu.width).toBeLessThanOrEqual(width);
+  });
+}

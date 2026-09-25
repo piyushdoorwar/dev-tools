@@ -126,7 +126,6 @@ function setupEventListeners() {
     });
     
     // Settings modal
-    const settingsModal = document.getElementById('settings-modal');
     const settingsOverlay = document.getElementById('settings-overlay');
     const settingsClose = document.getElementById('settings-close');
     
@@ -138,7 +137,6 @@ function setupEventListeners() {
     }
     
     // Info modal
-    const infoModal = document.getElementById('info-modal');
     const infoOverlay = document.getElementById('info-overlay');
     const infoClose = document.getElementById('info-close');
     
@@ -149,17 +147,6 @@ function setupEventListeners() {
         infoClose.addEventListener('click', closeInfoModal);
     }
     
-    // Close modal with Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            if (settingsModal && settingsModal.classList.contains('show')) {
-                closeSettingsModal();
-            }
-            if (infoModal && infoModal.classList.contains('show')) {
-                closeInfoModal();
-            }
-        }
-    });
 }
 
 // Update Mode
@@ -194,9 +181,12 @@ function updateMode() {
         rightEditor.placeholder = 'JSON output will appear here...';
     }
     
-    // Clear editors when switching
+    // Clear editors when switching. History restarts too: undo must not
+    // bring the other mode's JSON back into a Toon pane.
     leftEditor.value = '';
     rightEditor.value = '';
+    leftHistory = [''];
+    rightHistory = [''];
     updateStatus('left', 'Ready', false);
     updateStatus('right', 'Ready', false);
     updateCharCounts();
@@ -239,8 +229,8 @@ function loadSample() {
     updateCharCount('left');
     updateLineNumbers('left');
     saveToHistory('left');
+    scheduleReady('left');
     handleConvert(); // Live conversion after loading sample
-    setTimeout(() => updateStatus('left', 'Ready', false), 2000);
 }
 
 // Handle Actions
@@ -294,7 +284,6 @@ function handleAction(action) {
             break;
         case 'paste-left':
             pasteFromClipboard('left');
-            setTimeout(() => handleConvert(), 100); // Live conversion after paste
             break;
         case 'paste-right':
             pasteFromClipboard('right');
@@ -379,6 +368,7 @@ function beautifyEditor(side) {
         }
         updateCharCount(side);
         updateLineNumbers(side);
+        saveToHistory(side); // so undo steps back one edit, not two
     } catch (error) {
         updateStatus(side, '✗ ' + error.message, false, true);
     }
@@ -401,6 +391,7 @@ function sortJsonKeys() {
         updateStatus('left', 'Keys sorted', true);
         updateCharCount('left');
         updateLineNumbers('left');
+        saveToHistory('left');
     } catch (error) {
         updateStatus('left', '✗ ' + error.message, false, true);
     }
@@ -434,6 +425,7 @@ function changeCasing(caseType) {
         updateStatus('left', `Converted to ${caseType}`, true);
         updateCharCount('left');
         updateLineNumbers('left');
+        saveToHistory('left');
         handleConvert(); // Live conversion after casing change
     } catch (error) {
         updateStatus('left', '✗ ' + error.message, false, true);
@@ -577,11 +569,15 @@ function jsonToToon(obj, indentSpaces = 2, delimiter = '|') {
         if (array.length === 0 || !array.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
             return null;
         }
-        const keys = Object.keys(array[0]).sort();
+        // The header keeps the first row's key order; sorting it reordered
+        // every object's keys on the way back to JSON. Rows only need the
+        // same set of keys, in any order.
+        const keys = Object.keys(array[0]);
+        const keySet = JSON.stringify([...keys].sort());
         const safeFields = keys.every(key => /^[A-Za-z_][A-Za-z0-9_.-]*$/.test(key) && !key.includes(delimiter));
         const samePrimitiveFields = safeFields && array.every(item => {
             const itemKeys = Object.keys(item).sort();
-            return JSON.stringify(itemKeys) === JSON.stringify(keys) && keys.every(key => {
+            return JSON.stringify(itemKeys) === keySet && keys.every(key => {
                 const value = item[key];
                 return value === null || typeof value !== 'object';
             });
@@ -838,7 +834,7 @@ async function copyToClipboard(text, side) {
     try {
         await navigator.clipboard.writeText(text);
         updateStatus(side, '✓ Copied to clipboard', true);
-        setTimeout(() => updateStatus(side, 'Ready', false), 2000);
+        scheduleReady(side);
     } catch (error) {
         updateStatus(side, '✗ Failed to copy', false, true);
     }
@@ -854,7 +850,8 @@ async function pasteFromClipboard(side) {
         updateCharCount(side);
         updateLineNumbers(side);
         saveToHistory(side);
-        setTimeout(() => updateStatus(side, 'Ready', false), 2000);
+        scheduleReady(side);
+        if (side === 'left') handleConvert(); // its verdict replaces the flash
     } catch (error) {
         updateStatus(side, '✗ Failed to paste', false, true);
     }
@@ -902,7 +899,7 @@ function downloadContent(side) {
     URL.revokeObjectURL(url);
     
     updateStatus(side, `✓ Downloaded ${filename}`, true);
-    setTimeout(() => updateStatus(side, 'Ready', false), 2000);
+    scheduleReady(side);
 }
 
 // Save to History
@@ -952,16 +949,27 @@ function undoEdit(side) {
     updateCharCount(side);
     updateLineNumbers(side);
     
+    scheduleReady(side);
+
     // Live conversion after undo on left editor
     if (side === 'left') {
         handleConvert();
     }
-    
-    setTimeout(() => updateStatus(side, 'Ready', false), 2000);
+}
+
+// Revert a transient confirmation to "Ready". Any later status cancels it: a
+// bare setTimeout used to wipe an error that arrived in the meantime (paste
+// invalid JSON and the error vanished two seconds later).
+const statusTimers = {};
+
+function scheduleReady(side) {
+    clearTimeout(statusTimers[side]);
+    statusTimers[side] = setTimeout(() => updateStatus(side, 'Ready', false), 2000);
 }
 
 // Update Status
 function updateStatus(side, message, isSuccess = false, isError = false) {
+    clearTimeout(statusTimers[side]);
     const statusBar = side === 'left' ? leftStatus : rightStatus;
     const statusText = statusBar.querySelector('.status-text');
     statusText.textContent = message;

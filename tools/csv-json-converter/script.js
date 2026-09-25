@@ -530,13 +530,18 @@ const ACTIONS = {
     window.DevToolsMain.showToast("Cleared", "info");
   },
 
-  copy() {
+  async copy() {
     if (!state.text) {
       window.DevToolsMain.showToast("Nothing to copy", "error");
       return;
     }
-    window.DevToolsMain.copyText(state.text);
-    window.DevToolsMain.showToast(`${state.mode === "csv-json" ? "JSON" : "CSV"} copied`, "success");
+    // Awaited: a rejected clipboard write used to be reported as "copied".
+    try {
+      await window.DevToolsMain.copyText(state.text);
+      window.DevToolsMain.showToast(`${state.mode === "csv-json" ? "JSON" : "CSV"} copied`, "success");
+    } catch {
+      window.DevToolsMain.showToast("Copy failed", "error");
+    }
   },
 
   download() {

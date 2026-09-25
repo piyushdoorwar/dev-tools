@@ -233,6 +233,20 @@ test('sample shows off preserved order; format-in-place, copy, and download work
   await expect(page.locator('#output')).toHaveValue('');
 });
 
+test('opening a file with duplicate keys keeps the warning instead of repainting it as success', async ({ page }) => {
+  await openTool(page, 'json-formatter');
+
+  await page.locator('#file-input').setInputFiles({ name: 'dupes.json', mimeType: 'application/json', buffer: Buffer.from('{"id":1,"id":2}') });
+  await expect(page.locator('#input')).toHaveValue('{"id":1,"id":2}');
+  await expect(page.locator('#input-status')).toHaveClass(/is-warning/);
+  await expect(page.locator('#input-status')).not.toHaveClass(/is-success/);
+  await expect(page.locator('#input-status')).toContainText('Duplicate key "id"');
+
+  await page.locator('#file-input').setInputFiles({ name: 'clean.json', mimeType: 'application/json', buffer: Buffer.from('{"id":1}') });
+  await expect(page.locator('#input-status')).toHaveClass(/is-success/);
+  await expect(page.locator('#input-status')).toContainText('Opened clean.json');
+});
+
 test('engine agrees with JSON.parse on ordinary documents', async ({ page }) => {
   await openTool(page, 'json-formatter');
   const ok = await page.evaluate(() => {
