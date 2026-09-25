@@ -123,8 +123,9 @@ async function computeSignature(data, secret, alg) {
         .replace(/\+/g, '-')
         .replace(/\//g, '_');
     } catch (e) {
-      console.error('Failed to import RSA key:', e);
-      return '';
+      // Callers turn this into a toast; logging it here as well made every
+      // mistyped key a console error and left Apply silently unsigned.
+      throw new Error('Invalid RSA private key');
     }
   } else if (alg === 'ES256') {
     try {
@@ -142,8 +143,7 @@ async function computeSignature(data, secret, alg) {
         .replace(/\+/g, '-')
         .replace(/\//g, '_');
     } catch (e) {
-      console.error('Failed to import EC key:', e);
-      return '';
+      throw new Error('Invalid EC private key');
     }
   } else {
     return '';
@@ -318,6 +318,19 @@ function derToJwtEcSignature(der) {
   return new Uint8Array([...rPadded, ...sPadded]);
 }
 
+function isJsonObject(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+const SUPPORTED_ALGS = ['HS256', 'RS256', 'ES256', 'PS256'];
+
+// Mirrors a token's alg into the select without blanking it: assigning a value
+// with no matching <option> (HS512, none) left the select empty, which hid the
+// secret field as though an asymmetric algorithm were chosen.
+function syncAlgoSelect(alg) {
+  algoSelect.value = SUPPORTED_ALGS.includes(alg) ? alg : 'HS256';
+}
+
 function parseJwt(token) {
   if (!token) return null;
   const parts = token.split('.');
@@ -326,9 +339,14 @@ function parseJwt(token) {
   const payload = base64UrlDecode(parts[1]);
   if (!header || !payload) return null;
   try {
+    const parsedHeader = JSON.parse(header);
+    const parsedPayload = JSON.parse(payload);
+    // `null`, a number or an array is valid JSON but not a JOSE header or a
+    // claims set, and reading .alg / .exp off null threw.
+    if (!isJsonObject(parsedHeader) || !isJsonObject(parsedPayload)) return null;
     return {
-      header: JSON.parse(header),
-      payload: JSON.parse(payload),
+      header: parsedHeader,
+      payload: parsedPayload,
       signature: parts[2] || '',
       signingInput: `${parts[0]}.${parts[1]}`,
     };
@@ -382,14 +400,19 @@ async function updateJwt() {
   const currentToken = jwtInput.value.trim();
   const tokenMeta = parseJwt(currentToken);
   if (tokenMeta) {
-    const headerEncoded = base64UrlEncode(JSON.stringify(tokenMeta.header));
+    // Sign with the algorithm the key was entered for. For a token whose alg
+    // this tool cannot produce (HS512, none) that also rewrites the header,
+    // rather than silently returning an unsigned token.
+    const alg = algoSelect.value;
+    const header = { ...tokenMeta.header, alg };
+    const headerEncoded = base64UrlEncode(JSON.stringify(header));
     const payloadEncoded = base64UrlEncode(JSON.stringify(tokenMeta.payload));
     const data = `${headerEncoded}.${payloadEncoded}`;
-    const newSignature = await computeSignature(data, secret, tokenMeta.header.alg);
+    const newSignature = await computeSignature(data, secret, alg);
     const newToken = `${data}.${newSignature}`;
     jwtInput.value = newToken;
     signatureIsStale = !newSignature;
-    updateStatus(parseJwt(newToken));
+    updateDisplay(newToken);
   }
 }
 
@@ -415,7 +438,7 @@ function updateDisplay(token) {
   if (payloadJson !== document.activeElement) payloadJson.textContent = prettyPrint(tokenMeta.payload);
 
   // Update algorithm dropdown
-  algoSelect.value = tokenMeta.header.alg || 'HS256';
+  syncAlgoSelect(tokenMeta.header.alg);
   updateSecretSections();
   // Update signature algorithm display
   const sigAlgo = document.getElementById('sigAlgo');
@@ -531,16 +554,10 @@ function copyToClipboard(value) {
   });
 }
 
+// The shared toast: consistent timing, icons, live-region roles and
+// click-to-dismiss, instead of a bare div removed after 2.5 s.
 function showToast(message, type = 'info') {
-  const container = document.getElementById('toast-container');
-  if (!container || !message) return;
-
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-
-  window.setTimeout(() => toast.remove(), 2500);
+  if (message) window.DevToolsMain.showToast(message, type);
 }
 
 function flashActionIcon(button) {
@@ -622,7 +639,8 @@ headerJson.addEventListener('input', () => {
       const newToken = `${newHeaderEncoded}.${parts[1]}.${parts[2]}`;
       jwtInput.value = newToken;
       // Update algorithm
-      algoSelect.value = newHeader.alg || 'HS256';
+      syncAlgoSelect(newHeader.alg);
+      updateSecretSections();
       signatureIsStale = true;
       updateStatus(parseJwt(newToken));
     }
@@ -682,8 +700,19 @@ if (verifyBtn) {
   verifyBtn.addEventListener('click', async () => {
     const currentToken = jwtInput.value.trim();
     const tokenMeta = parseJwt(currentToken);
-    if (!tokenMeta || !tokenMeta.signature) return;
+    if (!tokenMeta) {
+      showToast('Paste a complete JWT to verify', 'error');
+      return;
+    }
+    if (!tokenMeta.signature) {
+      showToast('This token has no signature to verify', 'error');
+      return;
+    }
     const algo = tokenMeta.header.alg;
+    if (!SUPPORTED_ALGS.includes(algo)) {
+      showToast(`Verifying ${algo || 'this algorithm'} is not supported — use ${SUPPORTED_ALGS.join(', ')}`, 'error');
+      return;
+    }
     if (algo === 'HS256') {
       if (!secretTextarea.value.trim()) {
         showToast('Secret is required for verification', 'error');
@@ -850,7 +879,13 @@ updateDatetimeBtn.addEventListener('click', async () => {
     if (!isNaN(exp)) newPayload.exp = exp;
     payloadJson.textContent = JSON.stringify(newPayload, null, 2);
     payloadJson.dispatchEvent(new Event('input'));
-    if (secret) await updateJwt();
+    if (secret) {
+      try {
+        await updateJwt();
+      } catch (error) {
+        showToast(`${error.message} — the edited token is left unsigned`, 'error');
+      }
+    }
     window.DevToolsMain.closeModal(datetimeModal);
   }
 });
@@ -867,9 +902,14 @@ algoSelect.addEventListener('change', async () => {
     const payloadEncoded = base64UrlEncode(JSON.stringify(tokenMeta.payload));
     const data = `${newHeaderEncoded}.${payloadEncoded}`;
     const keyValue = algoSelect.value === 'HS256' ? secretTextarea.value : privateKeyTextarea.value;
-    const newSignature = keyValue
-      ? await computeSignature(data, keyValue, algoSelect.value)
-      : '';
+    let newSignature = '';
+    if (keyValue) {
+      try {
+        newSignature = await computeSignature(data, keyValue, algoSelect.value);
+      } catch (error) {
+        showToast(`${error.message} — the token is left unsigned`, 'error');
+      }
+    }
     const newToken = `${data}.${newSignature}`;
     jwtInput.value = newToken;
     signatureIsStale = !newSignature;

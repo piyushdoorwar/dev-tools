@@ -306,3 +306,26 @@ test('File mode sample loads an SVG and clear removes the file', async ({ page }
   await expect(page.locator('#file-name')).toHaveText('Drop a file here or click to choose');
   await expect(page.locator(output)).toHaveValue('');
 });
+
+test('a data: URI with a malformed name parameter still decodes', async ({ page }) => {
+  // decodeURIComponent() on the name threw URIError, which escaped as an
+  // uncaught exception and left the output panel stale.
+  const { errors } = await openTool(page, 'encoder-decoder');
+  await selectMode(page, 'file');
+  await selectDirection(page, 'decode');
+
+  await typeInto(page, input, 'data:text/plain;name=bad%E0name.txt;base64,SGk=');
+  await expect(page.locator('#file-details dd')).toHaveText(['text/plain', '2 bytes', 'data URI', 'bad%E0name.txt']);
+  expect(errors).toEqual([]);
+});
+
+test('stacked on a phone, both editors keep a usable height and nothing overflows', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'encoder-decoder');
+
+  for (const selector of [input, output]) {
+    const box = await page.locator(selector).boundingBox();
+    expect(box.height, `${selector} is too short to edit in`).toBeGreaterThan(200);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

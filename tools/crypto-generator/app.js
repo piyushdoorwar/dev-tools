@@ -331,7 +331,10 @@
 
   bulkDownloadBtn.addEventListener('click', () => {
     const list = generateBulkItems();
-    if (!list.length) return;
+    if (!list.length) {
+      window.DevToolsMain.showToast(buildRequirements().error || 'Nothing to download', 'error');
+      return;
+    }
     const blob = new Blob([list.join('\n')], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -386,7 +389,13 @@
       return wordArray;
     };
 
-    const utf8Encode = (string) => unescape(encodeURIComponent(string));
+    // TextEncoder, unlike unescape(encodeURIComponent()), never throws: a lone
+    // surrogate becomes U+FFFD, the same bytes the SHA path hashes.
+    const utf8Encode = (string) => {
+      let binary = '';
+      for (const byte of encoder.encode(string)) binary += String.fromCharCode(byte);
+      return binary;
+    };
     let x = [];
     let a = 0x67452301;
     let b = 0xefcdab89;
@@ -534,8 +543,13 @@
   };
 
   let hashTimer = null;
+  // Bumped per run: the algorithm select runs immediately while a debounced
+  // keystroke run may still be awaiting digests, and the older one must not
+  // overwrite the newer result when it finishes last.
+  let hashRun = 0;
 
   const runHashGeneration = async () => {
+    const run = ++hashRun;
     // Hash the input verbatim. Trimming here produced digests that silently
     // disagreed with sha256sum and every other hasher for input with leading
     // or trailing whitespace.
@@ -552,6 +566,7 @@
     for (const algo of algorithms) {
       // eslint-disable-next-line no-await-in-loop
       const value = await digestMessage(algo, salted);
+      if (run !== hashRun) return;
       results.push({
         label: algo.toUpperCase(),
         value,

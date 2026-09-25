@@ -542,14 +542,24 @@ body {
         flex-wrap: wrap;
     }
 
+    /* Stacked, two editors squeezed into one fixed-height screen left each
+       only a few lines tall, so the page scrolls instead. */
+    body,
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
     .main-content {
         flex-direction: column;
         padding: 1rem;
+        overflow: visible;
     }
 
     .editor-panel {
-        flex: 1;
-        min-height: 0;
+        flex: none;
+        min-height: 60vh;
     }
 
     .mode-btn,

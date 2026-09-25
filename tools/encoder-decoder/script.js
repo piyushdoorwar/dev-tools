@@ -344,6 +344,14 @@ function percentBytes(text) {
   return new Uint8Array(bytes);
 }
 
+function safeDecodeComponent(text) {
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text;
+  }
+}
+
 // Reads either a data: URI or bare Base64 into bytes plus a MIME type.
 function parseFilePayload(text) {
   const trimmed = text.trim();
@@ -356,6 +364,8 @@ function parseFilePayload(text) {
     const payload = trimmed.slice(comma + 1);
     const isBase64 = params.slice(1).some((part) => part.toLowerCase() === "base64");
     const nameParam = params.find((part) => /^name=/i.test(part));
+    // A malformed %XX in the name must not take the whole decode down with it.
+    const name = nameParam ? safeDecodeComponent(nameParam.slice(5)) : null;
     // RFC 2397: with no type given, the data is US-ASCII text.
     const mime = (params[0] || "text/plain").toLowerCase();
     if (!isBase64) {
@@ -365,11 +375,11 @@ function parseFilePayload(text) {
       } catch {
         return { error: "The data: URI contains characters that cannot be read" };
       }
-      return { bytes, mime, source: "data URI", name: nameParam ? decodeURIComponent(nameParam.slice(5)) : null };
+      return { bytes, mime, source: "data URI", name };
     }
     const decoded = base64Bytes(payload);
     if (decoded.error) return decoded;
-    return { bytes: decoded.bytes, mime, source: "data URI", name: nameParam ? decodeURIComponent(nameParam.slice(5)) : null };
+    return { bytes: decoded.bytes, mime, source: "data URI", name };
   }
 
   const decoded = base64Bytes(trimmed);

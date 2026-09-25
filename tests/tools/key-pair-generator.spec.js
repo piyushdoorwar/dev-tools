@@ -276,3 +276,20 @@ test('the help modal explains formats and ssh-keygen conversion', async ({ page 
   await expect(page.locator('#helpModal')).toContainText('ssh-keygen -i -m PKCS8');
   await expect(page.locator('#helpModal')).toContainText('RFC 7638');
 });
+
+test('picking an algorithm before generating keeps the shown key\'s SSH line in step with it', async ({ page }) => {
+  // renderAlgo() hid the SSH output whenever X25519 was *selected*, so the
+  // displayed Ed25519 key lost its public key line; and after generating an
+  // X25519 key, selecting RSA revealed an empty SSH box.
+  await openTool(page, 'key-pair-generator');
+  await expect(page.locator('#generate-btn')).toBeEnabled();
+  await expect(page.locator('#out-ssh')).toHaveValue(/^ssh-ed25519 /);
+
+  await page.click('[data-algo="x25519"]');
+  await expect(page.locator('[data-output="ssh"]')).toBeVisible();
+
+  await page.click('#generate-btn');
+  await expect(page.locator('#out-jwk-public')).toHaveValue(/X25519/);
+  await page.click('[data-algo="rsa"]');
+  await expect(page.locator('[data-output="ssh"]')).toBeHidden();
+});

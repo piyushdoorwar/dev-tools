@@ -140,7 +140,9 @@ function generate() {
       return;
     }
     state.msPerRound = elapsed / 2 ** cost;
-    hashOutput.value = hash;
+    // The prefix may have been switched while the rounds ran; the digest is
+    // the same for all three, so label it with the one showing now.
+    hashOutput.value = hash.replace(/^\$2[aby]\$/, `$${state.version}$`);
     renderCost();
     const emptyNote = password ? "" : " (of an empty password)";
     setStatus(hashStatus, `Hashed in ${formatMs(elapsed)} at cost ${cost}${emptyNote}`, password ? "success" : "warning");
