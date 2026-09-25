@@ -51,7 +51,14 @@
    */
 
   root.readHashState = root.readHashState || function readHashState() {
-    return decodeURIComponent(window.location.hash.replace(/^#/, ""));
+    const raw = window.location.hash.replace(/^#/, "");
+    // A hand-edited or truncated hash (`#%E0%A4`) would otherwise throw and
+    // take down every tool that reads its state on load.
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
   };
 
   root.writeHashState = root.writeHashState || function writeHashState(value) {
@@ -360,6 +367,10 @@
         if (event.key === "ArrowDown" || event.key === "ArrowUp") {
           event.preventDefault();
           root.openDropdown(dropdown);
+        } else if (event.key === "Escape" && dropdown.classList.contains(OPEN_CLASS)) {
+          event.preventDefault();
+          event.stopPropagation();
+          root.closeDropdown(dropdown);
         }
       });
 
@@ -397,7 +408,10 @@
         if (event.key === "Escape" || event.key === "Tab") {
           root.closeDropdown(dropdown);
           if (event.key === "Escape") {
+            // Stop here: inside a modal, the dialog's own Escape handler would
+            // otherwise close the dialog along with the menu.
             event.preventDefault();
+            event.stopPropagation();
             trigger.focus();
           }
         }

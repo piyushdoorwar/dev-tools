@@ -1416,7 +1416,9 @@ select[size]:not([size='1']) {
     gap: var(--space-1);
   }
 
-  .preset {
+  /* Scoped to the picker: a bare `.preset` in this winning layer turned
+     chmod-calculator's mode cards into tiny colourless squares. */
+  .picker__presets .preset {
     aspect-ratio: 1;
     padding: 0;
     border: 1px solid var(--border-light);
@@ -1426,12 +1428,12 @@ select[size]:not([size='1']) {
     transition: transform var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
   }
 
-  .preset:hover {
+  .picker__presets .preset:hover {
     transform: translateY(-2px);
     border-color: var(--accent-purple-light);
   }
 
-  .preset:focus-visible {
+  .picker__presets .preset:focus-visible {
     outline: 2px solid var(--focus-border);
     outline-offset: 2px;
   }
