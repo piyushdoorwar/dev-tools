@@ -397,8 +397,9 @@
   }
 
   function getOutputName() {
-    const base = state.files.length === 1 ? state.files[0].file.name.replace(/\.[^/.]+$/, '') : 'archive';
-    return base + ALGO[state.algorithm].ext;
+    // A dotfile such as ".env" strips to "", which produced a hidden ".zip".
+    const base = state.files.length === 1 ? state.files[0].file.name.replace(/\.[^/.]+$/, '') : '';
+    return (base || 'archive') + ALGO[state.algorithm].ext;
   }
 
   function refreshStats() {
@@ -428,7 +429,13 @@
 
   function setIdleMessage(message, isError = false) {
     if (el.idleText) el.idleText.textContent = message;
-    if (isError) setStatusBadge('Limit exceeded', 'idle');
+    if (isError) {
+      setStatusBadge('Limit exceeded', 'idle');
+      // The idle panel is hidden while a finished archive is on show, so the
+      // message alone could go unseen.
+      showProgressState('idle');
+      window.DevToolsMain.showToast(message, 'error');
+    }
   }
 
   function renderFileTable() {
@@ -677,10 +684,15 @@
       el.doneCompressed.textContent = formatSize(blob.size);
       el.doneSaved.textContent = saved > 0 ? 'Saved ' + formatSize(saved) + ' (' + savedPct + '%)' : 'This algorithm produced little or no size reduction';
     } catch (error) {
-      console.error('Compression failed:', error);
+      console.warn('Compression failed:', error);
+      const message = (error && error.message) || 'Unable to build archive';
       showProgressState('idle');
-      setStatusBadge(state.files.length ? 'Ready' : 'Idle', 'idle');
-      setProgress(0, 'Compression failed', error.message || 'Unable to build archive');
+      setStatusBadge('Failed', 'idle');
+      setProgress(0, 'Compression failed', message);
+      // The progress text lives in the active panel, which is hidden again
+      // here, so the reason has to reach the visible idle panel and a toast.
+      setIdleMessage('Compression failed: ' + message);
+      window.DevToolsMain.showToast('Compression failed: ' + message, 'error');
     } finally {
       state.isCompressing = false;
       refreshStats();
@@ -696,7 +708,54 @@
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Revoking synchronously can cancel the download in some browsers.
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  }
+
+  /* A dropped folder arrives in dataTransfer.files as a zero-byte File that
+     cannot be read, which failed the whole archive at generate time. Walk
+     dropped directories through the entries API instead, keeping paths. */
+  function readEntryFiles(entry, prefix) {
+    return new Promise((resolve) => {
+      if (entry.isFile) {
+        entry.file((file) => {
+          file.__relativePath = prefix + file.name;
+          resolve([file]);
+        }, () => resolve([]));
+        return;
+      }
+      if (!entry.isDirectory) {
+        resolve([]);
+        return;
+      }
+      const reader = entry.createReader();
+      const children = [];
+      const readBatch = () => {
+        reader.readEntries(async (batch) => {
+          if (!batch.length) {
+            const nested = await Promise.all(children.map((child) => readEntryFiles(child, prefix + entry.name + '/')));
+            resolve(nested.flat());
+            return;
+          }
+          children.push(...batch);
+          readBatch();
+        }, () => resolve([]));
+      };
+      readBatch();
+    });
+  }
+
+  async function filesFromDrop(dataTransfer) {
+    const items = Array.from(dataTransfer.items || []);
+    const entries = items
+      .filter((item) => item.kind === 'file' && typeof item.webkitGetAsEntry === 'function')
+      .map((item) => item.webkitGetAsEntry())
+      .filter(Boolean);
+    if (!entries.length || !entries.some((entry) => entry.isDirectory)) {
+      return Array.from(dataTransfer.files || []);
+    }
+    const nested = await Promise.all(entries.map((entry) => readEntryFiles(entry, '')));
+    return nested.flat();
   }
 
   function bindEvents() {
@@ -740,10 +799,13 @@
       el.dropZone.classList.add('drag-over');
     });
     el.dropZone.addEventListener('dragleave', () => el.dropZone.classList.remove('drag-over'));
-    el.dropZone.addEventListener('drop', (event) => {
+    el.dropZone.addEventListener('drop', async (event) => {
       event.preventDefault();
       el.dropZone.classList.remove('drag-over');
-      if (event.dataTransfer.files && event.dataTransfer.files.length) addFiles(event.dataTransfer.files);
+      if (!event.dataTransfer) return;
+      // Entries must be taken synchronously, before the event is recycled.
+      const files = await filesFromDrop(event.dataTransfer);
+      if (files.length) addFiles(files);
     });
     el.algorithmTrigger.addEventListener('click', (event) => {
       event.stopPropagation();
@@ -791,11 +853,9 @@
     document.addEventListener('click', (event) => {
       if (!el.algorithmDropdown.contains(event.target)) closeAlgorithmMenu();
     });
+    // Escape for the info modal comes from the shared modal component.
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        closeAlgorithmMenu();
-        if (el.infoModal.classList.contains('active')) closeInfoModal();
-      }
+      if (event.key === 'Escape') closeAlgorithmMenu();
     });
     el.generateBtn.addEventListener('click', compressAll);
     el.downloadBtn.addEventListener('click', downloadArchive);

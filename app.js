@@ -200,8 +200,19 @@ function loadPinnedToolIds() {
   }
 }
 
+/* Storage can refuse a write (quota, blocked site data, some private modes).
+   A failed save must not throw out of setActive(), where it used to abort the
+   tool switch before the URL was updated. */
+function safeSetItem(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    /* Preference simply is not persisted this time. */
+  }
+}
+
 function savePinnedToolIds() {
-  localStorage.setItem(PINNED_TOOLS_KEY, JSON.stringify(pinnedToolIds));
+  safeSetItem(PINNED_TOOLS_KEY, JSON.stringify(pinnedToolIds));
 }
 
 function loadRecentToolIds() {
@@ -215,7 +226,7 @@ function loadRecentToolIds() {
 }
 
 function saveRecentToolIds() {
-  localStorage.setItem(RECENT_TOOLS_KEY, JSON.stringify(recentToolIds));
+  safeSetItem(RECENT_TOOLS_KEY, JSON.stringify(recentToolIds));
 }
 
 function rememberRecentTool(toolId) {
@@ -536,6 +547,11 @@ function setActive(tool, updateHistory = true) {
   }
   rememberRecentTool(tool.id);
 
+  // Stacked (phone/tablet), the sidebar takes a fixed 340px row and leaves the
+  // tool a sliver of the screen, so opening a tool tucks the sidebar away; the
+  // expand button brings it back.
+  if (NARROW_LAYOUT.matches) setSidebarCollapsed(true);
+
   // Update URL
   if (updateHistory) {
     updateURL(tool.route);
@@ -543,9 +559,15 @@ function setActive(tool, updateHistory = true) {
 }
 
 // Sidebar collapse/expand
+const NARROW_LAYOUT = window.matchMedia("(max-width: 900px)");
+
+function setSidebarCollapsed(collapsed) {
+  els.sidebar.classList.toggle("is-collapsed", collapsed);
+  els.app.classList.toggle("sidebar-collapsed", collapsed);
+}
+
 function toggleSidebar() {
-  els.sidebar.classList.toggle("is-collapsed");
-  els.app.classList.toggle("sidebar-collapsed");
+  setSidebarCollapsed(!els.app.classList.contains("sidebar-collapsed"));
 }
 
 els.collapseBtn.addEventListener("click", toggleSidebar);
@@ -555,17 +577,78 @@ els.brandHome.addEventListener("click", () => setActive(null));
 // Modals (support, settings)
 const MODALS = [els.supportModal, els.settingsModal];
 
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const openDialogs = [];
+
+function isOpen(dialog) {
+  return dialog.getAttribute("aria-hidden") === "false";
+}
+
+function focusableIn(dialog) {
+  return [...dialog.querySelectorAll(FOCUSABLE)].filter((node) => node.getClientRects().length > 0);
+}
+
+/* The shell does not load tools/main.js, so its dialogs carry their own copy
+   of the essentials the shared modal gives every tool: focus moves into the
+   dialog, Tab stays inside it, and focus returns to the opener on close.
+   Without this, keyboard focus stayed on the button behind the scrim. */
+function trackDialogOpen(dialog, focusTarget) {
+  if (!openDialogs.includes(dialog)) {
+    dialog._returnFocusTo = document.activeElement;
+    openDialogs.push(dialog);
+  }
+  requestAnimationFrame(() => {
+    const target = focusTarget || focusableIn(dialog)[0];
+    target?.focus();
+  });
+}
+
+function trackDialogClose(dialog) {
+  const index = openDialogs.indexOf(dialog);
+  if (index === -1) return;
+  openDialogs.splice(index, 1);
+  const returnTo = dialog._returnFocusTo;
+  dialog._returnFocusTo = null;
+  if (returnTo && document.contains(returnTo)) returnTo.focus();
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Tab" || openDialogs.length === 0) return;
+  const dialog = openDialogs[openDialogs.length - 1];
+  const items = focusableIn(dialog);
+  if (items.length === 0) return;
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (!dialog.contains(document.activeElement)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+});
+
+function anyOverlayOpen() {
+  return MODALS.some(isOpen) || isOpen(els.commandPalette);
+}
+
 function openModal(modal) {
   modal.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
+  trackDialogOpen(modal, modal.querySelector(".modal__close"));
 }
 
 function closeModal(modal) {
+  const wasOpen = isOpen(modal);
   modal.setAttribute("aria-hidden", "true");
   // Another dialog may still be up — only release the page scroll once none are.
-  if (MODALS.every((other) => other.getAttribute("aria-hidden") !== "false")) {
+  if (!anyOverlayOpen()) {
     document.body.style.overflow = "";
   }
+  if (wasOpen) trackDialogClose(modal);
 }
 
 function openSupportModal() {
@@ -588,11 +671,16 @@ for (const modal of MODALS) {
 }
 
 // Close modal with Escape key
+// Escape dismisses only the topmost layer: it used to close every open dialog
+// at once, including one sitting under the command palette.
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
-  for (const modal of MODALS) {
-    if (modal.getAttribute("aria-hidden") === "false") closeModal(modal);
-  }
+  if (isOpen(els.commandPalette)) return; // the palette's own handler owns this
+  const top = [...openDialogs].reverse().find((dialog) => MODALS.includes(dialog) && isOpen(dialog))
+    || MODALS.find(isOpen);
+  if (!top) return;
+  if (top === els.settingsModal) closeSettingsModal();
+  else closeModal(top);
 });
 
 /* --- Settings: what this app has stored, and removing it ------------------
@@ -884,12 +972,21 @@ function openCommandPalette() {
   els.commandPaletteInput.value = "";
   syncCommandShortcutLabels();
   renderCommandPalette();
-  requestAnimationFrame(() => els.commandPaletteInput.focus());
+  trackDialogOpen(els.commandPalette, els.commandPaletteInput);
 }
 
-function closeCommandPalette() {
+function closeCommandPalette({ restoreFocus = true } = {}) {
+  const wasOpen = isOpen(els.commandPalette);
   els.commandPalette.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
+  // A dialog opened underneath keeps the scroll lock it asked for.
+  if (!anyOverlayOpen()) document.body.style.overflow = "";
+  if (!wasOpen) return;
+  if (restoreFocus) {
+    trackDialogClose(els.commandPalette);
+  } else {
+    openDialogs.splice(openDialogs.indexOf(els.commandPalette), 1);
+    els.commandPalette._returnFocusTo = null;
+  }
 }
 
 function toggleCommandPalette() {
@@ -903,7 +1000,9 @@ function toggleCommandPalette() {
 function openCommandPaletteTool(index = commandPaletteIndex) {
   const tool = commandPaletteResults[index];
   if (!tool) return;
-  closeCommandPalette();
+  // Focus goes to the tool that was just opened, not back to whatever
+  // launched the palette.
+  closeCommandPalette({ restoreFocus: false });
   setActive(tool);
 }
 
@@ -943,6 +1042,8 @@ els.commandPaletteInput.addEventListener("keydown", (event) => {
 
   if (event.key === "Escape") {
     event.preventDefault();
+    // Handled: don't let the document-level handler close a dialog below too.
+    event.stopPropagation();
     closeCommandPalette();
   }
 });
@@ -1164,7 +1265,12 @@ async function loadDeployedVersion() {
   }
 
   const cacheKey = `devtools:gh-version:${inferred.owner}/${inferred.repo}`;
-  const cachedRaw = localStorage.getItem(cacheKey);
+  let cachedRaw = null;
+  try {
+    cachedRaw = localStorage.getItem(cacheKey);
+  } catch {
+    // Storage blocked: fetch fresh.
+  }
   if (cachedRaw) {
     try {
       const cached = JSON.parse(cachedRaw);
@@ -1208,7 +1314,7 @@ async function loadDeployedVersion() {
     els.version.href = href;
     els.version.dataset.tooltip = tooltip;
 
-    localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), value, href, tooltip }));
+    safeSetItem(cacheKey, JSON.stringify({ ts: Date.now(), value, href, tooltip }));
   } catch (err) {
     els.version.textContent = "Version";
     els.version.href = "#";

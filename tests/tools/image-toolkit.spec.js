@@ -493,6 +493,62 @@ test('a custom width drives the height from the source aspect ratio', async ({ p
   await expect(page.locator('#resultDimensions')).toHaveText('400 × 200');
 });
 
+test('a custom width whose derived height passes the per-side limit is refused', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+  // 1 × 40: a 1000 px custom width derives a 40,000 px height (40 MP, under
+  // the pixel cap) which no canvas can encode.
+  await loadImage(page, 'tall.png', await makeImage(page, { width: 1, height: 40 }));
+
+  await page.locator('#outputScale').selectOption('custom');
+  await page.locator('#customWidth').fill('1000');
+  await page.locator('#customWidth').dispatchEvent('input');
+  await expect(page.locator('#customHeight')).toHaveText('40000');
+
+  await page.locator('#convertBtn').click();
+  await expect(page.locator('#toast-container .toast-message')).toContainText(/16,384/);
+  await expect(page.locator('#resultPanel')).toBeHidden();
+  await expect(page.locator('#outputStatus')).toHaveText(/failed/i);
+});
+
+test('an SVG with an editor comment or doctype subset before <svg> is accepted', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+
+  // Illustrator's export prolog: a generator comment, then a doctype whose
+  // internal subset contains its own `>` characters.
+  await loadSvg(page, '<?xml version="1.0" encoding="utf-8"?>\n'
+    + '<!-- Generator: Adobe Illustrator 24.0.0, SVG Export Plug-In -->\n'
+    + '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd" [\n'
+    + '  <!ENTITY ns_svg "http://www.w3.org/2000/svg">\n]>\n'
+    + '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="10"><rect width="20" height="10"/></svg>');
+
+  await expect(page.locator('#sourceFormat')).toHaveText('SVG');
+  await expect(page.locator('#sourceDimensions')).toHaveText('20 × 10');
+});
+
+test('SVG optimization keeps the space between text runs', async ({ page }) => {
+  await openTool(page, 'image-toolkit');
+  await page.locator('#modeSvg').click();
+
+  await page.locator('#svgInput').fill('<svg xmlns="http://www.w3.org/2000/svg">\n  <g>\n'
+    + '    <text x="0" y="10"><tspan>Hello</tspan> <tspan>World</tspan></text>\n  </g>\n</svg>');
+
+  await expect(page.locator('#svgOutput')).toHaveValue(/<\/tspan> <tspan>/);
+  // Indentation between ordinary tags still goes.
+  await expect(page.locator('#svgOutput')).toHaveValue(/<svg[^>]*><g><text/);
+});
+
+test('all three mode tabs fit on one row at phone width', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'image-toolkit');
+
+  const bar = await page.locator('.mode-bar').evaluate((node) => ({
+    scroll: node.scrollWidth,
+    client: node.clientWidth,
+  }));
+  expect(bar.scroll).toBeLessThanOrEqual(bar.client);
+  await expect(page.locator('#modeSvg')).toBeInViewport({ ratio: 1 });
+});
+
 test('a raster source keeps its own size by default', async ({ page }) => {
   await openTool(page, 'image-toolkit');
   await loadImage(page, 'sample.png', await makeImage(page, { width: 6, height: 4 }));

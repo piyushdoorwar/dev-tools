@@ -187,3 +187,103 @@ test('the design and tips modals open and close', async ({ page }) => {
   await page.locator('#tipsModalClose').click();
   await expect(page.locator('#tipsModal')).toBeHidden();
 });
+
+test('Escape closes only the topmost dialog via the shared modal', async ({ page }) => {
+  await openTool(page, 'qr-generator');
+
+  await page.locator('#settingsBtn').click();
+  await expect(page.locator('#designModal')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#designModal')).toBeHidden();
+  await expect(page.locator('#settingsBtn')).toBeFocused();
+});
+
+test('a prefilled country code alone does not produce a phone or WhatsApp code', async ({ page }) => {
+  await openTool(page, 'qr-generator');
+
+  // #phoneCode defaults to +1 and #waCode to +91; with no number these used to
+  // encode "tel:+1" / "https://wa.me/91" and report Ready.
+  expect(await encoded(page, 'phone', async () => {})).toBe('');
+  await expect(page.locator('#qr-status')).toHaveText('Missing');
+  await expect(page.locator('#downloadBtn')).toBeDisabled();
+
+  expect(await encoded(page, 'whatsapp', async () => {})).toBe('');
+  await expect(page.locator('#qr-status')).toHaveText('Missing');
+});
+
+test('content too long for a QR code is reported instead of throwing', async ({ page }) => {
+  const { errors } = await openTool(page, 'qr-generator');
+
+  await typeInto(page, '#textMessage', 'hello');
+  await expect(page.locator('#downloadBtn')).toBeEnabled();
+
+  await typeInto(page, '#textMessage', 'x'.repeat(5000));
+  await expect(page.locator('#qr-status')).toHaveText('Too long');
+  await expect(page.locator('#qr-empty')).toBeVisible();
+  await expect(page.locator('#qr-empty h3')).toContainText('too long');
+  await expect(page.locator('#downloadBtn')).toBeDisabled();
+  await expect(page.locator('#copyBtn')).toBeDisabled();
+  expect(errors).toEqual([]);
+
+  await typeInto(page, '#textMessage', 'short again');
+  await expect(page.locator('#qr-status')).toHaveText('Ready');
+  await expect(page.locator('#qr-empty')).toBeHidden();
+});
+
+test('switching content type replaces the hash instead of pushing history', async ({ page }) => {
+  await openTool(page, 'qr-generator');
+  const before = await page.evaluate(() => history.length);
+
+  await page.locator('[data-content-type="email"]').click();
+  await page.locator('[data-content-type="wifi"]').click();
+
+  expect(await page.evaluate(() => location.hash)).toBe('#wifi');
+  expect(await page.evaluate(() => history.length)).toBe(before);
+});
+
+test('a hash selects its form and an unknown hash falls back to text', async ({ page }) => {
+  // Seed the hash before the tool script runs, as a deep link would.
+  await page.addInitScript(() => {
+    if (!location.hash) history.replaceState(null, '', `${location.pathname}#wifi`);
+  });
+  await openTool(page, 'qr-generator');
+  await expect(page.locator('[data-content-form="wifi"]')).toBeVisible();
+
+  await page.evaluate(() => { location.hash = '#nonsense'; });
+  await expect(page.locator('[data-content-type="text"]')).toHaveClass(/active/);
+  await expect(page.locator('#textMessage')).toBeVisible();
+});
+
+test('the QR preview scales down to fit narrow columns instead of cropping', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'qr-generator');
+  await typeInto(page, '#textMessage', 'hello');
+
+  await expect(page.locator('#qr-preview svg').first()).toHaveAttribute('viewBox', '0 0 260 260');
+
+  const fit = await page.evaluate(() => {
+    const card = document.querySelector('.preview-card').getBoundingClientRect();
+    const frame = document.getElementById('qr-frame').getBoundingClientRect();
+    return {
+      inside: frame.left >= card.left && frame.right <= card.right,
+      overflow: document.documentElement.scrollWidth > window.innerWidth,
+    };
+  });
+  expect(fit).toEqual({ inside: true, overflow: false });
+});
+
+test('the design modal fits a phone-width viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openTool(page, 'qr-generator');
+
+  await page.locator('#settingsBtn').click();
+  await expect(page.locator('#designModal')).toBeVisible();
+
+  const overflowing = await page.evaluate(() => {
+    const box = document.querySelector('#designModal .modal-content').getBoundingClientRect();
+    return Array.from(document.querySelectorAll('#designModal .modal-content *'))
+      .filter((el) => el.getClientRects().length && el.getBoundingClientRect().right > box.right + 1)
+      .map((el) => el.id || el.className);
+  });
+  expect(overflowing).toEqual([]);
+});

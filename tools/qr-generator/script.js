@@ -86,7 +86,7 @@ const defaultState = {
 };
 
 const state = { ...defaultState };
-let isSyncingHash = false;
+let renderError = "";
 
 const logoLibrary = {
   phone: "assets/phone.svg",
@@ -152,15 +152,11 @@ function updateDesignTabs(tab) {
   });
 }
 
+// replaceState via the shared helper: a type switch is not a navigation, and
+// assigning location.hash pushed a history entry per click (hijacking the
+// dashboard's back button) without telling the shell to mirror it.
 function setRouteHash(contentType) {
-  if (isSyncingHash) return;
-  const hashValue = `#${contentType}`;
-  if (window.location.hash === hashValue) return;
-  isSyncingHash = true;
-  window.location.hash = hashValue;
-  setTimeout(() => {
-    isSyncingHash = false;
-  }, 0);
+  window.DevToolsMain.writeHashState(contentType);
 }
 
 function applyContentType(contentType) {
@@ -171,12 +167,13 @@ function applyContentType(contentType) {
   updateQrCode();
 }
 
-function applyContentTypeFromHash() {
-  const raw = window.location.hash.replace("#", "").trim();
-  if (!raw) return;
-  const target = document.querySelector(`[data-content-type='${raw}']`);
-  if (!target) return;
-  applyContentType(raw);
+function applyContentTypeFromHash(value = window.location.hash.replace("#", "")) {
+  const raw = String(value || "").trim();
+  const known = Array.from(document.querySelectorAll("[data-content-type]"))
+    .some((btn) => btn.dataset.contentType === raw);
+  // Unknown or empty hashes fall back to the default view.
+  const next = known ? raw : defaultState.contentType;
+  if (next !== state.contentType) applyContentType(next);
 }
 
 function openDesignModal() {
@@ -249,12 +246,6 @@ function normalizeUrl(value) {
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-function normalizePhone(code, number) {
-  const combined = `${code || ""}${number || ""}`;
-  const digits = combined.replace(/\D/g, "");
-  return digits;
 }
 
 function normalizePhoneWithNumber(code, number) {
@@ -498,12 +489,13 @@ function buildQrData() {
       return `mailto:${address}`;
     }
     case "phone": {
-      const digits = normalizePhone(elements.phoneCode.value, elements.phoneNumber.value);
+      // The country code is prefilled, so it alone must not count as content.
+      const digits = normalizePhoneWithNumber(elements.phoneCode.value, elements.phoneNumber.value);
       if (!digits) return "";
       return `tel:+${digits}`;
     }
     case "whatsapp": {
-      const digits = normalizePhone(elements.waCode.value, elements.waNumber.value);
+      const digits = normalizePhoneWithNumber(elements.waCode.value, elements.waNumber.value);
       if (!digits) return "";
       return `https://wa.me/${digits}`;
     }
@@ -686,33 +678,60 @@ function updateMeta(data) {
   };
   const label = labels[state.contentType] || "QR";
   elements.meta.textContent = `${qrSize} x ${qrSize} - SVG - ${label}`;
+  if (renderError) {
+    setStatus("Too long", "warning");
+    return;
+  }
   setStatus(data ? "Ready" : "Missing", data ? "ready" : "warning");
+}
+
+function setEmptyState(title, detail) {
+  const heading = elements.emptyState.querySelector("h3");
+  const text = elements.emptyState.querySelector("p");
+  if (heading) heading.textContent = title;
+  if (text) text.textContent = detail;
 }
 
 function updateQrCode() {
   const data = buildQrData();
-  updateMeta(data);
+  renderError = "";
 
   if (!data) {
+    updateMeta(data);
+    setEmptyState("Add content to generate", "Fill the fields to start.");
     elements.emptyState.hidden = false;
     setActionsEnabled(false);
     return;
   }
 
-  elements.emptyState.hidden = true;
-  setActionsEnabled(true);
-
   const shape = shapeMap[state.shape] || shapeMap.rounded;
 
-  qrCode.update({
-    data,
-    dotsOptions: { color: state.dotColor, type: shape.dots },
-    cornersSquareOptions: { color: state.dotColor, type: shape.cornersSquare },
-    cornersDotOptions: { color: state.dotColor, type: shape.cornersDot },
-    backgroundOptions: { color: state.bgColor },
-    image: state.logo,
-    qrOptions: { errorCorrectionLevel: state.level }
-  });
+  try {
+    qrCode.update({
+      data,
+      dotsOptions: { color: state.dotColor, type: shape.dots },
+      cornersSquareOptions: { color: state.dotColor, type: shape.cornersSquare },
+      cornersDotOptions: { color: state.dotColor, type: shape.cornersDot },
+      backgroundOptions: { color: state.bgColor },
+      image: state.logo,
+      qrOptions: { errorCorrectionLevel: state.level }
+    });
+  } catch (error) {
+    // The encoder throws "code length overflow" once the payload exceeds what
+    // a version-40 symbol holds at the chosen error-correction level. Left
+    // uncaught it surfaced as a page error while the pill still read "Ready"
+    // and the stale previous QR stayed downloadable.
+    renderError = "Shorten the content or pick a lower error-correction level.";
+    updateMeta(data);
+    setEmptyState("Content too long for a QR code", renderError);
+    elements.emptyState.hidden = false;
+    setActionsEnabled(false);
+    return;
+  }
+
+  updateMeta(data);
+  elements.emptyState.hidden = true;
+  setActionsEnabled(true);
 }
 
 function escapeXml(value) {
@@ -722,7 +741,7 @@ function escapeXml(value) {
 async function buildExportSvg() {
   if (!qrCode) return null;
   const data = buildQrData();
-  if (!data) return null;
+  if (!data || renderError) return null;
   const raw = await qrCode.getRawData("svg");
   if (!raw) return null;
   const rawSvg = await raw.text();
@@ -909,7 +928,7 @@ function resetApp() {
   elements.bgColorText.value = defaultState.bgColor;
   setActive(document.querySelectorAll("[data-content-type]"), document.querySelector("[data-content-type='text']"));
   updateContentForm();
-  setActive(document.querySelectorAll("[data-frame]"), document.querySelector("[data-frame='none']"));
+  setActive(document.querySelectorAll("[data-frame]"), document.querySelector(`[data-frame='${defaultState.frame}']`));
   setActive(document.querySelectorAll("[data-shape]"), document.querySelector("[data-shape='rounded']"));
   setActive(document.querySelectorAll("[data-logo]"), document.querySelector("[data-logo='none']"));
   setActive(document.querySelectorAll("[data-level]"), document.querySelector("[data-level='Q']"));
@@ -1092,14 +1111,6 @@ function bindEvents() {
     elements.designModalClose.addEventListener("click", closeDesignModal);
   }
 
-  if (elements.designModal) {
-    elements.designModal.addEventListener("click", (event) => {
-      if (event.target === elements.designModal) {
-        closeDesignModal();
-      }
-    });
-  }
-
   if (elements.infoBtn) {
     elements.infoBtn.addEventListener("click", openTipsModal);
   }
@@ -1108,20 +1119,7 @@ function bindEvents() {
     elements.tipsModalClose.addEventListener("click", closeTipsModal);
   }
 
-  if (elements.tipsModal) {
-    elements.tipsModal.addEventListener("click", (event) => {
-      if (event.target === elements.tipsModal) {
-        closeTipsModal();
-      }
-    });
-  }
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeDesignModal();
-      closeTipsModal();
-    }
-  });
+  // Scrim click and Escape come from the shared modal component.
 }
 
 function init() {
@@ -1146,6 +1144,18 @@ function init() {
 
   qrCode.append(elements.qrContainer);
 
+  // qr-code-styling writes a fixed width/height and no viewBox, so whenever
+  // the preview box is narrower than qrSize (phones, the 1fr preview column
+  // just above the stacking breakpoint) the code was cropped, not scaled.
+  const ensureViewBox = () => {
+    const svg = elements.qrContainer.querySelector("svg");
+    if (svg && !svg.hasAttribute("viewBox")) {
+      svg.setAttribute("viewBox", `0 0 ${qrSize} ${qrSize}`);
+    }
+  };
+  new MutationObserver(ensureViewBox).observe(elements.qrContainer, { childList: true, subtree: true });
+  ensureViewBox();
+
   elements.frameText.value = state.frameText;
   elements.frameColor.value = state.frameColor;
   elements.frameColorText.value = state.frameColor;
@@ -1162,10 +1172,7 @@ function init() {
   bindEvents();
 
   applyContentTypeFromHash();
-  window.addEventListener("hashchange", () => {
-    if (isSyncingHash) return;
-    applyContentTypeFromHash();
-  });
+  window.DevToolsMain.onHashState((value) => applyContentTypeFromHash(value));
 }
 
 init();

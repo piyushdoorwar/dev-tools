@@ -63,10 +63,18 @@ const debounce = (fn, waitMs) => {
 
 const detectDialect = (sql) => {
   const text = sql || '';
-  if (/@[A-Za-z_][A-Za-z0-9_]*/.test(text) || /\[[^\]]+\]/.test(text)) return 'tsql';
-  if (/:[A-Za-z_][A-Za-z0-9_]*/.test(text)) return 'plsql';
-  if (/`[^`]+`/.test(text)) return 'mysql';
-  if (/\bILIKE\b|\bRETURNING\b|\bSERIAL\b/i.test(text)) return 'postgresql';
+  const segments = scanSql(text);
+  // Sigils only count in executable code: "bob@example.com" inside a string or
+  // "-- see @home" in a comment used to force T-SQL.
+  const code = segments.filter((segment) => segment.type === 'code').map((segment) => segment.text).join(' ');
+  const quoted = segments.filter((segment) => segment.type === 'quoted').map((segment) => segment.text);
+  // A PostgreSQL cast (id::text) was read as an Oracle bind variable, and the
+  // PL/SQL grammar then refused to parse it at all.
+  if (/::\s*[A-Za-z_]/.test(code)) return 'postgresql';
+  if (/@[A-Za-z_][A-Za-z0-9_]*/.test(code) || quoted.some((q) => q.startsWith('['))) return 'tsql';
+  if (/(^|[^:]):[A-Za-z_][A-Za-z0-9_]*/.test(code)) return 'plsql';
+  if (quoted.some((q) => q.startsWith('`'))) return 'mysql';
+  if (/\bILIKE\b|\bRETURNING\b|\bSERIAL\b/i.test(code)) return 'postgresql';
   return 'sql';
 };
 
@@ -611,23 +619,7 @@ window.closeModal = (modalId) => {
   }
 };
 
-// Close modal on outside click
-document.querySelectorAll('.modal').forEach(modal => {
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      closeModal(modal.id);
-    }
-  });
-});
-
-// Close modal on Escape key
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal.active').forEach(modal => {
-      closeModal(modal.id);
-    });
-  }
-});
+// Scrim click and Escape are handled by the shared modal component.
 
 // Case button handlers
 document.querySelectorAll('.case-btn').forEach(btn => {
@@ -734,24 +726,34 @@ window.redoEditor = function() {
   }
 };
 
+const toast = (message, type) => window.DevToolsMain?.showToast(message, type);
+
 window.copyEditor = async function() {
   formatAndRender();
   const textToCopy = outputEl.value || editor.value;
-  
-  try {
-    await navigator.clipboard.writeText(textToCopy);
-  } catch (err) {
-    // Fallback
-    editor.select();
-    document.execCommand('copy');
+  // Copying an empty editor used to "succeed" silently with nothing copied.
+  if (!textToCopy.trim()) {
+    toast('Nothing to copy yet', 'error');
+    return;
   }
-  
+
+  try {
+    await window.DevToolsMain.copyText(textToCopy);
+    toast('Formatted SQL copied', 'success');
+  } catch (err) {
+    toast('Clipboard copy failed', 'error');
+  }
+
   editor.focus();
 };
 
 window.downloadFormattedSql = function() {
   formatAndRender();
   const text = outputEl.value || editor.value || '';
+  if (!text.trim()) {
+    toast('Nothing to download yet', 'error');
+    return;
+  }
   const blob = new Blob([text], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -760,7 +762,8 @@ window.downloadFormattedSql = function() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  // Revoking synchronously can cancel the download in some browsers.
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
 };
 
 window.pasteEditor = async function() {
@@ -775,7 +778,8 @@ window.pasteEditor = async function() {
     saveToEditorHistory();
     editor.focus();
   } catch (err) {
-    console.error('Paste failed:', err);
+    // A denied clipboard permission is an expected outcome, not a page error.
+    toast('Clipboard access was blocked — paste with Ctrl+V instead', 'error');
   }
 };
 

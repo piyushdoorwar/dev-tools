@@ -293,7 +293,11 @@
     const text = new TextDecoder('utf-8', { fatal: false }).decode(bytes)
       .replace(/^﻿/, '')
       .trimStart();
-    if (/^(?:<\?xml[\s\S]*?\?>\s*)?(?:<!doctype\s+svg[\s\S]*?>\s*)?<svg(?:\s|>)/i.test(text)) return 'svg';
+    // The prolog may interleave comments and a doctype (Illustrator writes a
+    // "<!-- Generator: ... -->" line before <svg>, and older exports carry a
+    // doctype with an [internal subset] of entities); none of that may reject
+    // the file.
+    if (/^(?:<\?xml[\s\S]*?\?>\s*)?(?:(?:<!--[\s\S]*?-->|<!doctype\s+svg[^[>]*(?:\[[\s\S]*?\])?\s*>)\s*)*<svg(?:\s|>)/i.test(text)) return 'svg';
     return 'unknown';
   }
 
@@ -648,6 +652,11 @@
       } else {
         if (target.width * target.height > MAX_PIXELS) {
           throw new Error('That output size is above the 80 megapixel limit. Choose a smaller one.');
+        }
+        // A custom width is clamped, but on a tall image the derived height is
+        // not, and a canvas past the per-side limit silently fails to encode.
+        if (target.width > MAX_DIMENSION || target.height > MAX_DIMENSION) {
+          throw new Error('That output size is above the 16,384 pixel per side limit. Choose a smaller one.');
         }
         const canvas = document.createElement('canvas');
         canvas.width = target.width;
@@ -1160,11 +1169,26 @@
 
     svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
+    // Indentation between tags is the last easy win, but only outside text
+    // content: the space in <tspan>Hello</tspan> <tspan>World</tspan> is a
+    // rendered glyph, and a blanket `>\s+<` regex fused the words together.
+    const TEXT_CONTENT = new Set(['text', 'tspan', 'textpath', 'title', 'desc', 'style']);
+    const whitespace = parsed.createTreeWalker(svg, NodeFilter.SHOW_TEXT);
+    const blanks = [];
+    while (whitespace.nextNode()) {
+      const node = whitespace.currentNode;
+      if (node.nodeValue.trim()) continue;
+      let inText = false;
+      for (let parent = node.parentNode; parent && parent !== parsed; parent = parent.parentNode) {
+        if (TEXT_CONTENT.has((parent.localName || '').toLowerCase())) { inText = true; break; }
+      }
+      if (inText) node.nodeValue = ' ';
+      else blanks.push(node);
+    }
+    blanks.forEach((node) => node.remove());
+
     return new XMLSerializer()
       .serializeToString(svg)
-      // Indentation between tags is the last easy win, and it cannot change
-      // rendering outside <text>, which never survives as a tag boundary here.
-      .replace(/>\s+</g, '><')
       .replace(/\s{2,}/g, ' ')
       .trim();
   }

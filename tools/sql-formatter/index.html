@@ -22,26 +22,26 @@
       <div class="toolbar" id="toolbar">
         <div class="toolbar-group">
           <span class="toolbar-label">File</span>
-          <button class="toolbar-btn" onclick="undoEditor()" data-tooltip="Undo (Ctrl+Z)">
+          <button class="toolbar-btn" type="button" onclick="undoEditor()" data-tooltip="Undo (Ctrl+Z)" aria-label="Undo (Ctrl+Z)">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-undo"></use></svg>
           </button>
-          <button class="toolbar-btn" onclick="redoEditor()" data-tooltip="Redo (Ctrl+Y)">
+          <button class="toolbar-btn" type="button" onclick="redoEditor()" data-tooltip="Redo (Ctrl+Y)" aria-label="Redo (Ctrl+Y)">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-redo"></use></svg>
           </button>
-          <button class="toolbar-btn" onclick="copyEditor()" data-tooltip="Copy formatted SQL">
+          <button class="toolbar-btn" type="button" onclick="copyEditor()" data-tooltip="Copy formatted SQL" aria-label="Copy formatted SQL">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
           </button>
-          <button class="toolbar-btn" onclick="downloadFormattedSql()" data-tooltip="Download formatted SQL">
+          <button class="toolbar-btn" type="button" onclick="downloadFormattedSql()" data-tooltip="Download formatted SQL" aria-label="Download formatted SQL">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-download"></use></svg>
           </button>
-          <button class="toolbar-btn" onclick="loadSampleSql()" data-tooltip="Load sample SQL">
+          <button class="toolbar-btn" type="button" onclick="loadSampleSql()" data-tooltip="Load sample SQL" aria-label="Load sample SQL">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="14" height="16" rx="2" ry="2"/>
               <path d="M7 8h6M7 12h6M7 16h4"/>
               <path d="M17 8h4v12a2 2 0 01-2 2H9"/>
             </svg>
           </button>
-          <button class="toolbar-btn" onclick="pasteEditor()" data-tooltip="Paste (Ctrl+V)">
+          <button class="toolbar-btn" type="button" onclick="pasteEditor()" data-tooltip="Paste (Ctrl+V)" aria-label="Paste (Ctrl+V)">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
           </button>
         </div>
@@ -61,7 +61,7 @@
 
         <div class="toolbar-group">
           <span class="toolbar-label">Settings</span>
-          <button class="toolbar-btn" onclick="openModal('settingsModal')" data-tooltip="Settings">
+          <button class="toolbar-btn" type="button" onclick="openModal('settingsModal')" data-tooltip="Settings" aria-label="Settings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 7h8m-8 10h8m6-10h4m-4 10h4M10 7a4 4 0 108 0 4 4 0 00-8 0zm0 10a4 4 0 108 0 4 4 0 00-8 0z"></path>
             </svg>
@@ -78,7 +78,7 @@
           </div>
           <div class="editor-container">
             <div class="line-numbers" id="line-numbers"></div>
-            <textarea id="editor" spellcheck="false"></textarea>
+            <textarea id="editor" spellcheck="false" wrap="off" aria-label="SQL input"></textarea>
           </div>
         </section>
 
@@ -91,7 +91,7 @@
           </div>
           <div class="editor-container">
             <div class="output-line-numbers" id="output-line-numbers"></div>
-            <textarea id="output-editor" class="output-editor" spellcheck="false" readonly wrap="off"></textarea>
+            <textarea id="output-editor" class="output-editor" spellcheck="false" readonly wrap="off" aria-label="Formatted SQL"></textarea>
           </div>
         </section>
       </main>
@@ -102,7 +102,7 @@
       <div class="modal-content modal-content-wide">
         <div class="modal-header">
           <h2>Settings</h2>
-          <button class="modal-close" onclick="closeModal('settingsModal')">&times;</button>
+          <button class="modal-close" type="button" aria-label="Close settings" onclick="closeModal('settingsModal')">&times;</button>
         </div>
         <div class="modal-body modal-body-split">
           <div class="modal-section">
