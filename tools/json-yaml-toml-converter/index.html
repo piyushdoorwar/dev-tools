@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON ⇄ YAML ⇄ TOML Converter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">JSON ⇄ YAML ⇄ TOML</h1>
+            </div>
+            <div class="header-right">
+                <div class="mode-switcher" id="from-switcher" role="group" aria-label="Input format">
+                    <button class="mode-btn" type="button" data-side="from" data-format="json" aria-pressed="true">JSON</button>
+                    <button class="mode-btn" type="button" data-side="from" data-format="yaml" aria-pressed="false">YAML</button>
+                    <button class="mode-btn" type="button" data-side="from" data-format="toml" aria-pressed="false">TOML</button>
+                </div>
+                <button class="action-btn swap-btn" type="button" data-action="swap" aria-label="Swap direction" data-tooltip="Swap direction">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-swap"></use></svg>
+                </button>
+                <div class="mode-switcher" id="to-switcher" role="group" aria-label="Output format">
+                    <button class="mode-btn" type="button" data-side="to" data-format="json" aria-pressed="false">JSON</button>
+                    <button class="mode-btn" type="button" data-side="to" data-format="yaml" aria-pressed="true">YAML</button>
+                    <button class="mode-btn" type="button" data-side="to" data-format="toml" aria-pressed="false">TOML</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel -->
+            <div class="editor-panel left-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="left-title">JSON Input</h2>
+                    <div class="action-bar" id="left-actions">
+                        <button class="action-btn" data-action="load-sample" aria-label="Load sample" data-tooltip="Load sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" data-action="validate-left" aria-label="Validate" data-tooltip="Validate">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-check"></use></svg>
+                        </button>
+                        <button class="action-btn" data-action="beautify-left" aria-label="Beautify" data-tooltip="Beautify">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-align"></use></svg>
+                        </button>
+                        <button class="action-btn" data-action="sort-keys" aria-label="Sort keys" data-tooltip="Sort keys">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-sort"></use></svg>
+                        </button>
+                        <button class="action-btn" data-action="copy-left" aria-label="Copy" data-tooltip="Copy">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" data-action="paste-left" aria-label="Paste" data-tooltip="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" data-action="download-left" aria-label="Download" data-tooltip="Download">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                        </button>
+                        <button class="action-btn" data-action="undo-left" aria-label="Undo" data-tooltip="Undo">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-undo"></use></svg>
+                        </button>
+                        <button class="action-btn" data-action="clear-left" aria-label="Clear" data-tooltip="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="code-editor-wrapper">
+                        <div class="line-numbers" id="left-line-numbers"></div>
+                        <textarea class="editor-textarea" id="left-editor" spellcheck="false" placeholder="Enter your JSON here..."></textarea>
+                    </div>
+                    <div class="status-bar" id="left-status">
+                        <span class="status-text">Ready</span>
+                        <span class="char-count">0 characters</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="editor-panel right-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="right-title">YAML Output</h2>
+                    <div class="action-bar" id="right-actions">
+                        <button class="action-btn" data-action="copy-right" aria-label="Copy" data-tooltip="Copy">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" data-action="download-right" aria-label="Download" data-tooltip="Download">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                        </button>
+                        <button class="action-btn" data-action="clear-right" aria-label="Clear" data-tooltip="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="code-editor-wrapper">
+                        <div class="line-numbers" id="right-line-numbers"></div>
+                        <textarea class="editor-textarea" id="right-editor" spellcheck="false" readonly placeholder="YAML output will appear here..."></textarea>
+                    </div>
+                    <div class="status-bar" id="right-status">
+                        <span class="status-text">Ready</span>
+                        <span class="char-count">0 characters</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" integrity="sha384-+pxiN6T7yvpryuJmE1gM9PX7yQit15auDb+ZwwvJOd/4be2Cie5/IuVXgQb/S9du" crossorigin="anonymous"></script>
+    <!-- smol-toml only ships ESM and a CommonJS bundle. The bundle writes to a
+         bare `exports`, so give it one (after js-yaml, whose UMD wrapper would
+         otherwise take the CommonJS path) and read it back as TOML. -->
+    <script>var exports = {};</script>
+    <script src="https://unpkg.com/smol-toml@1.9.0/dist/index.cjs" integrity="sha384-K/i468dzpiBhMJvpvq0UtDKUcAnF2LzXxJ3MjgzrHLmzd2vB3eyXyS3YHX3bq5wX" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+</body>
+</html>

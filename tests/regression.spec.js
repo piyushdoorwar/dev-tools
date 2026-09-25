@@ -45,6 +45,7 @@ const TOOL_ROUTES = [
   'json-diff',
   'json-toon-converter',
   'json-xml-converter',
+  'json-yaml-toml-converter',
   'jwt-debugger',
   'markdown-editor',
   'qr-generator',
@@ -71,9 +72,11 @@ test('quick launch and recently used cards open their tools', async ({ page }) =
 });
 
 test('dashboard uses clean routes and migrates legacy or direct-load URLs', async ({ page }) => {
+  // Toon → JSON was folded into the JSON ⇄ Toon listing; its legacy hash
+  // route now opens that tool in the reverse mode.
   await page.goto('/#toon-to-json-converter');
-  await expect(page).toHaveURL(/\/toon-to-json-converter\/$/);
-  await expect(page.locator('iframe[data-tool-id="toon-json-converter"]')).toHaveClass(/is-visible/);
+  await expect(page).toHaveURL(/\/json-toon-converter\/#toon-json$/);
+  await expect(page.locator('iframe[data-tool-id="json-toon-converter"]')).toHaveClass(/is-visible/);
 
   await page.goto('/?route=image-toolkit');
   await expect(page).toHaveURL(/\/image-toolkit\/$/);
@@ -84,6 +87,22 @@ test('dashboard uses clean routes and migrates legacy or direct-load URLs', asyn
   await page.goBack();
   await expect(page).toHaveURL(/\/image-toolkit\/$/);
   await expect(page.locator('iframe[data-tool-id="image-toolkit"]')).toHaveClass(/is-visible/);
+});
+
+test('retired reverse-converter routes open the merged tool in reverse mode', async ({ page }) => {
+  // JSON ⇄ XML and JSON ⇄ Toon each had a second listing for the reverse
+  // direction. Those routes are still served and must land on the one tool.
+  const response = await page.goto('/xml-to-json-converter/');
+  expect(response.status()).toBe(200);
+  await expect(page).toHaveURL(/\/json-to-xml-converter\/#xml-json$/);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/json-to-xml-converter\/$/);
+  const frame = page.frameLocator('iframe[data-tool-id="json-xml-converter"]');
+  await expect(frame.locator('#left-title')).toHaveText('XML Input');
+
+  await page.goto('/toon-to-json-converter/');
+  await expect(page).toHaveURL(/\/json-toon-converter\/#toon-json$/);
+  await expect(page.frameLocator('iframe[data-tool-id="json-toon-converter"]').locator('.mode-btn[data-mode="toon-json"]')).toHaveClass(/active/);
+  await expect(page.locator('#toolList [data-tool-id="toon-json-converter"]')).toHaveCount(0);
 });
 
 test('clean tool routes are indexable pages with crawlable navigation and route metadata', async ({ page }) => {

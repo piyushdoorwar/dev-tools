@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 import { openTool } from '../helpers.js';
 
-const TOOLS = ['base-converter','chmod-calculator','color-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator','file-compressor',
+const TOOLS = ['base-converter','certificate-decoder','chmod-calculator','color-converter','cron-expression-generator','crypto-generator','encoder-decoder','fake-data-generator','file-compressor',
  'html-preview','http-status-codes','id-generator','image-toolkit','json-diff','json-toon-converter',
- 'json-xml-converter','jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester',
+ 'json-xml-converter','json-yaml-toml-converter','jwt-debugger','markdown-editor','qr-generator','regex-cheatsheet','regex-tester',
  'sql-formatter','text-diff','text-utilities','timestamp-converter','unit-converter'];
 
 const titleStyle = (page) => page.evaluate(() => {

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Decoder</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Certificate Decoder</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="What this decodes" aria-label="What this decodes">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel input-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">PEM input</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Insert sample chain" aria-label="Insert sample chain">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="open" data-tooltip="Open .pem, .crt, .cer or .der file" aria-label="Open file">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-upload"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" accept=".pem,.crt,.cer,.der,.csr,.pub,.key,.txt,application/x-x509-ca-cert,application/pkix-cert" hidden>
+                </div>
+                <div class="panel-body">
+                    <textarea id="input" class="editor" spellcheck="false" autocomplete="off" aria-label="PEM input"
+                              placeholder="-----BEGIN CERTIFICATE-----&#10;MIIE…&#10;-----END CERTIFICATE-----&#10;&#10;Paste a certificate, a whole chain, a public key or a CSR. You can also drop a file here."></textarea>
+                </div>
+            </section>
+
+            <section class="panel output-panel">
+                <div class="panel-header">
+                    <div class="panel-header-left">
+                        <h2 class="panel-title">Decoded</h2>
+                        <span class="badge info" id="summaryBadge" hidden></span>
+                    </div>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="copy-json" data-tooltip="Copy as JSON" aria-label="Copy as JSON">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body output-body" id="output" aria-live="polite"></div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">What this decodes</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Accepted input</strong></p>
+                        <ul class="tip-list">
+                            <li><span class="hint-code">CERTIFICATE</span> — one X.509 certificate or a whole chain pasted together. Each block gets its own tab.</li>
+                            <li><span class="hint-code">CERTIFICATE REQUEST</span> — a PKCS#10 CSR, including the SANs it asks for.</li>
+                            <li><span class="hint-code">PUBLIC KEY</span> and <span class="hint-code">RSA PUBLIC KEY</span> — SPKI and PKCS#1 keys.</li>
+                            <li>Binary <span class="hint-code">.der</span> / <span class="hint-code">.cer</span> files, bare Base64 DER, and Base64 of a whole PEM file (a Kubernetes <span class="hint-code">tls.crt</span> value).</li>
+                        </ul>
+                        <p><strong>What you get</strong></p>
+                        <ul class="tip-list">
+                            <li><strong>Validity</strong> — a status of valid, expiring within 30 days, expired, or not yet valid, measured against your clock.</li>
+                            <li><strong>Chain checks</strong> — each certificate is matched to its issuer in the paste, and the signature is verified with WebCrypto when the browser supports the algorithm.</li>
+                            <li><strong>SPKI pin</strong> — the Base64 SHA-256 of the public key, the value used for certificate pinning.</li>
+                        </ul>
+                        <p><strong>Privacy</strong></p>
+                        <ul class="tip-list">
+                            <li>Everything is decoded in this page. Nothing is uploaded and no network request is made.</li>
+                            <li>Private keys are recognised and deliberately not decoded.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

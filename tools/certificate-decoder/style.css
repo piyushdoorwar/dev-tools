@@ -1,0 +1,609 @@
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.hint-code {
+    font-family: var(--font-mono);
+    color: var(--accent-yellow);
+}
+
+/* main.css gives .tip-list top margin only, so a heading <p> right after a
+   list needs its own gap or it sits flush against the last card. */
+.legend-intro p {
+    margin-top: var(--space-4);
+}
+
+.legend-intro p:first-child {
+    margin-top: 0;
+}
+
+/* --- Tooltips ------------------------------------------------------------
+   main.css styles how a tooltip looks; placement and show/hide are the
+   tool's. Buttons near a right edge anchor right so the label stays on screen.
+   ------------------------------------------------------------------------ */
+
+.action-btn[data-tooltip] {
+    position: relative;
+}
+
+.action-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 4px);
+    transition:
+        opacity var(--dur) var(--ease-out),
+        transform var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.action-btn[data-tooltip]:hover::after,
+.action-btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition-delay: 0s;
+}
+
+.header-actions .action-btn[data-tooltip]::after,
+.output-panel .panel-header .action-btn[data-tooltip]::after,
+.output-body .action-btn[data-tooltip]::after {
+    left: auto;
+    right: 0;
+    transform: translateY(4px);
+}
+
+.header-actions .action-btn[data-tooltip]:hover::after,
+.header-actions .action-btn[data-tooltip]:focus-visible::after,
+.output-panel .panel-header .action-btn[data-tooltip]:hover::after,
+.output-panel .panel-header .action-btn[data-tooltip]:focus-visible::after,
+.output-body .action-btn[data-tooltip]:hover::after,
+.output-body .action-btn[data-tooltip]:focus-visible::after {
+    transform: translateY(0);
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+/* --- Layout ------------------------------------------------------------- */
+
+.main-content {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.8fr) minmax(460px, 1.6fr);
+    gap: var(--space-4);
+    flex: 1;
+    min-height: 0;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+    transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
+}
+
+.input-panel.is-dragging {
+    border-color: var(--accent-purple-light);
+    box-shadow: var(--focus-ring);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-4);
+}
+
+.output-body {
+    overflow-y: auto;
+    gap: var(--space-4);
+}
+
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.editor {
+    flex: 1;
+    width: 100%;
+    min-height: 260px;
+    resize: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    /* PEM is fixed 64-column lines; wrapping them mid-line hides the shape. */
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.output-empty {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    max-width: 42ch;
+    margin: 0 auto;
+    text-align: center;
+    line-height: var(--leading-normal);
+}
+
+.mono {
+    font-family: var(--font-mono);
+}
+
+/* --- Chain strip -------------------------------------------------------- */
+
+.chain-strip {
+    display: flex;
+    gap: var(--space-2);
+    flex: none;
+    overflow-x: auto;
+    padding-bottom: var(--space-1);
+}
+
+.chain-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 280px;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+    color: var(--text-secondary);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition-control);
+}
+
+.chain-item:hover {
+    border-color: var(--control-border-hover);
+    color: var(--text-primary);
+}
+
+.chain-item:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.chain-item.active {
+    border-color: var(--accent-purple-light);
+    background: rgba(var(--accent-purple-rgb), 0.22);
+    color: var(--text-primary);
+}
+
+.chain-dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-disabled);
+}
+
+.chain-dot.success { background: var(--accent-green); }
+.chain-dot.warning { background: var(--accent-orange); }
+.chain-dot.error,
+.chain-dot.private-key { background: var(--accent-pink); }
+.chain-dot.csr,
+.chain-dot.public-key { background: var(--accent-blue); }
+
+.chain-index {
+    flex: none;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+}
+
+.chain-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.chain-name {
+    overflow: hidden;
+    font-size: var(--chrome-base);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chain-role {
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+}
+
+/* --- Summary ------------------------------------------------------------- */
+
+.item-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.cert-summary {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+.cert-summary-text {
+    min-width: 0;
+}
+
+.cert-title {
+    font-family: var(--font-headline);
+    font-size: var(--text-xl);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    overflow-wrap: anywhere;
+}
+
+.cert-subtitle {
+    margin-top: var(--space-1);
+    color: var(--text-secondary);
+    font-size: var(--text-base);
+}
+
+.badge-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+/* --- Cards ---------------------------------------------------------------- */
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-3);
+    align-items: start;
+}
+
+.info-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-width: 0;
+    padding: var(--space-4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.info-card.wide {
+    grid-column: 1 / -1;
+}
+
+.info-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    min-height: var(--control-h-sm);
+}
+
+.info-card-title {
+    color: var(--accent-yellow);
+    font-family: var(--font-headline);
+    font-size: var(--chrome-base);
+    font-weight: 700;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.field-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.field-row {
+    display: grid;
+    grid-template-columns: minmax(110px, 38%) 1fr;
+    gap: var(--space-3);
+    align-items: start;
+}
+
+.field-row dt {
+    padding-top: 2px;
+    color: var(--text-muted);
+    font-size: var(--chrome-sm);
+}
+
+.field-row dd {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    min-width: 0;
+    color: var(--text-primary);
+    font-size: var(--chrome-base);
+    line-height: var(--leading-normal);
+}
+
+.field-row dd.mono {
+    font-size: var(--chrome-sm);
+}
+
+.field-value {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.field-row dd.block .field-value {
+    max-height: 7.5em;
+    overflow-y: auto;
+    color: var(--text-secondary);
+}
+
+.copy-btn {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    margin-top: -3px;
+    padding: 0;
+    opacity: 0.55;
+}
+
+.copy-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.field-row:hover .copy-btn,
+.info-card-header .copy-btn,
+.copy-btn:focus-visible {
+    opacity: 1;
+}
+
+/* --- SANs ----------------------------------------------------------------- */
+
+.san-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    list-style: none;
+}
+
+.san-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    max-width: 100%;
+    padding: 4px var(--space-2) 4px 4px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    background: var(--panel-bg);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+}
+
+.san-type {
+    flex: none;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(var(--accent-purple-light-rgb), 0.16);
+    color: var(--accent-purple-light);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.san-value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* --- Validity ------------------------------------------------------------- */
+
+.validity-detail {
+    color: var(--text-secondary);
+    font-size: var(--chrome-sm);
+}
+
+.validity-bar {
+    position: relative;
+    height: 6px;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--surface-strong);
+}
+
+.validity-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: inherit;
+    background: var(--accent-green);
+}
+
+.validity-bar.warning .validity-fill { background: var(--accent-orange); }
+.validity-bar.error .validity-fill { background: var(--accent-pink); }
+
+.validity-dates {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-2) var(--space-4);
+}
+
+.validity-dates .field-row {
+    grid-template-columns: auto 1fr;
+}
+
+/* --- Notices ------------------------------------------------------------- */
+
+.notice {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+    color: var(--text-secondary);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+}
+
+.notice strong {
+    color: var(--text-primary);
+}
+
+.notice.warning {
+    border-color: rgba(245, 158, 11, 0.45);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.notice.error {
+    border-color: rgba(var(--accent-pink-rgb), 0.45);
+    background: rgba(var(--accent-pink-rgb), 0.08);
+}
+
+@media (max-width: 960px) {
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        padding: var(--space-4);
+    }
+
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+
+    .editor {
+        min-height: 200px;
+    }
+
+    .output-body {
+        overflow-y: visible;
+    }
+
+    .card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .field-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+}
+}

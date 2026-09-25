@@ -12,7 +12,7 @@ const QUICK_LAUNCH_TOOL_IDS = [
   "id-generator",
   "base-converter",
 ];
-const NEW_TOOL_IDS = new Set(["chmod-calculator", "regex-cheatsheet", "http-status-codes", "text-cleaner", "word-counter", "lorem-ipsum-generator", "cron-expression-generator", "color-converter", "encoder-decoder", "image-toolkit", "base-converter", "json-toon-converter", "toon-json-converter"]);
+const NEW_TOOL_IDS = new Set(["certificate-decoder", "chmod-calculator", "regex-cheatsheet", "http-status-codes", "text-cleaner", "word-counter", "lorem-ipsum-generator", "cron-expression-generator", "color-converter", "encoder-decoder", "image-toolkit", "base-converter", "json-toon-converter", "json-yaml-toml-converter"]);
 const TOOL_CATALOG = globalThis.DEV_TOOLS_CATALOG;
 
 if (!Array.isArray(TOOL_CATALOG) || TOOL_CATALOG.length === 0) {
@@ -184,12 +184,17 @@ let commandPaletteResults = [];
 let commandPaletteIndex = 0;
 const commandPaletteShortcut = /Mac|iPhone|iPad|iPod/.test(navigator.platform) ? "⌘K" : "Ctrl K";
 
+/* Stored ids may name a listing that has since been merged into another tool
+ * (see `aliases` in tool-catalog.js), so map them forward and drop repeats. */
+function canonicalToolIds(ids) {
+  return [...new Set(ids.map(routeToToolId).filter(Boolean))];
+}
+
 function loadPinnedToolIds() {
   try {
     const parsed = JSON.parse(localStorage.getItem(PINNED_TOOLS_KEY) || "[]");
     if (!Array.isArray(parsed)) return [];
-    const validIds = new Set(TOOLS.map((tool) => tool.id));
-    return parsed.filter((id) => validIds.has(id));
+    return canonicalToolIds(parsed);
   } catch {
     return [];
   }
@@ -203,8 +208,7 @@ function loadRecentToolIds() {
   try {
     const parsed = JSON.parse(localStorage.getItem(RECENT_TOOLS_KEY) || "[]");
     if (!Array.isArray(parsed)) return [];
-    const validIds = new Set(TOOLS.map((tool) => tool.id));
-    return parsed.filter((id) => validIds.has(id)).slice(0, RECENT_TOOLS_LIMIT);
+    return canonicalToolIds(parsed).slice(0, RECENT_TOOLS_LIMIT);
   } catch {
     return [];
   }
@@ -440,12 +444,22 @@ function renderWelcomeTools() {
   });
 }
 
-// Convert URL route to tool ID
-function routeToToolId(route) {
+/* Resolve a route or id to its tool. A retired route or id listed in a tool's
+ * `aliases` also resolves, carrying the hash that selects the matching view. */
+function resolveRoute(route) {
   if (!route) return null;
   const normalizedRoute = String(route).replace(/^\/+|\/+$/g, "").toLowerCase();
-  const tool = TOOLS.find(t => t.route === normalizedRoute || t.id === normalizedRoute);
-  return tool?.id ?? null;
+  for (const tool of TOOLS) {
+    if (tool.route === normalizedRoute || tool.id === normalizedRoute) return { tool, hash: "" };
+    const alias = tool.aliases.find((a) => a.route === normalizedRoute || a.id === normalizedRoute);
+    if (alias) return { tool, hash: alias.hash || "" };
+  }
+  return null;
+}
+
+// Convert URL route to tool ID
+function routeToToolId(route) {
+  return resolveRoute(route)?.tool.id ?? null;
 }
 
 // Get current route from URL
@@ -1081,10 +1095,10 @@ els.allToolLinks?.addEventListener("click", (event) => {
 function loadFromURL() {
   const route = getCurrentRoute();
   if (route) {
-    const toolId = routeToToolId(route);
-    const tool = TOOLS.find(t => t.id === toolId);
+    const resolved = resolveRoute(route);
+    const tool = resolved?.tool;
     if (tool) {
-      const toolHash = getToolHash();
+      const toolHash = getToolHash() || resolved.hash;
       // Built before setActive so the frame's first load already carries the
       // view; a tool only sees hashchange on later switches.
       getOrCreateFrame(tool, { loading: "eager", hash: toolHash });

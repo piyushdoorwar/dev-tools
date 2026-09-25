@@ -55,6 +55,15 @@ for (const tool of TOOL_CATALOG) {
   const routeDirectory = path.join(outputDirectory, tool.route);
   await mkdir(routeDirectory, { recursive: true });
   await writeFile(path.join(routeDirectory, 'index.html'), renderToolRoutePage(homePage, tool));
+
+  // Retired routes keep answering HTTP 200 with the surviving tool's canonical
+  // URL, so old links and indexed pages consolidate instead of 404ing. They are
+  // deliberately left out of the sitemap and the LLM indexes.
+  for (const alias of tool.aliases) {
+    const aliasDirectory = path.join(outputDirectory, alias.route);
+    await mkdir(aliasDirectory, { recursive: true });
+    await writeFile(path.join(aliasDirectory, 'index.html'), renderToolRoutePage(homePage, tool));
+  }
 }
 
 await Promise.all([

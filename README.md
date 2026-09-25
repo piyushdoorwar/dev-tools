@@ -17,8 +17,9 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - ID Generator
 - Image Converter
 - JSON Diff
-- JSON to TOON / TOON to JSON Converter
-- JSON to XML / XML to JSON Converter
+- JSON ⇄ TOON Converter
+- JSON ⇄ XML Converter
+- JSON ⇄ YAML ⇄ TOML Converter
 - JWT Debugger
 - Lorem Ipsum Generator
 - Markdown Editor

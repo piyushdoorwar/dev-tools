@@ -74,6 +74,18 @@ export const EXTERNAL_ASSETS = [
     integrity: 'sha384-7L46T4Kl2EnzUo/gQTjxNfalcv8uvTUmtMfBDjO7Cxef+mWAUErtpikKl3Qnsg4M',
   },
   {
+    source: 'https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js',
+    output: 'vendor/js-yaml/4.1.0/js-yaml.min.js',
+    integrity: 'sha384-+pxiN6T7yvpryuJmE1gM9PX7yQit15auDb+ZwwvJOd/4be2Cie5/IuVXgQb/S9du',
+  },
+  {
+    // unpkg, not jsDelivr: jsDelivr serves .cjs as application/node, which
+    // browsers refuse to execute. Saved as .js for the same reason.
+    source: 'https://unpkg.com/smol-toml@1.9.0/dist/index.cjs',
+    output: 'vendor/smol-toml/1.9.0/index.js',
+    integrity: 'sha384-K/i468dzpiBhMJvpvq0UtDKUcAnF2LzXxJ3MjgzrHLmzd2vB3eyXyS3YHX3bq5wX',
+  },
+  {
     source: 'https://cdn.jsdelivr.net/npm/world-countries@5.1.0/countries.json',
     output: 'vendor/world-countries/5.1.0/countries.json',
     integrity: 'sha384-J2799pXmuGfHQjOErUWJG6CC1C6fRQA4HemJ3jbYJlqpVFudfJdz793JMcC/1hsr',

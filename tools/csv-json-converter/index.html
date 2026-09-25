@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV ⇄ JSON Converter</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">CSV ⇄ JSON Converter</h1>
+            </div>
+            <div class="header-right">
+                <div class="mode-switch" role="group" aria-label="Conversion direction">
+                    <button class="mode-btn active" type="button" data-mode="csv-json" aria-pressed="true">CSV → JSON</button>
+                    <button class="mode-btn" type="button" data-mode="json-csv" aria-pressed="false">JSON → CSV</button>
+                </div>
+                <button class="action-btn" type="button" id="helpBtn" data-tooltip="How conversion works" aria-label="How conversion works">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel input-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="input-title">CSV Input</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Insert sample" aria-label="Insert sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="open" data-tooltip="Open file" aria-label="Open file">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-upload"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                        <input type="file" id="file-input" accept=".csv,.tsv,.txt,.json,text/csv,application/json" hidden>
+                    </div>
+                </div>
+                <div class="options-bar">
+                    <div class="option">
+                        <span class="option-label">Delimiter</span>
+                        <select id="delimiter" hidden>
+                            <option value="auto">Auto-detect</option>
+                            <option value=",">Comma ,</option>
+                            <option value=";">Semicolon ;</option>
+                            <option value="\t">Tab</option>
+                            <option value="|">Pipe |</option>
+                        </select>
+                        <div class="dd" data-dd data-dd-select="#delimiter">
+                            <button class="dd__trigger" type="button" aria-label="Delimiter">
+                                <span class="dd__value">Auto-detect</span>
+                            </button>
+                            <div class="dd__menu" role="listbox">
+                                <button class="dd__option" type="button" role="option" data-value="auto">Auto-detect</button>
+                                <button class="dd__option" type="button" role="option" data-value=",">Comma ,</button>
+                                <button class="dd__option" type="button" role="option" data-value=";">Semicolon ;</button>
+                                <button class="dd__option" type="button" role="option" data-value="\t">Tab</button>
+                                <button class="dd__option" type="button" role="option" data-value="|">Pipe |</button>
+                            </div>
+                        </div>
+                    </div>
+                    <label class="option option-check">
+                        <input type="checkbox" id="header-row" checked>
+                        <span>Header row</span>
+                    </label>
+                    <label class="option option-check csv-only">
+                        <input type="checkbox" id="infer-types" checked>
+                        <span>Infer numbers &amp; booleans</span>
+                    </label>
+                </div>
+                <div class="panel-body">
+                    <textarea id="input" class="editor" spellcheck="false" autocomplete="off"
+                              placeholder="Paste CSV here, or drop a .csv file…"></textarea>
+                    <div class="status-bar" id="status" role="status">
+                        <span class="status-text">Ready</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel output-panel">
+                <div class="panel-header">
+                    <div class="mode-switch" role="tablist" aria-label="Output view">
+                        <button class="mode-btn active" type="button" role="tab" data-view="table" aria-selected="true">Table</button>
+                        <button class="mode-btn" type="button" role="tab" data-view="text" aria-selected="false" id="text-view-btn">JSON</button>
+                    </div>
+                    <div class="action-group">
+                        <input type="search" id="filter" class="filter-input" placeholder="Filter rows…" aria-label="Filter rows" autocomplete="off">
+                        <button class="action-btn" type="button" data-action="copy" data-tooltip="Copy output" aria-label="Copy output">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="download" data-tooltip="Download output" aria-label="Download output">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="view view-table" id="table-view">
+                        <div class="table-wrap" id="table-wrap">
+                            <table class="data-table" id="data-table">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                            <p class="empty-state" id="empty-state">Your table will appear here.</p>
+                        </div>
+                        <div class="table-meta" id="table-meta"></div>
+                    </div>
+                    <div class="view view-text" id="text-view" hidden>
+                        <textarea id="output" class="editor output" readonly spellcheck="false" aria-label="Converted output"></textarea>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How conversion works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>CSV → JSON</strong></p>
+                        <ul class="tip-list">
+                            <li>Parsing follows RFC 4180: fields may be wrapped in double quotes, a quote inside a quoted field is written <span class="hint-code">""</span>, and quoted fields may contain delimiters and line breaks.</li>
+                            <li><strong>Auto-detect</strong> picks whichever of comma, semicolon, tab, or pipe appears most often in the first line, ignoring anything inside quotes.</li>
+                            <li>With <strong>Header row</strong> on, each row becomes an object keyed by the first line. Blank headers become <span class="hint-code">column_3</span>, and repeated headers get a suffix such as <span class="hint-code">id_2</span> so no value is lost. With it off, each row becomes an array.</li>
+                            <li><strong>Infer numbers &amp; booleans</strong> turns <span class="hint-code">42</span>, <span class="hint-code">-1.5</span>, <span class="hint-code">true</span>, <span class="hint-code">false</span>, and <span class="hint-code">null</span> into JSON types. Numbers with leading zeros, such as ZIP codes like <span class="hint-code">02134</span>, stay strings.</li>
+                        </ul>
+                        <p><strong>JSON → CSV</strong></p>
+                        <ul class="tip-list">
+                            <li>Accepts an array of objects, an array of arrays, or a single object. Columns are the union of every object's keys, in the order they first appear.</li>
+                            <li>Nested objects are flattened into dotted columns, so <span class="hint-code">{"user":{"name":"Ada"}}</span> becomes a <span class="hint-code">user.name</span> column. Arrays are written as JSON text.</li>
+                            <li>Fields containing the delimiter, a quote, a line break, or leading or trailing spaces are quoted. Auto-detect writes commas.</li>
+                        </ul>
+                        <p><strong>Table</strong></p>
+                        <ul class="tip-list">
+                            <li>Click a column header to sort ascending, again for descending, and a third time to restore the original order. Numbers sort numerically.</li>
+                            <li>Sorting and filtering change the table only. The JSON or CSV output always keeps the source order.</li>
+                            <li>Large files show the first 1,000 matching rows; use the filter to narrow them down.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../main.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
