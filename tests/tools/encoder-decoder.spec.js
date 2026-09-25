@@ -269,7 +269,9 @@ test('File mode swap round-trips decoded bytes back into a file to encode', asyn
   await openTool(page, 'encoder-decoder');
   await selectMode(page, 'file');
   await chooseFile(page, { name: 'a.txt', mimeType: 'text/plain', buffer: Buffer.from('round trip') });
-  const encoded = await page.inputValue(output);
+  const encoded = `data:text/plain;base64,${Buffer.from('round trip').toString('base64')}`;
+  // File reads are asynchronous; wait for encoding before swapping directions.
+  await expect(page.locator(output)).toHaveValue(encoded);
 
   await page.click('[data-action="swap"]');
   await expect(page.locator(input)).toHaveValue(encoded);
