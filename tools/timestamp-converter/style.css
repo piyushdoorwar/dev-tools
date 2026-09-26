@@ -298,4 +298,39 @@ body {
         opacity: 1;
     }
 }
+
+@media (max-width: 560px) {
+    .toolbar-left,
+    .toolbar-right {
+        flex: 1 1 100%;
+        flex-wrap: wrap;
+    }
+
+    #tz-dropdown {
+        flex: 1;
+        min-width: 0;
+    }
+
+    #tz-menu {
+        min-width: 100%;
+        width: 100%;
+    }
+
+    .result-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .result-label {
+        grid-column: 1;
+    }
+
+    .result-value {
+        grid-column: 1;
+    }
+
+    .result-copy {
+        grid-column: 2;
+        grid-row: 1 / 3;
+    }
+}
 }

@@ -433,5 +433,13 @@ body {
         flex: none;
         min-height: 70vh;
     }
+
+    .editor-textarea {
+        min-height: 240px;
+    }
+
+    .notes {
+        max-height: 240px;
+    }
 }
 }

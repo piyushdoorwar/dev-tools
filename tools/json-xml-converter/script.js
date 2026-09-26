@@ -364,10 +364,7 @@ function sortObjectKeys(obj) {
     if (typeof obj !== 'object' || obj === null) return obj;
     if (Array.isArray(obj)) return obj.map(sortObjectKeys);
     
-    return Object.keys(obj).sort().reduce((result, key) => {
-        result[key] = sortObjectKeys(obj[key]);
-        return result;
-    }, {});
+    return Object.fromEntries(Object.keys(obj).sort().map(key => [key, sortObjectKeys(obj[key])]));
 }
 
 // Change Casing
@@ -557,12 +554,12 @@ function xmlToJSON(xmlString) {
         
         if (node.nodeType !== 1) return null; // Element node
         
-        const obj = {};
+        const obj = Object.create(null);
         
         // Handle attributes
         const attributes = Array.from(node.attributes).filter(attr => attr.name !== 'data-json-key');
         if (attributes.length > 0) {
-            obj['@attributes'] = {};
+            obj['@attributes'] = Object.create(null);
             for (const attr of attributes) {
                 obj['@attributes'][attr.name] = attr.value;
             }
@@ -588,15 +585,15 @@ function xmlToJSON(xmlString) {
         }
         if (hasElements && text) obj['#text'] = text;
         
-        const children = {};
+        const children = Object.create(null);
         for (let i = 0; i < node.childNodes.length; i++) {
             const child = node.childNodes[i];
             if (child.nodeType !== 1) continue;
             
             const childData = parseNode(child);
-            const childName = child.getAttribute('data-json-key') || child.nodeName;
+            const childName = child.getAttribute('data-json-key') ?? child.nodeName;
             
-            if (children[childName]) {
+            if (Object.hasOwn(children, childName)) {
                 if (!Array.isArray(children[childName])) {
                     children[childName] = [children[childName]];
                 }

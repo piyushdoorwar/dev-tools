@@ -5,6 +5,13 @@ const outputJson = async (page) => JSON.parse(await page.locator('#output').inpu
 const columnText = (page, column) =>
   page.locator(`#data-table tbody tr td:nth-child(${column + 2})`).allTextContents();
 
+test('JSON flattening preserves prototype-named columns and missing values', async ({ page }) => {
+  await openTool(page, 'csv-json-converter');
+  const result = await page.evaluate(() => jsonToData('[{"__proto__":"kept","constructor":"value","toString":"text"},{}]'));
+  expect(result.headers).toEqual(['__proto__', 'constructor', 'toString']);
+  expect(result.rows).toEqual([['kept', 'value', 'text'], [null, null, null]]);
+});
+
 test('converts CSV with a header row into an array of typed objects with no console errors', async ({ page }) => {
   const { errors } = await openTool(page, 'csv-json-converter');
 

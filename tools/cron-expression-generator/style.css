@@ -91,15 +91,6 @@ body {
     min-width: 320px;
 }
 
-/* A preset is a label plus the expression it produces, so the option is two
-   lines rather than the shared single-line text. */
-#preset-menu .dd__option {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-}
-
 .preset-code {
     font-family: var(--font-mono);
     font-size: var(--chrome-sm);
@@ -430,8 +421,10 @@ body {
         min-width: 0;
     }
 
-    #preset-menu {
-        min-width: min(320px, calc(100vw - 2 * var(--space-4)));
+    #preset-menu,
+    #tz-menu {
+        min-width: 100%;
+        width: 100%;
     }
 
     .live-clock {

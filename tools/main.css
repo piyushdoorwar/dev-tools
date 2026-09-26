@@ -1194,6 +1194,21 @@ select[size]:not([size='1']) {
     color: var(--text-primary);
   }
 
+  /* Long labels and two-line presets must keep their natural height inside
+     a scrolling menu, rather than overlap or force horizontal scrolling. */
+  .dd__menu--wrap .dd__option {
+    flex-shrink: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    padding-block: var(--space-2);
+  }
+
+  .dd__option--stacked {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
   .dd__option:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring);

@@ -45,6 +45,19 @@ test('ISO and date strings are parsed back to the same instant', async ({ page }
   }
 });
 
+test('sub-millisecond epochs keep exact boundaries before and after 1970', async ({ page }) => {
+  await openTool(page, 'timestamp-converter');
+  for (const [input, expected] of [
+    ['1789689600123999999', '1789689600123'],
+    ['-1789689600123000001', '-1789689600124'],
+    ['99999999999999999', '99999999999999'],
+    ['-99999999999999001', '-100000000000000'],
+  ]) {
+    await enter(page, input);
+    expect((await rows(page))['Unix milliseconds'], input).toBe(expected);
+  }
+});
+
 test('unparseable input reports an error and shows no conversions', async ({ page }) => {
   await openTool(page, 'timestamp-converter');
   await enter(page, 'not a timestamp');

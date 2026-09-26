@@ -34,10 +34,16 @@ const state = {
 // not exact in binary, so `n * 0.001` can land a hair under the true value and
 // floor to the previous millisecond (or leave a fractional "Unix milliseconds").
 function unitForDigits(digits) {
-  if (digits <= 11) return { unit: "seconds", toMs: (n) => n * 1000 };
+  if (digits <= 11) return { unit: "seconds", toMs: (n) => n * 1000n };
   if (digits <= 14) return { unit: "milliseconds", toMs: (n) => n };
-  if (digits <= 17) return { unit: "microseconds", toMs: (n) => Math.floor(n / 1000) };
-  return { unit: "nanoseconds", toMs: (n) => Math.floor(n / 1e6) };
+  if (digits <= 17) return { unit: "microseconds", toMs: (n) => floorDivide(n, 1000n) };
+  return { unit: "nanoseconds", toMs: (n) => floorDivide(n, 1000000n) };
+}
+
+// BigInt division truncates toward zero; timestamps use the preceding
+// millisecond, including for negative instants with a fractional remainder.
+function floorDivide(value, divisor) {
+  return value / divisor - (value < 0n && value % divisor !== 0n ? 1n : 0n);
 }
 
 function parseInput(raw) {
@@ -48,7 +54,9 @@ function parseInput(raw) {
   if (/^-?\d+$/.test(text)) {
     const digits = text.replace("-", "").length;
     const { unit, toMs } = unitForDigits(digits);
-    const ms = toMs(Number(text));
+    // Reduce to milliseconds before converting to Number: nanoseconds exceed
+    // its exact-integer range and can otherwise round into the next instant.
+    const ms = Number(toMs(BigInt(text)));
     if (!Number.isFinite(ms)) return { ok: false, error: "Number is too large to be a timestamp." };
     if (Math.abs(ms) > MAX_TIME) {
       return { ok: false, error: `Out of range: ${unit} value is beyond the maximum representable date.` };

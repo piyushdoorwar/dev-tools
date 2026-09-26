@@ -402,10 +402,7 @@ function sortObjectKeys(obj) {
     if (typeof obj !== 'object' || obj === null) return obj;
     if (Array.isArray(obj)) return obj.map(sortObjectKeys);
     
-    return Object.keys(obj).sort().reduce((result, key) => {
-        result[key] = sortObjectKeys(obj[key]);
-        return result;
-    }, {});
+    return Object.fromEntries(Object.keys(obj).sort().map(key => [key, sortObjectKeys(obj[key])]));
 }
 
 // Change Casing

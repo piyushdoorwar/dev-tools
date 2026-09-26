@@ -703,7 +703,7 @@ function buildPresetMenu() {
   presetMenu.innerHTML = "";
   for (const [label, expression] of PRESETS) {
     const option = document.createElement("button");
-    option.className = "dd__option";
+    option.className = "dd__option dd__option--stacked";
     option.type = "button";
     option.setAttribute("role", "option");
     option.dataset.value = expression;

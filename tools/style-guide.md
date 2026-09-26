@@ -148,6 +148,8 @@ One trigger + popup for both value selection and command menus.
 | `data-dd` | Marks the root for auto-init. `data-dd="menu"` = command menu, no selection. |
 | `data-dd-select` | Selector for a native `<select>` to mirror; a `change` event fires on it. |
 | `.dd--end` | Right-align the menu under the trigger. |
+| `.dd__menu--wrap` | Wrap long option labels and preserve each row's height in scrolling menus. |
+| `.dd__option--stacked` | Stack an option's label and supporting text, aligned to the start. |
 | `.dd__trigger--plain` | Keep the tool's own button styling; skips the generated chevron. |
 | `dd:change` event | `detail: { value, label }`, fired on the `.dd` root. |
 

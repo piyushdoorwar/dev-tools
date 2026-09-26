@@ -31,7 +31,7 @@ body {
 .app-container {
     display: flex;
     flex-direction: column;
-    width: 100vw;
+    width: 100%;
     height: 100vh;
     position: relative;
     z-index: 1;
@@ -1684,6 +1684,28 @@ input[type="number"] {
     }
 }
 
+/* The dashboard sidebar can leave a narrow schema pane even on a desktop.
+   Size field rows against that pane instead of only the window width. */
+.schema-body {
+    container-type: inline-size;
+}
+
+@container (max-width: 480px) {
+    .field-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field-cell:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@container (max-width: 320px) {
+    .field-row {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ==================== Stacked layout ====================
    The page is locked to 100vh with every container clipping. Side by side
    that is right, but the two panels only stacked at 480px, and even then each
@@ -1724,6 +1746,7 @@ input[type="number"] {
     }
 
     .editor-panel.right-panel .panel-body {
+        flex: none;
         height: min(70vh, 560px);
         min-height: 320px;
     }

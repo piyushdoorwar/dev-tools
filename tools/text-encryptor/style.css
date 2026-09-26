@@ -35,7 +35,7 @@ body {
 .app-container {
     display: flex;
     flex-direction: column;
-    width: 100vw;
+    width: 100%;
     height: 100vh;
     position: relative;
     z-index: 1;
@@ -566,6 +566,16 @@ body {
 
     .secret-row {
         flex-wrap: wrap;
+    }
+
+    [data-action="swap"][data-tooltip]::after {
+        left: auto;
+        right: 0;
+        transform: translateY(4px);
+    }
+
+    [data-action="swap"][data-tooltip]:hover::after {
+        transform: translateY(0);
     }
 }
 }

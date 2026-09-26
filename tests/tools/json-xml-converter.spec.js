@@ -27,6 +27,20 @@ test('XML converts back to the original JSON shape', async ({ page }) => {
   expect(JSON.stringify(roundTrip)).toContain('London');
 });
 
+test('XML preserves prototype-named keys, attributes, and repeated empty text', async ({ page }) => {
+  await openTool(page, 'json-xml-converter');
+  const result = await page.evaluate(() => JSON.stringify(xmlToJSON(
+    '<root __proto__="attribute"><__proto__>data</__proto__><constructor>value</constructor>' +
+    '<toString>text</toString><item><![CDATA[]]></item><item>second</item></root>'
+  )));
+  expect(JSON.parse(result)).toEqual(JSON.parse('{"root":{"@attributes":{"__proto__":"attribute"},"__proto__":"data","constructor":"value","toString":"text","item":["","second"]}}'));
+});
+
+test('an empty JSON property name survives the XML round trip', async ({ page }) => {
+  await openTool(page, 'json-xml-converter');
+  expect(await page.evaluate(() => xmlToJSON(jsonToXML({ '': 'value' })))).toEqual({ root: { '': 'value' } });
+});
+
 test('keys that are not valid XML names are made safe', async ({ page }) => {
   await openTool(page, 'json-xml-converter');
 

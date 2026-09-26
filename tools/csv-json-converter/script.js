@@ -202,7 +202,7 @@ function dataToJson({ headers, rows, header }) {
 
 /* --- JSON → CSV ----------------------------------------------------------- */
 
-function flattenObject(value, prefix = "", out = {}) {
+function flattenObject(value, prefix = "", out = Object.create(null)) {
   for (const [key, child] of Object.entries(value)) {
     const path = prefix ? `${prefix}.${key}` : key;
     if (child && typeof child === "object" && !Array.isArray(child) && Object.keys(child).length) {
