@@ -10,22 +10,25 @@ function render() {
   $("results").replaceChildren(
     ...rows.map(([title, command, note]) => {
       const card = document.createElement("article");
-      card.className = "card";
+      card.className = "reference-entry";
       const h = document.createElement("h2");
       h.textContent = title;
       const pre = document.createElement("pre");
       pre.textContent = command;
       const p = document.createElement("p");
       p.textContent = note;
-      const button = document.createElement("button");
-      button.className = "btn";
-      button.textContent = "Copy command";
-      button.onclick = () => copy(command);
-      card.append(h, pre, p, button);
+      const button = UtilityUI.iconButton("Copy command", "copy", () =>
+        copy(command),
+      );
+      const line = document.createElement("div");
+      line.className = "command-line";
+      line.append(pre, button);
+      card.append(h, line, p);
       return card;
     }),
   );
-  if (!rows.length) $("results").textContent = "No matching tasks.";
+  if (!rows.length)
+    $("results").innerHTML = '<p class="empty-state">No matching tasks.</p>';
 }
 $("search").oninput = render;
 render();

@@ -4,47 +4,106 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MIME Type Lookup</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="../main.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="app-container">
       <header class="header">
-        <h1 class="app-title">MIME Type Lookup</h1>
-        <p class="app-subtitle">
-          Search common extensions, filenames, and MIME types in both
-          directions.
-        </p>
+        <div class="header-left">
+          <h1 class="app-title">MIME Type Lookup</h1>
+          <p class="app-subtitle">
+            Find a Content-Type from an extension, filename, or media type.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button
+            type="button"
+            class="action-btn"
+            id="helpBtn"
+            aria-label="How to use this"
+            data-tooltip="How to use this"
+            data-modal-open="#helpModal"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <use href="#i-info"></use>
+            </svg>
+          </button>
+        </div>
       </header>
       <main>
-        <label class="field"
-          >Extension, filename, or MIME type<input
-            id="search"
-            type="text"
-            value="webp"
-            autocomplete="off"
-            spellcheck="false"
-        /></label>
-        <p>
-          Extensions are hints, not file validation. Content-Type describes the
-          body; Content-Encoding describes compression. Use charset=UTF-8 for
-          text when appropriate. Let the browser set multipart boundaries for
-          FormData. Unknown binary data commonly uses application/octet-stream.
-        </p>
-        <p>
-          This is a curated common-type reference, not the complete
-          <a
-            href="https://www.iana.org/assignments/media-types/"
-            target="_blank"
-            rel="noopener noreferrer"
-            >IANA registry</a
-          >.
-        </p>
-        <p id="count" role="status"></p>
-        <div id="results"></div>
-        <p id="error" role="status" aria-live="polite"></p>
+        <div class="toolbar">
+          <div class="search-field">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <use href="#i-search"></use></svg
+            ><input
+              class="search-input"
+              id="search"
+              type="search"
+              aria-label="Search reference"
+              value="webp"
+              placeholder="Search .webp, photo.png, application/json…"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+          <span class="result-count" id="count" role="status"></span>
+        </div>
+        <section class="panel reference-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Common media types</h2>
+            <div class="action-group">
+              <p class="note">Curated reference</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="results" class="reference-list mime-list"></div>
+          </div>
+        </section>
+        <p id="error" class="notice error" role="status" aria-live="polite"></p>
       </main>
+      <div class="modal-overlay" id="helpModal" data-modal>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Using MIME Type Lookup</h3>
+            <button
+              type="button"
+              class="action-btn"
+              aria-label="Close"
+              data-tooltip="Close"
+              data-modal-close
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <use href="#i-close"></use>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Search in either direction, then copy the Content-Type header
+              using the icon on its right. Filename extensions are hints, not
+              validation of file contents.
+            </p>
+            <p>
+              <code>Content-Type</code> describes the body;
+              <code>Content-Encoding</code> describes compression. Use
+              charset=UTF-8 for text when appropriate. Let the browser set
+              multipart boundaries for FormData.
+            </p>
+            <p>
+              Unknown binary data commonly uses application/octet-stream. This
+              is a common-type reference, not the complete
+              <a
+                href="https://www.iana.org/assignments/media-types/"
+                target="_blank"
+                rel="noopener noreferrer"
+                >IANA registry</a
+              >.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="../main.js"></script>
     <script src="../utility-ui.js"></script>

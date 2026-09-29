@@ -4,87 +4,201 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Open Graph / Meta Tag Generator</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="../main.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="app-container">
       <header class="header">
-        <h1 class="app-title">Open Graph / Meta Tag Generator</h1>
-        <p class="app-subtitle">
-          Generate SEO, Open Graph, and Twitter Card tags with an illustrative
-          link preview.
-        </p>
+        <div class="header-left">
+          <h1 class="app-title">Open Graph / Meta Tag Generator</h1>
+          <p class="app-subtitle">
+            Compose your page details and preview the link before sharing.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button
+            type="button"
+            class="action-btn"
+            id="helpBtn"
+            aria-label="How to use this"
+            data-tooltip="How to use this"
+            data-modal-open="#helpModal"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <use href="#i-info"></use>
+            </svg>
+          </button>
+        </div>
       </header>
       <main>
-        <div class="grid">
-          <label class="field"
-            >Title<input
-              id="title"
-              type="text"
-              value="My page"
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >Description<input
-              id="description"
-              type="text"
-              value="A useful page worth sharing."
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >Page URL<input
-              id="url"
-              type="text"
-              value="https://example.com/"
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >Image URL<input
-              id="image"
-              type="text"
-              value=""
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >Image description<input
-              id="alt"
-              type="text"
-              value=""
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >Site name<input
-              id="site"
-              type="text"
-              value="Example"
-              autocomplete="off"
-              spellcheck="false"
-          /></label>
+        <div class="workspace">
+          <div class="stack">
+            <section class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Page details</h2>
+                <div class="action-group"></div>
+              </div>
+              <div class="panel-body">
+                <label class="field" for="title"
+                  ><span class="field-label">Title</span
+                  ><input
+                    id="title"
+                    type="text"
+                    value="My page"
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false" /></label
+                ><label class="field" for="description"
+                  ><span class="field-label">Description</span
+                  ><input
+                    id="description"
+                    type="text"
+                    value="A useful page worth sharing."
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false" /></label
+                ><label class="field" for="url"
+                  ><span class="field-label">Page URL</span
+                  ><input
+                    id="url"
+                    type="text"
+                    value="https://example.com/"
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false" /></label
+                ><label class="field" for="image"
+                  ><span class="field-label">Image URL</span
+                  ><input
+                    id="image"
+                    type="text"
+                    value=""
+                    placeholder="https://example.com/social-card.jpg"
+                    autocomplete="off"
+                    spellcheck="false" /></label
+                ><label class="field" for="alt"
+                  ><span class="field-label">Image description</span
+                  ><input
+                    id="alt"
+                    type="text"
+                    value=""
+                    placeholder="Describe the image"
+                    autocomplete="off"
+                    spellcheck="false" /></label
+                ><label class="field" for="site"
+                  ><span class="field-label">Site name</span
+                  ><input
+                    id="site"
+                    type="text"
+                    value="Example"
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false"
+                /></label>
+              </div>
+            </section>
+          </div>
+          <div class="stack">
+            <section class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Link preview</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="load-image"
+                    aria-label="Load image preview"
+                    data-tooltip="Load image preview"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-download"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div class="social-card" id="preview">
+                  <div id="preview-image" class="social-image">
+                    Load an image to preview your card
+                  </div>
+                  <div class="social-copy">
+                    <small id="preview-url"></small>
+                    <h3 id="preview-title"></h3>
+                    <p id="preview-description"></p>
+                  </div>
+                </div>
+                <p class="note">
+                  Illustrative preview · Loading an image contacts its host.
+                </p>
+              </div>
+            </section>
+            <section class="panel output-panel meta-output">
+              <div class="panel-header">
+                <h2 class="panel-title">SEO & social tags</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="copy"
+                    aria-label="Copy output"
+                    data-tooltip="Copy output"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-copy"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <textarea
+                  id="output"
+                  class="editor"
+                  aria-label="SEO &amp; social tags"
+                  spellcheck="false"
+                  readonly
+                  placeholder="Your result appears here."
+                ></textarea>
+              </div>
+            </section>
+          </div>
         </div>
-        <label class="field"
-          >Output<textarea
-            id="output"
-            spellcheck="false"
-            readonly
-          ></textarea></label
-        ><button type="button" class="btn" id="copy">Copy output</button>
-        <section class="card" id="preview">
-          <h2>Link card preview</h2>
-          <div id="preview-image">Image preview appears after loading.</div>
-          <button type="button" class="btn" id="load-image">
-            Load image preview</button
-          ><small id="preview-url"></small>
-          <h3 id="preview-title"></h3>
-          <p id="preview-description"></p>
-          <p>
-            Illustrative layout; platforms may crop images or cache older
-            metadata. Loading an image contacts its host.
-          </p>
-        </section>
-        <p id="error" role="status" aria-live="polite"></p>
+        <p id="error" class="notice error" role="status" aria-live="polite"></p>
       </main>
+      <div class="modal-overlay" id="helpModal" data-modal>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Using Open Graph / Meta Tag Generator</h3>
+            <button
+              type="button"
+              class="action-btn"
+              aria-label="Close"
+              data-tooltip="Close"
+              data-modal-close
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <use href="#i-close"></use>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Fill in the title, description, page URL and image URL. The
+              generator produces basic SEO, Open Graph and Twitter Card tags
+              with escaped attribute values.
+            </p>
+            <p>
+              The text preview updates as you type. Use Load image preview to
+              fetch the image from its host. URLs must use HTTP or HTTPS.
+            </p>
+            <p>
+              Social platforms may crop images differently and cache old
+              metadata. The card is illustrative, not a guarantee of a specific
+              platform’s rendering.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="../main.js"></script>
     <script src="../utility-ui.js"></script>

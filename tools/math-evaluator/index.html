@@ -4,75 +4,204 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Math / Expression Evaluator</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="../main.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="app-container">
       <header class="header">
-        <h1 class="app-title">Math / Expression Evaluator</h1>
-        <p class="app-subtitle">
-          Calculate expressions, exact BigInt arithmetic, and percentages with a
-          session history.
-        </p>
+        <div class="header-left">
+          <h1 class="app-title">Math / Expression Evaluator</h1>
+          <p class="app-subtitle">
+            Evaluate expressions and percentages, with your working kept beside
+            you.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button
+            type="button"
+            class="action-btn"
+            id="helpBtn"
+            aria-label="How to use this"
+            data-tooltip="How to use this"
+            data-modal-open="#helpModal"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <use href="#i-info"></use>
+            </svg>
+          </button>
+        </div>
       </header>
       <main>
-        <label class="field"
-          >Expression<input
-            id="expression"
-            type="text"
-            value="sqrt(81) + 0xff"
-            autocomplete="off"
-            spellcheck="false" /></label
-        ><button type="button" class="btn" id="evaluate">Evaluate</button>
-        <p>
-          Operators: + − * / % ^ (power). Functions: sqrt, log (natural), log10,
-          sin, cos, tan, abs, floor, ceil, round, min, max. Constants: pi, e.
-          Trigonometry uses radians. Add n to integer literals for BigInt; do
-          not mix BigInt and decimal numbers. BigInt division truncates.
-          Ordinary numbers use floating-point arithmetic and may round.
-        </p>
-        <label class="field"
-          >Output<textarea
-            id="output"
-            spellcheck="false"
-            readonly
-          ></textarea></label
-        ><button type="button" class="btn" id="copy">Copy output</button>
-        <section class="panel">
-          <h2>Percentages</h2>
-          <p>
-            Percentage change uses (B − A) / |A| × 100. A zero starting value is
-            undefined.
-          </p>
-          <div class="grid">
-            <label class="field"
-              >X / starting value<input
-                id="a"
-                type="number"
-                value="25"
-                autocomplete="off"
-                spellcheck="false" /></label
-            ><label class="field"
-              >Y / ending value<input
-                id="b"
-                type="number"
-                value="100"
-                autocomplete="off"
-                spellcheck="false"
-            /></label>
+        <div class="workspace">
+          <div class="stack">
+            <section class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Calculator</h2>
+                <div class="action-group"></div>
+              </div>
+              <div class="panel-body">
+                <label class="field" for="expression"
+                  ><span class="field-label">Expression</span
+                  ><input
+                    id="expression"
+                    type="text"
+                    value="sqrt(81) + 0xff"
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false"
+                /></label>
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    id="evaluate"
+                  >
+                    Evaluate</button
+                  ><span class="note">Enter to evaluate · Radians</span>
+                </div>
+              </div>
+            </section>
+            <section class="panel output-panel math-result">
+              <div class="panel-header">
+                <h2 class="panel-title">Result</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="copy"
+                    aria-label="Copy output"
+                    data-tooltip="Copy output"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-copy"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <textarea
+                  id="output"
+                  class="editor"
+                  aria-label="Result"
+                  spellcheck="false"
+                  readonly
+                  placeholder="Your result appears here."
+                ></textarea>
+              </div>
+            </section>
+            <section class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Percentages</h2>
+                <div class="action-group"></div>
+              </div>
+              <div class="panel-body">
+                <div class="grid">
+                  <label class="field" for="a"
+                    ><span class="field-label">X / starting value</span
+                    ><input
+                      id="a"
+                      type="number"
+                      value="25"
+                      placeholder=""
+                      autocomplete="off"
+                      spellcheck="false" /></label
+                  ><label class="field" for="b"
+                    ><span class="field-label">Y / ending value</span
+                    ><input
+                      id="b"
+                      type="number"
+                      value="100"
+                      placeholder=""
+                      autocomplete="off"
+                      spellcheck="false"
+                  /></label>
+                </div>
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    id="percent"
+                  >
+                    X is what % of Y?</button
+                  ><button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    id="change"
+                  >
+                    % change from A to B
+                  </button>
+                </div>
+                <p class="note">
+                  Change = (B − A) / |A| × 100. A zero baseline is undefined.
+                </p>
+              </div>
+            </section>
           </div>
-          <button type="button" class="btn" id="percent">
-            X is what % of Y?</button
-          ><button type="button" class="btn" id="change">
-            % change from A to B
-          </button>
-        </section>
-        <button type="button" class="btn" id="clear">Clear history</button>
-        <div id="history"></div>
-        <p id="error" role="status" aria-live="polite"></p>
+          <section class="panel history-panel">
+            <div class="panel-header">
+              <h2 class="panel-title">History</h2>
+              <div class="action-group">
+                <button
+                  type="button"
+                  class="action-btn"
+                  id="clear"
+                  aria-label="Clear history"
+                  data-tooltip="Clear history"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 24 24">
+                    <use href="#i-trash"></use>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div
+                id="history"
+                class="history-list"
+                data-empty="Your calculations will appear here."
+              ></div>
+            </div>
+          </section>
+        </div>
+        <p id="error" class="notice error" role="status" aria-live="polite"></p>
       </main>
+      <div class="modal-overlay" id="helpModal" data-modal>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Using Math / Expression Evaluator</h3>
+            <button
+              type="button"
+              class="action-btn"
+              aria-label="Close"
+              data-tooltip="Close"
+              data-modal-close
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <use href="#i-close"></use>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Operators: + − * / % and ^ or ** for powers. Functions: sqrt, log
+              (natural), log10, sin, cos, tan, abs, floor, ceil, round, min and
+              max. Constants: pi and e. Trigonometry uses radians.
+            </p>
+            <p>
+              Use hexadecimal (0xff) and binary (0b1010) literals. Add n to an
+              integer for BigInt. Do not mix BigInt and ordinary numbers; BigInt
+              division truncates. Ordinary numbers use floating point and may
+              round.
+            </p>
+            <p>
+              History keeps the latest 30 results for this session. Calculations
+              run locally with a bounded arithmetic parser.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="../main.js"></script>
     <script src="../utility-ui.js"></script>

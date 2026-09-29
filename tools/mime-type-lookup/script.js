@@ -14,29 +14,34 @@ function render() {
   $("results").replaceChildren(
     ...rows.map(([extensions, mime, note]) => {
       const card = document.createElement("article");
-      card.className = "card";
+      card.className = "reference-entry";
       const title = document.createElement("h2");
       title.textContent = mime;
       const p = document.createElement("p");
-      p.textContent =
-        (extensions
-          ? extensions
-              .split(" ")
-              .map((e) => "." + e)
-              .join(", ")
-          : "No standard extension") +
-        " — " +
-        note;
-      const button = document.createElement("button");
-      button.className = "btn";
-      button.textContent = "Copy Content-Type";
-      button.onclick = () => copy("Content-Type: " + mime);
-      card.append(title, p, button);
+      p.textContent = note;
+      const head = document.createElement("div");
+      head.className = "reference-head";
+      head.append(
+        title,
+        UtilityUI.iconButton("Copy Content-Type", "copy", () =>
+          copy("Content-Type: " + mime),
+        ),
+      );
+      const tags = document.createElement("div");
+      tags.className = "extension-list";
+      for (const extension of extensions ? extensions.split(" ") : [""]) {
+        const tag = document.createElement("span");
+        tag.className = "extension-tag";
+        tag.textContent = extension ? "." + extension : "No standard extension";
+        tags.append(tag);
+      }
+      card.append(head, tags, p);
       return card;
     }),
   );
   if (!rows.length)
-    $("results").textContent = "No match in this curated reference.";
+    $("results").innerHTML =
+      '<p class="empty-state">No match in this curated reference.</p>';
 }
 $("search").oninput = render;
 render();

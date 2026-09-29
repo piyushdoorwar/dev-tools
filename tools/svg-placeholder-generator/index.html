@@ -4,99 +4,238 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SVG Placeholder Generator</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="../main.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="app-container">
       <header class="header">
-        <h1 class="app-title">SVG Placeholder Generator</h1>
-        <p class="app-subtitle">
-          Create a placeholder as SVG markup, a data URI, or a downloadable
-          image.
-        </p>
+        <div class="header-left">
+          <h1 class="app-title">SVG Placeholder Generator</h1>
+          <p class="app-subtitle">
+            A lightweight placeholder, exactly the size and colour you need.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button
+            type="button"
+            class="action-btn"
+            id="helpBtn"
+            aria-label="How to use this"
+            data-tooltip="How to use this"
+            data-modal-open="#helpModal"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <use href="#i-info"></use>
+            </svg>
+          </button>
+        </div>
       </header>
       <main>
-        <div class="grid">
-          <label class="field"
-            >Width<input
-              id="width"
-              type="number"
-              value="640"
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >Height<input
-              id="height"
-              type="number"
-              value="360"
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >Background<input
-              id="background"
-              type="text"
-              value="#6739b7"
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >Text colour<input
-              id="foreground"
-              type="text"
-              value="#ffffff"
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >Text (blank uses dimensions)<input
-              id="text"
-              type="text"
-              value=""
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >Font size<input
-              id="font-size"
-              type="number"
-              value="32"
-              autocomplete="off"
-              spellcheck="false"
-          /></label>
+        <div class="workspace controls-workspace">
+          <section class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Image settings</h2>
+              <div class="action-group"></div>
+            </div>
+            <div class="panel-body">
+              <div class="grid">
+                <label class="field" for="width"
+                  ><span class="field-label">Width · px</span
+                  ><input
+                    id="width"
+                    type="number"
+                    value="640"
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false" /></label
+                ><label class="field" for="height"
+                  ><span class="field-label">Height · px</span
+                  ><input
+                    id="height"
+                    type="number"
+                    value="360"
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false"
+                /></label>
+              </div>
+              <label class="field" for="text"
+                ><span class="field-label">Text</span
+                ><input
+                  id="text"
+                  type="text"
+                  value=""
+                  placeholder="Blank uses dimensions"
+                  autocomplete="off"
+                  spellcheck="false" /></label
+              ><label class="field" for="font-size"
+                ><span class="field-label">Font size · px</span
+                ><input
+                  id="font-size"
+                  type="number"
+                  value="32"
+                  placeholder=""
+                  autocomplete="off"
+                  spellcheck="false"
+              /></label>
+              <div class="colour-field">
+                <label class="field" for="background"
+                  ><span class="field-label">Background</span
+                  ><input
+                    id="background"
+                    type="text"
+                    value="#6739b7"
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false"
+                /></label>
+                <div
+                  id="background-picker"
+                  data-color-picker
+                  data-value="#6739b7"
+                  data-alpha="false"
+                  data-label="Background"
+                ></div>
+              </div>
+              <div class="colour-field">
+                <label class="field" for="foreground"
+                  ><span class="field-label">Text colour</span
+                  ><input
+                    id="foreground"
+                    type="text"
+                    value="#ffffff"
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false"
+                /></label>
+                <div
+                  id="foreground-picker"
+                  data-color-picker
+                  data-value="#ffffff"
+                  data-alpha="false"
+                  data-label="Text colour"
+                ></div>
+              </div>
+              <p class="note">
+                SVG scales without losing sharpness. Changes update the preview
+                instantly.
+              </p>
+            </div>
+          </section>
+          <div class="stack">
+            <section class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Preview</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="download"
+                    aria-label="Download SVG"
+                    data-tooltip="Download SVG"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-download"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <div id="preview" class="placeholder-preview"></div>
+              </div>
+            </section>
+            <section class="panel output-panel">
+              <div class="panel-header">
+                <h2 class="panel-title">SVG markup</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="copy"
+                    aria-label="Copy output"
+                    data-tooltip="Copy output"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-copy"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <textarea
+                  id="output"
+                  class="editor"
+                  aria-label="SVG markup"
+                  spellcheck="false"
+                  readonly
+                  placeholder="Your result appears here."
+                ></textarea>
+              </div>
+            </section>
+            <section class="panel output-panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Data URI</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="copy-uri"
+                    aria-label="Copy Data URI"
+                    data-tooltip="Copy Data URI"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-copy"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <textarea
+                  id="data-uri"
+                  class="editor"
+                  aria-label="Data URI"
+                  spellcheck="false"
+                  readonly
+                  placeholder="Your result appears here."
+                ></textarea>
+              </div>
+            </section>
+          </div>
         </div>
-        <div class="actions">
-          <div
-            data-color-picker
-            data-value="#6739b7"
-            data-alpha="false"
-            data-label="Background colour"
-            id="background-picker"
-          ></div>
-          <div
-            data-color-picker
-            data-value="#ffffff"
-            data-alpha="false"
-            data-label="Text colour"
-            id="foreground-picker"
-          ></div>
-        </div>
-        <div id="preview"></div>
-        <label class="field"
-          >Output<textarea
-            id="output"
-            spellcheck="false"
-            readonly
-          ></textarea></label
-        ><button type="button" class="btn" id="copy">Copy output</button
-        ><label class="field"
-          >Data URI<textarea
-            id="data-uri"
-            spellcheck="false"
-            readonly
-          ></textarea></label
-        ><button type="button" class="btn" id="copy-uri">Copy data URI</button
-        ><button type="button" class="btn" id="download">Download SVG</button>
-        <p id="error" role="status" aria-live="polite"></p>
+        <p id="error" class="notice error" role="status" aria-live="polite"></p>
       </main>
+      <div class="modal-overlay" id="helpModal" data-modal>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Using SVG Placeholder Generator</h3>
+            <button
+              type="button"
+              class="action-btn"
+              aria-label="Close"
+              data-tooltip="Close"
+              data-modal-close
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <use href="#i-close"></use>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Set dimensions, colours, text and font size. Leave the text blank
+              to use the dimensions as the label. Use the colour swatches or
+              enter six-digit hex values.
+            </p>
+            <p>
+              Copy the SVG markup or data URI from their output headers. The
+              download icon saves a standalone SVG. Dimensions and font size
+              must be whole numbers from 1 to 10,000.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="../main.js"></script>
     <script src="../utility-ui.js"></script>

@@ -4,42 +4,103 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Git Cheatsheet</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="../main.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="app-container">
       <header class="header">
-        <h1 class="app-title">Git Cheatsheet</h1>
-        <p class="app-subtitle">
-          Search common Git tasks and copy commands with context and recovery
-          guidance.
-        </p>
+        <div class="header-left">
+          <h1 class="app-title">Git Cheatsheet</h1>
+          <p class="app-subtitle">
+            Everyday commands, recovery steps, and the context to use them.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button
+            type="button"
+            class="action-btn"
+            id="helpBtn"
+            aria-label="How to use this"
+            data-tooltip="How to use this"
+            data-modal-open="#helpModal"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <use href="#i-info"></use>
+            </svg>
+          </button>
+        </div>
       </header>
       <main>
-        <label class="field"
-          >Search tasks or commands<input
-            id="search"
-            type="text"
-            value=""
-            autocomplete="off"
-            spellcheck="false"
-        /></label>
-        <p>
-          Replace placeholders such as &lt;commit&gt; and &lt;branch&gt; before
-          running commands. Check git status first.
-          <a
-            href="https://git-scm.com/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            >Git documentation</a
-          >
-        </p>
-        <p id="count" role="status"></p>
-        <div id="results"></div>
-        <p id="error" role="status" aria-live="polite"></p>
+        <div class="toolbar">
+          <div class="search-field">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <use href="#i-search"></use></svg
+            ><input
+              class="search-input"
+              id="search"
+              type="search"
+              aria-label="Search reference"
+              value=""
+              placeholder="Search commands, rebase, stash, undo…"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+          <span class="result-count" id="count" role="status"></span>
+        </div>
+        <section class="panel reference-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Command reference</h2>
+            <div class="action-group">
+              <p class="note">Replace &lt;placeholders&gt; before running</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="results" class="reference-list"></div>
+          </div>
+        </section>
+        <p id="error" class="notice error" role="status" aria-live="polite"></p>
       </main>
+      <div class="modal-overlay" id="helpModal" data-modal>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Using Git Cheatsheet</h3>
+            <button
+              type="button"
+              class="action-btn"
+              aria-label="Close"
+              data-tooltip="Close"
+              data-modal-close
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <use href="#i-close"></use>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Search by task or command. Copy a command using the icon on its
+              right. Replace placeholders such as &lt;commit&gt; and
+              &lt;branch&gt; before running commands.
+            </p>
+            <p>
+              Check <code>git status</code> first. Commands that discard work or
+              rewrite history include a note beside them. Prefer revert for
+              commits that have already been shared.
+            </p>
+            <p>
+              <a
+                href="https://git-scm.com/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Read the Git documentation</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="../main.js"></script>
     <script src="../utility-ui.js"></script>

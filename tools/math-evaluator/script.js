@@ -9,9 +9,14 @@ function record(label, result) {
   history.length = Math.min(history.length, 30);
   $("history").replaceChildren(
     ...history.map((item) => {
-      const node = document.createElement("pre");
-      node.className = "card";
-      node.textContent = item;
+      const node = document.createElement("div");
+      node.className = "history-entry";
+      const text = document.createElement("pre");
+      text.textContent = item;
+      node.append(
+        text,
+        UtilityUI.iconButton("Copy calculation", "copy", () => copy(item)),
+      );
       return node;
     }),
   );

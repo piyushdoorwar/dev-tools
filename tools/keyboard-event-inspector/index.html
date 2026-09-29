@@ -4,44 +4,155 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Keyboard Event Inspector</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="../main.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="app-container">
       <header class="header">
-        <h1 class="app-title">Keyboard Event Inspector</h1>
-        <p class="app-subtitle">
-          Inspect keyboard events and compare the latest 30 presses.
-        </p>
+        <div class="header-left">
+          <h1 class="app-title">Keyboard Event Inspector</h1>
+          <p class="app-subtitle">
+            See each key, its physical code, modifiers, and repeat state.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button
+            type="button"
+            class="action-btn"
+            id="helpBtn"
+            aria-label="How to use this"
+            data-tooltip="How to use this"
+            data-modal-open="#helpModal"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <use href="#i-info"></use>
+            </svg>
+          </button>
+        </div>
       </header>
       <main>
-        <div
-          id="capture"
-          tabindex="0"
-          role="region"
-          aria-label="Keyboard capture area"
-        >
-          Click here or focus with Tab, then press a key. Tab and Escape remain
-          available for navigation.
+        <div class="workspace">
+          <section class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Keyboard input</h2>
+              <div class="action-group"></div>
+            </div>
+            <div class="panel-body">
+              <div
+                id="capture"
+                tabindex="0"
+                role="region"
+                aria-label="Keyboard capture area"
+              >
+                <span class="capture-label">FOCUS HERE, THEN PRESS A KEY</span
+                ><span id="key-display" class="key-display">⌨</span
+                ><span id="key-code" class="note"
+                  >Click or Tab into this area to start</span
+                >
+              </div>
+              <div id="modifiers" class="modifier-list">
+                <span class="modifier" data-modifier="Control">Control</span
+                ><span class="modifier" data-modifier="Alt">Alt</span
+                ><span class="modifier" data-modifier="Shift">Shift</span
+                ><span class="modifier" data-modifier="Meta">Meta</span
+                ><span class="modifier" data-modifier="CapsLock">CapsLock</span
+                ><span class="modifier" data-modifier="NumLock">NumLock</span>
+              </div>
+              <p class="note">
+                Tab and Escape remain available. Browser or OS shortcuts may not
+                reach this page.
+              </p>
+            </div>
+          </section>
+          <section class="panel output-panel event-output">
+            <div class="panel-header">
+              <h2 class="panel-title">Latest event · JSON</h2>
+              <div class="action-group">
+                <button
+                  type="button"
+                  class="action-btn"
+                  id="copy"
+                  aria-label="Copy output"
+                  data-tooltip="Copy output"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 24 24">
+                    <use href="#i-copy"></use>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <textarea
+                id="output"
+                class="editor"
+                aria-label="Latest event · JSON"
+                spellcheck="false"
+                readonly
+                placeholder="Your result appears here."
+              ></textarea>
+            </div>
+          </section>
         </div>
-        <p>
-          Events are captured only while this area is focused. Browser and OS
-          shortcuts may not reach the page. keyCode is deprecated; prefer key or
-          code.
-        </p>
-        <button type="button" class="btn" id="clear">Clear history</button
-        ><label class="field"
-          >Latest event<textarea
-            id="output"
-            spellcheck="false"
-            readonly
-          ></textarea></label
-        ><button type="button" class="btn" id="copy">Copy output</button>
-        <div id="history"></div>
-        <p id="error" role="status" aria-live="polite"></p>
+        <section class="panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Recent presses</h2>
+            <div class="action-group">
+              <button
+                type="button"
+                class="action-btn"
+                id="clear"
+                aria-label="Clear history"
+                data-tooltip="Clear history"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <use href="#i-trash"></use>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div
+              id="history"
+              class="history-list"
+              data-empty="Press a key in the capture area to start your history."
+            ></div>
+          </div>
+        </section>
+        <p id="error" class="notice error" role="status" aria-live="polite"></p>
       </main>
+      <div class="modal-overlay" id="helpModal" data-modal>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Using Keyboard Event Inspector</h3>
+            <button
+              type="button"
+              class="action-btn"
+              aria-label="Close"
+              data-tooltip="Close"
+              data-modal-close
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <use href="#i-close"></use>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Events are captured only while the keyboard input area has focus.
+              Press a key to see its logical key, physical code, location,
+              modifiers, repeat state and composition state. History keeps the
+              latest 30 keydown events.
+            </p>
+            <p>
+              Tab and Escape are not intercepted. OS and browser shortcuts may
+              never reach the page. The keyCode property is deprecated; use key
+              or code for new shortcuts.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="../main.js"></script>
     <script src="../utility-ui.js"></script>

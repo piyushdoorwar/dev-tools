@@ -4,69 +4,228 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Unicode / Character Inspector</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="../main.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="app-container">
       <header class="header">
-        <h1 class="app-title">Unicode / Character Inspector</h1>
-        <p class="app-subtitle">
-          Inspect code points, Unicode names and categories, encoding bytes, and
-          hidden characters.
-        </p>
+        <div class="header-left">
+          <h1 class="app-title">Unicode / Character Inspector</h1>
+          <p class="app-subtitle">
+            Reveal invisible characters, inspect encodings, and copy escaped
+            text.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button
+            type="button"
+            class="action-btn"
+            id="helpBtn"
+            aria-label="How to use this"
+            data-tooltip="How to use this"
+            data-modal-open="#helpModal"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <use href="#i-info"></use>
+            </svg>
+          </button>
+        </div>
       </header>
       <main>
-        <label class="field"
-          >Text<textarea id="input" spellcheck="false">Hello 👋​</textarea>
-        </label>
-        <p>
-          One row per code point, not per grapheme. UTF-16 bytes are shown
-          big-endian without a BOM. Lone surrogates have no valid UTF-8
-          encoding. Names and categories use bundled Unicode 17.0 data.
-        </p>
-        <p id="count" role="status"></p>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Character</th>
-                <th>Code point</th>
-                <th>Name / category</th>
-                <th>UTF-8 bytes</th>
-                <th>UTF-16 BE bytes</th>
-              </tr>
-            </thead>
-            <tbody id="results"></tbody>
-          </table>
+        <div class="workspace unicode-workspace">
+          <section class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Text to inspect</h2>
+              <div class="action-group">
+                <button
+                  type="button"
+                  class="action-btn"
+                  id="paste-input"
+                  aria-label="Paste text"
+                  data-tooltip="Paste text"
+                  data-paste="input"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 24 24">
+                    <use href="#i-paste"></use>
+                  </svg></button
+                ><button
+                  type="button"
+                  class="action-btn"
+                  id="clear-input"
+                  aria-label="Clear text"
+                  data-tooltip="Clear text"
+                  data-clear="input"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 24 24">
+                    <use href="#i-trash"></use>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <textarea
+                id="input"
+                class="editor"
+                aria-label="Text"
+                spellcheck="false"
+                placeholder="Paste text to inspect…"
+              >
+Hello 👋​</textarea
+              >
+              <p class="note">One row per code point · Unicode 17.0</p>
+            </div>
+          </section>
+          <div class="stack escape-stack">
+            <section class="panel output-panel">
+              <div class="panel-header">
+                <h2 class="panel-title">JavaScript · \u{…}</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="copy"
+                    aria-label="Copy output"
+                    data-tooltip="Copy output"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-copy"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <textarea
+                  id="output"
+                  class="editor"
+                  aria-label="JavaScript · \u{…}"
+                  spellcheck="false"
+                  readonly
+                  placeholder="Your result appears here."
+                ></textarea>
+              </div>
+            </section>
+            <section class="panel output-panel">
+              <div class="panel-header">
+                <h2 class="panel-title">HTML · &amp;#x…;</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="copy-html"
+                    aria-label="Copy HTML · &amp;#x…;"
+                    data-tooltip="Copy HTML · &amp;#x…;"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-copy"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <textarea
+                  id="html"
+                  class="editor"
+                  aria-label="HTML · &amp;#x…;"
+                  spellcheck="false"
+                  readonly
+                  placeholder="Your result appears here."
+                ></textarea>
+              </div>
+            </section>
+            <section class="panel output-panel">
+              <div class="panel-header">
+                <h2 class="panel-title">CSS · \hex</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="copy-css"
+                    aria-label="Copy CSS · \hex"
+                    data-tooltip="Copy CSS · \hex"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-copy"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <textarea
+                  id="css"
+                  class="editor"
+                  aria-label="CSS · \hex"
+                  spellcheck="false"
+                  readonly
+                  placeholder="Your result appears here."
+                ></textarea>
+              </div>
+            </section>
+          </div>
         </div>
-        <label class="field"
-          >JavaScript code-point escapes<textarea
-            id="output"
-            spellcheck="false"
-            readonly
-          ></textarea></label
-        ><button type="button" class="btn" id="copy">Copy output</button
-        ><label class="field"
-          >HTML hexadecimal entities<textarea
-            id="html"
-            spellcheck="false"
-            readonly
-          ></textarea></label
-        ><button type="button" class="btn" id="copy-html">
-          Copy HTML entities</button
-        ><label class="field"
-          >CSS escapes<textarea
-            id="css"
-            spellcheck="false"
-            readonly
-          ></textarea></label
-        ><button type="button" class="btn" id="copy-css">
-          Copy CSS escapes
-        </button>
-        <p id="error" role="status" aria-live="polite"></p>
+        <section class="panel table-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">Character details</h2>
+            <div class="action-group">
+              <span id="count" class="result-count" role="status"></span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Character</th>
+                    <th>Code point</th>
+                    <th>Name / category</th>
+                    <th>UTF-8 bytes</th>
+                    <th>UTF-16 BE bytes</th>
+                  </tr>
+                </thead>
+                <tbody id="results"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <p id="error" class="notice error" role="status" aria-live="polite"></p>
       </main>
+      <div class="modal-overlay" id="helpModal" data-modal>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Using Unicode / Character Inspector</h3>
+            <button
+              type="button"
+              class="action-btn"
+              aria-label="Close"
+              data-tooltip="Close"
+              data-modal-close
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <use href="#i-close"></use>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Each row is one Unicode code point, not one grapheme. A visible
+              character can comprise several code points. Hidden, control and
+              combining characters are flagged rather than displayed as blank
+              cells.
+            </p>
+            <p>
+              UTF-16 bytes are big-endian without a BOM. Lone surrogates cannot
+              be encoded as valid UTF-8. Names and categories come from bundled
+              Unicode 17.0 data, with a limit of 5,000 code points.
+            </p>
+            <p>
+              Copy text as JavaScript code-point escapes, HTML hexadecimal
+              entities or CSS escapes. HTML and CSS replace invalid scalar
+              values such as lone surrogates when interpreted.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="../main.js"></script>
     <script src="../utility-ui.js"></script>

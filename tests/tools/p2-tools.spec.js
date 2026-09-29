@@ -47,16 +47,19 @@ test("headers: Unicode round-trip, password colons, validation and curl quoting"
   await page.locator("#basic").click();
   await expect(page.locator("#error")).toContainText("colon");
   await expect(page.locator("#output")).toHaveValue("");
+  await page.getByRole("tab", {name:"Bearer",exact:true}).click();
   await page.locator("#token").fill("abc.def");
   await page.locator("#bearer").click();
   await expect(page.locator("#output")).toHaveValue(
     "Authorization: Bearer abc.def",
   );
+  await page.getByRole("tab", {name:"API key",exact:true}).click();
   await page.locator("#api-key").fill("a'b");
   await page.locator("#api").click();
   expect(await page.locator("#curl").inputValue()).toContain("'\\''");
   await page.locator("#copy").click();
   expect(await lastCopied(page)).toBe("X-API-Key: a'b");
+  await page.getByRole("tab", {name:"Basic",exact:true}).click();
   await page.locator("#decode-input").fill("Basic !!!");
   await page.locator("#decode").click();
   await expect(page.locator("#error")).not.toBeEmpty();

@@ -1,1 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#6739b7"/><text x="32" y="43" text-anchor="middle" fill="#ffd700" font-size="32" font-family="monospace">M</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#ffd700" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+  <circle
+    cx="50"
+    cy="50"
+    r="47"
+    fill="#1e1e1e"
+    stroke="url(#rim)"
+    stroke-width="3"
+  />
+  <g
+    fill="none"
+    stroke="#ffd700"
+    stroke-width="4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <rect x="25" y="19" width="50" height="63" rx="7" />
+    <path d="M35 31h30v13H35Z" stroke="#8b5cf6" />
+    <path d="M35 58h12m-6-6v12m14-6h10M35 72h12m8-3h10m-10 6h10" />
+  </g>
+</svg>

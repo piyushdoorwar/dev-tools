@@ -36,9 +36,10 @@ $("decode").onclick = () =>
     if (!match) throw Error("Enter a Basic header with valid Base64.");
     let decoded;
     try {
-      decoded = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(
-        Uint8Array.from(atob(match[1]), (c) => c.charCodeAt(0)),
-      );
+      decoded = new TextDecoder("utf-8", {
+        fatal: true,
+        ignoreBOM: true,
+      }).decode(Uint8Array.from(atob(match[1]), (c) => c.charCodeAt(0)));
     } catch {
       throw Error("Invalid Base64 or UTF-8 credentials.");
     }
@@ -70,3 +71,34 @@ $("url").oninput = () => {
 };
 
 $("copy-curl").onclick = () => copy(value("curl"));
+
+// Authentication views follow the shared hash contract and accessible tab navigation.
+const authTabs = [...document.querySelectorAll("[data-view]")];
+function setView(view, updateHash = true) {
+  if (!authTabs.some((tab) => tab.dataset.view === view)) view = "basic";
+  authTabs.forEach((tab) => {
+    const selected = tab.dataset.view === view;
+    tab.classList.toggle("active", selected);
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    $("auth-" + tab.dataset.view).hidden = !selected;
+  });
+  if (updateHash) DevToolsMain.writeHashState(view);
+}
+authTabs.forEach((tab, index) => {
+  tab.addEventListener("click", () => setView(tab.dataset.view));
+  tab.addEventListener("keydown", (event) => {
+    let next;
+    if (event.key === "ArrowRight") next = (index + 1) % authTabs.length;
+    else if (event.key === "ArrowLeft")
+      next = (index + authTabs.length - 1) % authTabs.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = authTabs.length - 1;
+    else return;
+    event.preventDefault();
+    setView(authTabs[next].dataset.view);
+    authTabs[next].focus();
+  });
+});
+setView(DevToolsMain.readHashState(), false);
+DevToolsMain.onHashState((view) => setView(view, false));

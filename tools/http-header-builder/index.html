@@ -4,106 +4,309 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HTTP Header Builder</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="../main.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="app-container">
       <header class="header">
-        <h1 class="app-title">HTTP Header Builder</h1>
-        <p class="app-subtitle">
-          Build Basic, Bearer, or API-key headers and shell-quoted curl snippets
-          locally.
-        </p>
+        <div class="header-left">
+          <h1 class="app-title">HTTP Header Builder</h1>
+          <p class="app-subtitle">
+            Create authentication headers and ready-to-copy curl commands.
+          </p>
+        </div>
+        <div class="header-actions">
+          <button
+            type="button"
+            class="action-btn"
+            id="helpBtn"
+            aria-label="How to use this"
+            data-tooltip="How to use this"
+            data-modal-open="#helpModal"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <use href="#i-info"></use>
+            </svg>
+          </button>
+        </div>
       </header>
       <main>
-        <section class="panel">
-          <h2>Basic authentication</h2>
-          <div class="grid">
-            <label class="field"
-              >Username<input
-                id="username"
-                type="text"
-                value=""
-                autocomplete="off"
-                spellcheck="false" /></label
-            ><label class="field"
-              >Password<input
-                id="password"
-                type="password"
-                value=""
-                autocomplete="off"
-                spellcheck="false"
-            /></label>
+        <div class="workspace">
+          <section class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title">Authentication</h2>
+              <div class="action-group"></div>
+            </div>
+            <div class="panel-body">
+              <div
+                class="mode-switch"
+                role="tablist"
+                aria-label="Authentication type"
+              >
+                <button
+                  class="mode-btn active"
+                  id="tab-basic"
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  aria-controls="auth-basic"
+                  data-view="basic"
+                >
+                  Basic</button
+                ><button
+                  class="mode-btn"
+                  id="tab-bearer"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="auth-bearer"
+                  data-view="bearer"
+                >
+                  Bearer</button
+                ><button
+                  class="mode-btn"
+                  id="tab-api"
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  aria-controls="auth-api"
+                  data-view="api"
+                >
+                  API key
+                </button>
+              </div>
+              <div id="auth-basic" role="tabpanel" aria-labelledby="tab-basic">
+                <div class="grid">
+                  <label class="field" for="username"
+                    ><span class="field-label">Username</span
+                    ><input
+                      id="username"
+                      type="text"
+                      value=""
+                      placeholder="username"
+                      autocomplete="off"
+                      spellcheck="false" /></label
+                  ><label class="field" for="password"
+                    ><span class="field-label">Password</span
+                    ><input
+                      id="password"
+                      type="password"
+                      value=""
+                      placeholder="password"
+                      autocomplete="off"
+                      spellcheck="false"
+                  /></label>
+                </div>
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    id="basic"
+                  >
+                    Build Basic header
+                  </button>
+                </div>
+                <div class="section-divider"></div>
+                <label class="field-label" for="decode-input"
+                  >Decode an existing header</label
+                ><textarea
+                  id="decode-input"
+                  class="editor short"
+                  aria-label="Existing Basic header"
+                  spellcheck="false"
+                  placeholder="Authorization: Basic …"
+                ></textarea>
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    id="decode"
+                  >
+                    Decode header
+                  </button>
+                </div>
+                <p class="note">
+                  UTF-8 encoding · Use HTTPS. Base64 is not encryption.
+                </p>
+              </div>
+              <div
+                id="auth-bearer"
+                role="tabpanel"
+                aria-labelledby="tab-bearer"
+                hidden
+              >
+                <label class="field" for="token"
+                  ><span class="field-label">Bearer token</span
+                  ><input
+                    id="token"
+                    type="password"
+                    value=""
+                    placeholder="Paste your token"
+                    autocomplete="off"
+                    spellcheck="false"
+                /></label>
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    id="bearer"
+                  >
+                    Build Bearer header
+                  </button>
+                </div>
+                <p class="note">
+                  The token stays in this page. Nothing is sent to the request
+                  URL.
+                </p>
+              </div>
+              <div
+                id="auth-api"
+                role="tabpanel"
+                aria-labelledby="tab-api"
+                hidden
+              >
+                <label class="field" for="header-name"
+                  ><span class="field-label">Header name</span
+                  ><input
+                    id="header-name"
+                    type="text"
+                    value="X-API-Key"
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false" /></label
+                ><label class="field" for="api-key"
+                  ><span class="field-label">API key</span
+                  ><input
+                    id="api-key"
+                    type="password"
+                    value=""
+                    placeholder="Paste your API key"
+                    autocomplete="off"
+                    spellcheck="false"
+                /></label>
+                <div class="form-actions">
+                  <button type="button" class="btn btn-primary btn-sm" id="api">
+                    Build API-key header
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+          <div class="stack">
+            <section class="panel">
+              <div class="panel-header">
+                <h2 class="panel-title">Request</h2>
+                <div class="action-group"></div>
+              </div>
+              <div class="panel-body">
+                <label class="field" for="url"
+                  ><span class="field-label">Request URL</span
+                  ><input
+                    id="url"
+                    type="text"
+                    value="https://example.com/api"
+                    placeholder=""
+                    autocomplete="off"
+                    spellcheck="false"
+                /></label>
+              </div>
+            </section>
+            <section class="panel output-panel">
+              <div class="panel-header">
+                <h2 class="panel-title">HTTP header</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="copy"
+                    aria-label="Copy output"
+                    data-tooltip="Copy output"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-copy"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <textarea
+                  id="output"
+                  class="editor"
+                  aria-label="HTTP header"
+                  spellcheck="false"
+                  readonly
+                  placeholder="Your result appears here."
+                ></textarea>
+              </div>
+            </section>
+            <section class="panel output-panel">
+              <div class="panel-header">
+                <h2 class="panel-title">curl · POSIX shell</h2>
+                <div class="action-group">
+                  <button
+                    type="button"
+                    class="action-btn"
+                    id="copy-curl"
+                    aria-label="Copy curl · POSIX shell"
+                    data-tooltip="Copy curl · POSIX shell"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24">
+                      <use href="#i-copy"></use>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <textarea
+                  id="curl"
+                  class="editor"
+                  aria-label="curl · POSIX shell"
+                  spellcheck="false"
+                  readonly
+                  placeholder="Your result appears here."
+                ></textarea>
+              </div>
+            </section>
           </div>
-          <button type="button" class="btn" id="basic">
-            Build Basic header</button
-          ><label class="field"
-            >Existing Basic header<textarea
-              id="decode-input"
-              spellcheck="false"
-            ></textarea></label
-          ><button type="button" class="btn" id="decode">
-            Decode Basic header
-          </button>
-          <p>
-            Basic is Base64, not encryption. Use HTTPS. Encoding is UTF-8; the
-            server must support it. Credentials stay in this page.
-          </p>
-        </section>
-        <section class="panel grid">
-          <label class="field"
-            >Bearer token<input
-              id="token"
-              type="password"
-              value=""
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><button type="button" class="btn" id="bearer">
-            Build Bearer header</button
-          ><label class="field"
-            >API-key header name<input
-              id="header-name"
-              type="text"
-              value="X-API-Key"
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><label class="field"
-            >API key<input
-              id="api-key"
-              type="password"
-              value=""
-              autocomplete="off"
-              spellcheck="false" /></label
-          ><button type="button" class="btn" id="api">
-            Build API-key header
-          </button>
-        </section>
-        <label class="field"
-          >Request URL<input
-            id="url"
-            type="text"
-            value="https://example.com/api"
-            autocomplete="off"
-            spellcheck="false" /></label
-        ><label class="field"
-          >Output<textarea
-            id="output"
-            spellcheck="false"
-            readonly
-          ></textarea></label
-        ><button type="button" class="btn" id="copy">Copy output</button
-        ><label class="field"
-          >curl (POSIX shell)<textarea
-            id="curl"
-            spellcheck="false"
-            readonly
-          ></textarea>
-        </label>
-        <button type="button" class="btn" id="copy-curl">Copy curl</button>
-        <p id="error" role="status" aria-live="polite"></p>
+        </div>
+        <p id="error" class="notice error" role="status" aria-live="polite"></p>
       </main>
+      <div class="modal-overlay" id="helpModal" data-modal>
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Using HTTP Header Builder</h3>
+            <button
+              type="button"
+              class="action-btn"
+              aria-label="Close"
+              data-tooltip="Close"
+              data-modal-close
+            >
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <use href="#i-close"></use>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Choose Basic, Bearer or API key, fill in the values, then build
+              the header. Copy actions sit at the right of each output panel.
+            </p>
+            <p>
+              Basic uses UTF-8 Base64. The server must support UTF-8
+              credentials; a username cannot contain a colon. Decoding splits at
+              the first colon so passwords can contain additional colons.
+            </p>
+            <p>
+              Basic is not encryption. Use HTTPS. Credentials are neither saved
+              nor sent by this tool. The curl command quotes values for a POSIX
+              shell.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
     <script src="../main.js"></script>
     <script src="../utility-ui.js"></script>

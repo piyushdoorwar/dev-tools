@@ -1,1 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#6739b7"/><text x="32" y="43" text-anchor="middle" fill="#ffd700" font-size="32" font-family="monospace">M</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#ffd700" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+  <circle
+    cx="50"
+    cy="50"
+    r="47"
+    fill="#1e1e1e"
+    stroke="url(#rim)"
+    stroke-width="3"
+  />
+  <g
+    fill="none"
+    stroke="#ffd700"
+    stroke-width="4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M29 20h28l16 17v42H29Z" />
+    <path d="M56 20v18h17M39 51h23M39 61h17" />
+    <circle cx="70" cy="71" r="12" fill="#292037" stroke="#8b5cf6" />
+    <path d="m79 80 7 7" stroke="#8b5cf6" />
+  </g>
+</svg>
