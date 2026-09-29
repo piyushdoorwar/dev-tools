@@ -1,28 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
-    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#ffd700" />
-      <stop offset="1" stop-color="#8b5cf6" />
+    <linearGradient id="metaTagRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700">
+        <animate attributeName="stop-color" values="#FFD700;#8B5CF6;#FFD700" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#8B5CF6">
+        <animate attributeName="stop-color" values="#8B5CF6;#FFD700;#8B5CF6" dur="3s" repeatCount="indefinite" />
+      </stop>
     </linearGradient>
   </defs>
-  <circle
-    cx="50"
-    cy="50"
-    r="47"
-    fill="#1e1e1e"
-    stroke="url(#rim)"
-    stroke-width="3"
-  />
-  <g
-    fill="none"
-    stroke="#ffd700"
-    stroke-width="4"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <rect x="23" y="26" width="54" height="48" rx="6" />
-    <path d="M23 42h54" />
-    <circle cx="32" cy="34" r="2" fill="#ffd700" stroke="none" />
-    <path d="m34 55-6 6 6 6m32-12 6 6-6 6m-20 1 8-14" />
+
+  <circle cx="50" cy="50" r="47" fill="#1e1e1e" stroke="url(#metaTagRing)" stroke-width="3" />
+
+  <!-- A link card: image on top, headline and domain below -->
+  <path d="M24 28h52v20H24z" fill="#8B5CF6" />
+  <rect x="21" y="25" width="58" height="50" rx="8" fill="none" stroke="#FFD700" stroke-width="6" />
+  <circle cx="64" cy="37" r="4" fill="#FFD700" />
+  <g fill="none" stroke="#FFD700" stroke-width="6" stroke-linecap="round">
+    <line x1="32" y1="58" x2="68" y2="58" />
+    <line x1="32" y1="67" x2="52" y2="67">
+      <animate attributeName="opacity" values="1;0.45;1" dur="2.4s" repeatCount="indefinite" />
+    </line>
   </g>
 </svg>

@@ -1,28 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
-    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#ffd700" />
-      <stop offset="1" stop-color="#8b5cf6" />
+    <linearGradient id="mimeRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700">
+        <animate attributeName="stop-color" values="#FFD700;#8B5CF6;#FFD700" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#8B5CF6">
+        <animate attributeName="stop-color" values="#8B5CF6;#FFD700;#8B5CF6" dur="3s" repeatCount="indefinite" />
+      </stop>
     </linearGradient>
   </defs>
-  <circle
-    cx="50"
-    cy="50"
-    r="47"
-    fill="#1e1e1e"
-    stroke="url(#rim)"
-    stroke-width="3"
-  />
-  <g
-    fill="none"
-    stroke="#ffd700"
-    stroke-width="4"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M29 20h28l16 17v42H29Z" />
-    <path d="M56 20v18h17M39 51h23M39 61h17" />
-    <circle cx="70" cy="71" r="12" fill="#292037" stroke="#8b5cf6" />
-    <path d="m79 80 7 7" stroke="#8b5cf6" />
-  </g>
+
+  <circle cx="50" cy="50" r="47" fill="#1e1e1e" stroke="url(#mimeRing)" stroke-width="3" />
+
+  <!-- A file with a folded corner: the thing a MIME type describes. -->
+  <path d="M30 20H56L72 36V80H30Z" fill="none" stroke="#FFD700" stroke-width="6" stroke-linejoin="round" />
+  <path d="M55 21V37H71" fill="none" stroke="#FFD700" stroke-width="5" stroke-linejoin="round" />
+
+  <!-- The type/subtype slash. -->
+  <line x1="58" y1="46" x2="45" y2="72" stroke="#8B5CF6" stroke-width="7" stroke-linecap="round">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2.4s" repeatCount="indefinite" />
+  </line>
 </svg>

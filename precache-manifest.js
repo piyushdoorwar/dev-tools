@@ -234,7 +234,5 @@ const PRECACHE_ASSETS = [
   "./tools/user-agent-parser/favicon.svg",
   "./tools/user-agent-parser/index.html",
   "./tools/user-agent-parser/script.js",
-  "./tools/user-agent-parser/style.css",
-  "./tools/utility-layout.css",
-  "./tools/utility-ui.js"
+  "./tools/user-agent-parser/style.css"
 ];

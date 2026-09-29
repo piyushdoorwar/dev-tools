@@ -1,92 +1,4 @@
 globalThis.DEV_TOOLS_CATALOG = Object.freeze([
-{
-  "id": "http-header-builder",
-  "name": "HTTP Header Builder",
-  "route": "http-header-builder",
-  "description": "Build Basic, Bearer, or API-key headers and shell-quoted curl snippets locally.",
-  "capabilities": [
-    "UTF-8 Basic authentication encoding and decoding",
-    "Bearer and API-key headers",
-    "POSIX shell-quoted curl snippets"
-  ]
-},
-{
-  "id": "meta-tag-generator",
-  "name": "Open Graph / Meta Tag Generator",
-  "route": "meta-tag-generator",
-  "description": "Generate SEO, Open Graph, and Twitter Card tags with an illustrative link preview.",
-  "capabilities": [
-    "SEO, Open Graph and Twitter Card markup",
-    "Escaped attribute output and HTTP URL validation",
-    "Live illustrative social link preview"
-  ]
-},
-{
-  "id": "keyboard-event-inspector",
-  "name": "Keyboard Event Inspector",
-  "route": "keyboard-event-inspector",
-  "description": "Inspect keyboard key, code, modifiers, location and repeat state, and compare the latest 30 presses locally.",
-  "capabilities": [
-    "Key, code, legacy keyCode and location",
-    "Modifiers, repeat and composition state",
-    "Recent 30 keydown events with copy and clear"
-  ]
-},
-{
-  "id": "svg-placeholder-generator",
-  "name": "SVG Placeholder Generator",
-  "route": "svg-placeholder-generator",
-  "description": "Create a placeholder as SVG markup, a data URI, or a downloadable image.",
-  "capabilities": [
-    "Dimensions, colours and text customization",
-    "SVG markup and data URI output",
-    "Image preview and SVG download"
-  ]
-},
-{
-  "id": "math-evaluator",
-  "name": "Math / Expression Evaluator",
-  "route": "math-evaluator",
-  "description": "Calculate expressions, exact BigInt arithmetic, and percentages with a session history.",
-  "capabilities": [
-    "Arithmetic, functions, constants and hex/binary literals",
-    "Bounded exact BigInt arithmetic without JavaScript execution",
-    "Percentage calculations and session history"
-  ]
-},
-{
-  "id": "mime-type-lookup",
-  "name": "MIME Type Lookup",
-  "route": "mime-type-lookup",
-  "description": "Search common file extensions, filenames, and MIME types in both directions, with copyable Content-Type headers.",
-  "capabilities": [
-    "Extension, filename and MIME search",
-    "Copyable Content-Type headers",
-    "Common media-type notes and pitfalls"
-  ]
-},
-{
-  "id": "git-cheatsheet",
-  "name": "Git Cheatsheet",
-  "route": "git-cheatsheet",
-  "description": "Search common Git tasks and copy commands with context and recovery guidance.",
-  "capabilities": [
-    "Searchable Git task reference",
-    "Copyable commands with history-rewrite and data-loss notes",
-    "Rebase, stash, cherry-pick and detached HEAD recovery"
-  ]
-},
-{
-  "id": "unicode-inspector",
-  "name": "Unicode / Character Inspector",
-  "route": "unicode-inspector",
-  "description": "Inspect code points, Unicode names and categories, encoding bytes, and hidden characters.",
-  "capabilities": [
-    "Unicode 17 names, categories and hidden characters",
-    "Code points, UTF-8 and UTF-16 bytes",
-    "JavaScript, HTML and CSS escapes"
-  ]
-},
   {
     id: "base-converter",
     name: "Base Converter",
@@ -179,6 +91,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["Multiple compression formats", "Before-and-after size comparison", "Local file processing"],
   },
   {
+    id: "git-cheatsheet",
+    name: "Git Cheatsheet",
+    route: "git-cheatsheet",
+    description: "Find Git commands by task, grouped by category, with history-rewrite and data-loss badges, fill-in placeholders and one-click copy.",
+    capabilities: ["Searchable Git tasks in 12 categories", "Rewrites-history and discards-work badges", "Fill in branch, commit, file and tag placeholders before copying"],
+  },
+  {
     id: "hash-generator",
     name: "Hash Generator",
     route: "hash-generator",
@@ -193,11 +112,25 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["Live HTML, CSS, and JavaScript editing", "Instant isolated preview", "Downloadable result"],
   },
   {
+    id: "http-header-builder",
+    name: "HTTP Header Builder",
+    route: "http-header-builder",
+    description: "Build Basic, Bearer, or API-key auth headers live, decode existing ones, and copy curl, fetch, or HTTPie snippets. Everything stays in your browser.",
+    capabilities: ["UTF-8 Basic encoding and header decoding", "Bearer (JWT-aware) and API-key header or query", "curl, fetch and HTTPie snippets"],
+  },
+  {
     id: "http-status-codes",
     name: "HTTP Status Codes",
     route: "http-status-codes",
     description: "Search every HTTP status code with plain-English meanings, when-to-use guidance, common mistakes, and the RFC that defines it.",
     capabilities: ["Searchable 1xx-5xx reference", "When to use and what to avoid", "RFC references and related codes"],
+  },
+  {
+    id: "id-generator",
+    name: "ID Generator",
+    route: "id-generator",
+    description: "Generate and inspect developer identifiers including UUID variants and ULIDs directly in your browser.",
+    capabilities: ["Multiple UUID versions", "ULID generation", "Identifier decoding and inspection"],
   },
   {
     id: "image-toolkit",
@@ -211,13 +144,6 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
       "Favicon and app-icon pack with manifest",
       "SVG optimization with size report",
     ],
-  },
-  {
-    id: "id-generator",
-    name: "ID Generator",
-    route: "id-generator",
-    description: "Generate and inspect developer identifiers including UUID variants and ULIDs directly in your browser.",
-    capabilities: ["Multiple UUID versions", "ULID generation", "Identifier decoding and inspection"],
   },
   {
     id: "json-diff",
@@ -261,6 +187,13 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["JSON, YAML, and TOML in any direction", "YAML/JSON/TOML formatter with multi-document YAML support", "Validation with line and column errors"],
   },
   {
+    id: "jwt-debugger",
+    name: "JWT Debugger",
+    route: "jwt-debugger",
+    description: "Decode, inspect, edit, and verify JSON Web Tokens with readable header, payload, signature, and timestamp details.",
+    capabilities: ["JWT header and payload decoding", "Signature verification tools", "Claim and timestamp inspection"],
+  },
+  {
     id: "key-pair-generator",
     name: "Key Pair Generator",
     route: "key-pair-generator",
@@ -268,11 +201,11 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["RSA 2048–4096, ECDSA P-256/P-384/P-521, Ed25519 and X25519 keys", "PKCS#8 and SPKI PEM, public and private JWK with thumbprint kid, OpenSSH public key", "SSH and SPKI SHA-256 fingerprints, with copy and download for every format"],
   },
   {
-    id: "jwt-debugger",
-    name: "JWT Debugger",
-    route: "jwt-debugger",
-    description: "Decode, inspect, edit, and verify JSON Web Tokens with readable header, payload, signature, and timestamp details.",
-    capabilities: ["JWT header and payload decoding", "Signature verification tools", "Claim and timestamp inspection"],
+    id: "keyboard-event-inspector",
+    name: "Keyboard Event Inspector",
+    route: "keyboard-event-inspector",
+    description: "Inspect key, code, location and modifiers live as you type, and turn any press into a shortcut string and JS condition.",
+    capabilities: ["Key, code, named location, repeat and legacy keyCode", "Live modifier chips incl. AltGr, released on keyup", "Shortcut + JS condition copy and 30-event history"],
   },
   {
     id: "lorem-ipsum-generator",
@@ -290,6 +223,27 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     route: "markdown-editor",
     description: "Write Markdown with synchronized editing, safe live preview, local file opening, and export-friendly controls.",
     capabilities: ["Safe live Markdown preview", "Local file opening", "Synchronized editor experience"],
+  },
+  {
+    id: "math-evaluator",
+    name: "Math / Expression Evaluator",
+    route: "math-evaluator",
+    description: "Evaluate expressions live with exact BigInt, degree/radian trig and clean float display, plus percentage calculators and a reusable session history.",
+    capabilities: ["Live expression results with hex, octal and binary views", "Bounded BigInt, factorial and trig (DEG/RAD) without JavaScript execution", "Live percentage calculators and click-to-reuse history"],
+  },
+  {
+    id: "mime-type-lookup",
+    name: "MIME Type Lookup",
+    route: "mime-type-lookup",
+    description: "Look up MIME types by extension, filename or Content-Type, with ranked results and copyable header, nginx and Apache lines.",
+    capabilities: ["Ranked extension, filename and media-type search", "Copyable Content-Type, nginx, Apache and HTML lines", "Content-Type pitfalls and linkable types"],
+  },
+  {
+    id: "meta-tag-generator",
+    name: "Open Graph / Meta Tag Generator",
+    route: "meta-tag-generator",
+    description: "Generate SEO, Open Graph and Twitter/X card tags with live, illustrative previews for Google, Facebook, X, LinkedIn and Slack.",
+    capabilities: ["SEO, Open Graph and Twitter/X tags, escaped and grouped", "Google, Facebook, X, LinkedIn and Slack link previews", "Inline URL checks, length counters and HTML import"],
   },
   {
     id: "otp-generator",
@@ -320,13 +274,6 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["Live regular-expression matches", "Flag and capture-group controls", "Replacement output templates"],
   },
   {
-    id: "sql-formatter",
-    name: "SQL Formatter",
-    route: "sql-formatter",
-    description: "Format and beautify SQL queries locally with readable indentation and practical editor controls.",
-    capabilities: ["SQL formatting and beautification", "Readable indentation", "Local query processing"],
-  },
-  {
     id: "string-escaper",
     name: "Slug Generator / String Escaper",
     route: "string-escaper",
@@ -334,11 +281,25 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["URL slugs with transliteration and length limits", "JSON, SQL, shell, regex, and HTML attribute escaping", "Unescaping literals back to plain text"],
   },
   {
+    id: "sql-formatter",
+    name: "SQL Formatter",
+    route: "sql-formatter",
+    description: "Format and beautify SQL queries locally with readable indentation and practical editor controls.",
+    capabilities: ["SQL formatting and beautification", "Readable indentation", "Local query processing"],
+  },
+  {
     id: "subnet-calculator",
     name: "Subnet Calculator",
     route: "subnet-calculator",
     description: "Calculate IPv4 and IPv6 subnets from CIDR notation: network, broadcast, netmask, usable host range, and address type, then split blocks and convert ranges to CIDR.",
     capabilities: ["IPv4 and IPv6 CIDR and netmask breakdown", "Subnet splitting by prefix or host count", "Address containment and range-to-CIDR conversion"],
+  },
+  {
+    id: "svg-placeholder-generator",
+    name: "SVG Placeholder Generator",
+    route: "svg-placeholder-generator",
+    description: "Create a sized, coloured placeholder image and copy it as SVG, a data URI, an <img> tag or CSS, or download it as SVG or PNG.",
+    capabilities: ["Size presets, auto-scaling text, fonts, colours and corner radius", "SVG, data URI, Base64, <img> and CSS output", "Live preview with SVG and PNG download"],
   },
   {
     id: "text-case-converter",
@@ -357,13 +318,6 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["List conversion: prefix/suffix, quoting, joining, transpose and truncation", "Trim, collapse, and drop empty lines", "Sort, reverse, shuffle, and deduplicate", "Upper, lower, title, and sentence case"],
   },
   {
-    id: "timestamp-converter",
-    name: "Timestamp Converter",
-    route: "timestamp-converter",
-    description: "Convert Unix timestamps to ISO 8601, human-readable and relative time across time zones, and back again, entirely in your browser.",
-    capabilities: ["Unix seconds, milliseconds and microseconds", "ISO 8601, RFC 1123 and relative time", "Time zone and DST aware conversion"],
-  },
-  {
     id: "text-diff",
     name: "Text Diff",
     route: "text-diff",
@@ -378,14 +332,18 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     capabilities: ["AES-256-GCM with a password or a raw 256-bit key", "Compact or JSON output in Base64 or Base64url, detected on decrypt", "Envelope breakdown in hex, plus Python and Node.js code to decrypt it"],
   },
   {
-    id: "word-counter",
-    name: "Word & Character Counter",
-    route: "word-counter",
-    toolPath: "text-utilities",
-    endpoint: "#count",
-    favicon: "favicon-word-counter.svg",
-    description: "Count words, characters, sentences, paragraphs, and estimated LLM tokens, with reading time and word frequency.",
-    capabilities: ["Word, character, line, and sentence counts", "GPT-style token estimate", "Reading time and word frequency"],
+    id: "timestamp-converter",
+    name: "Timestamp Converter",
+    route: "timestamp-converter",
+    description: "Convert Unix timestamps to ISO 8601, human-readable and relative time across time zones, and back again, entirely in your browser.",
+    capabilities: ["Unix seconds, milliseconds and microseconds", "ISO 8601, RFC 1123 and relative time", "Time zone and DST aware conversion"],
+  },
+  {
+    id: "unicode-inspector",
+    name: "Unicode / Character Inspector",
+    route: "unicode-inspector",
+    description: "Find hidden and zero-width characters, inspect code points, Unicode names and bytes, and escape text for code.",
+    capabilities: ["Hidden and zero-width character finder with one-click cleanup", "Unicode 17 names, categories, UTF-8 and UTF-16 bytes", "JS, HTML, CSS, Python and URL escapes"],
   },
   {
     id: "unit-converter",
@@ -408,7 +366,23 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     description: "Parse any User-Agent string into browser, engine, OS, device and CPU, flag bots and crawlers, and see this browser's Client Hints. Handles Edge, Opera, Samsung, iOS browsers, in-app browsers and frozen UA values.",
     capabilities: ["Browser, engine, OS version, device type, model and CPU from a User-Agent string", "Search and AI crawler, HTTP client and headless browser detection", "This browser's User-Agent Client Hints, and the parsed result as JSON"],
   },
-].map((tool) => Object.freeze({
+  {
+    id: "word-counter",
+    name: "Word & Character Counter",
+    route: "word-counter",
+    toolPath: "text-utilities",
+    endpoint: "#count",
+    favicon: "favicon-word-counter.svg",
+    description: "Count words, characters, sentences, paragraphs, and estimated LLM tokens, with reading time and word frequency.",
+    capabilities: ["Word, character, line, and sentence counts", "GPT-style token estimate", "Reading time and word frequency"],
+  },
+]
+// The dashboard, sitemap and llms.txt all list tools in catalog order, so keep
+// it alphabetical regardless of where an entry is added. Symbols (".env", "⇄",
+// "/") are ignored so "JSON ⇄ Toon" files after "JSON Formatter".
+.map((tool) => [tool, tool.name.replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim()])
+.sort(([, a], [, b]) => a.localeCompare(b, "en", { sensitivity: "base", numeric: true }))
+.map(([tool]) => Object.freeze({
   ...tool,
   toolPath: tool.toolPath || tool.id,
   endpoint: tool.endpoint || "",

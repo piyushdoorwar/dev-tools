@@ -111,3 +111,16 @@ test('on desktop, opening a tool leaves the sidebar as it was', async ({ page })
   await expect(page.locator('#sidebar')).toBeVisible();
   await expect(page.locator('#app')).not.toHaveClass(/sidebar-collapsed/);
 });
+
+test('the sidebar lists every tool alphabetically, wherever it was added to the catalog', async ({ page }) => {
+  const { errors } = await openDashboard(page);
+  const names = await page.locator('#toolList .menu__item').evaluateAll((items) =>
+    items.map((item) => item.getAttribute('data-tool-id') && (item.querySelector('.menu__name, .menu__label')?.textContent || item.textContent).trim()));
+  expect(names.length).toBeGreaterThan(40);
+  // Symbols are ignored, so ".env ⇄ JSON" files under E and "JSON ⇄ Toon" after "JSON Formatter".
+  const key = (name) => name.replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim();
+  const sorted = [...names].sort((a, b) => key(a).localeCompare(key(b), 'en', { sensitivity: 'base', numeric: true }));
+  expect(names).toEqual(sorted);
+  expect(names.indexOf('Git Cheatsheet')).toBeGreaterThan(names.indexOf('File Compressor'));
+  expect(errors).toEqual([]);
+});

@@ -501,10 +501,17 @@ function getToolHash() {
 // Update URL without triggering navigation
 function updateURL(route, replaceState = false, hash = "") {
   const newURL = `${route ? `${APP_ROOT_PATH}${route}/` : APP_ROOT_PATH}${route ? hash : ""}`;
-  if (replaceState) {
-    window.history.replaceState(null, "", newURL);
-  } else {
-    window.history.pushState(null, "", newURL);
+  // Opened from disk (file://), Chrome refuses to move the address bar to
+  // another path and throws, which aborted opening the tool. The clean routes
+  // do not exist on disk anyway, so leave the address bar alone there.
+  try {
+    if (replaceState) {
+      window.history.replaceState(null, "", newURL);
+    } else {
+      window.history.pushState(null, "", newURL);
+    }
+  } catch (error) {
+    if (window.location.protocol !== "file:") throw error;
   }
 }
 

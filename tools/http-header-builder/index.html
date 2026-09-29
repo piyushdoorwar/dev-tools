@@ -1,315 +1,253 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTTP Header Builder</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="stylesheet" href="../main.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
     <div class="app-container">
-      <header class="header">
-        <div class="header-left">
-          <h1 class="app-title">HTTP Header Builder</h1>
-          <p class="app-subtitle">
-            Create authentication headers and ready-to-copy curl commands.
-          </p>
-        </div>
-        <div class="header-actions">
-          <button
-            type="button"
-            class="action-btn"
-            id="helpBtn"
-            aria-label="How to use this"
-            data-tooltip="How to use this"
-            data-modal-open="#helpModal"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <use href="#i-info"></use>
-            </svg>
-          </button>
-        </div>
-      </header>
-      <main>
-        <div class="workspace">
-          <section class="panel">
-            <div class="panel-header">
-              <h2 class="panel-title">Authentication</h2>
-              <div class="action-group"></div>
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">HTTP Header Builder</h1>
             </div>
-            <div class="panel-body">
-              <div
-                class="mode-switch"
-                role="tablist"
-                aria-label="Authentication type"
-              >
-                <button
-                  class="mode-btn active"
-                  id="tab-basic"
-                  type="button"
-                  role="tab"
-                  aria-selected="true"
-                  aria-controls="auth-basic"
-                  data-view="basic"
-                >
-                  Basic</button
-                ><button
-                  class="mode-btn"
-                  id="tab-bearer"
-                  type="button"
-                  role="tab"
-                  aria-selected="false"
-                  aria-controls="auth-bearer"
-                  data-view="bearer"
-                >
-                  Bearer</button
-                ><button
-                  class="mode-btn"
-                  id="tab-api"
-                  type="button"
-                  role="tab"
-                  aria-selected="false"
-                  aria-controls="auth-api"
-                  data-view="api"
-                >
-                  API key
-                </button>
-              </div>
-              <div id="auth-basic" role="tabpanel" aria-labelledby="tab-basic">
-                <div class="grid">
-                  <label class="field" for="username"
-                    ><span class="field-label">Username</span
-                    ><input
-                      id="username"
-                      type="text"
-                      value=""
-                      placeholder="username"
-                      autocomplete="off"
-                      spellcheck="false" /></label
-                  ><label class="field" for="password"
-                    ><span class="field-label">Password</span
-                    ><input
-                      id="password"
-                      type="password"
-                      value=""
-                      placeholder="password"
-                      autocomplete="off"
-                      spellcheck="false"
-                  /></label>
+            <div class="header-right">
+                <div class="mode-switcher" role="tablist" aria-label="Authentication scheme">
+                    <button class="mode-btn active" type="button" role="tab" id="tab-basic" aria-selected="true" aria-controls="fields-basic" data-mode="basic">Basic</button>
+                    <button class="mode-btn" type="button" role="tab" id="tab-bearer" aria-selected="false" aria-controls="fields-bearer" data-mode="bearer" tabindex="-1">Bearer</button>
+                    <button class="mode-btn" type="button" role="tab" id="tab-api-key" aria-selected="false" aria-controls="fields-api-key" data-mode="api-key" tabindex="-1">API key</button>
                 </div>
-                <div class="form-actions">
-                  <button
-                    type="button"
-                    class="btn btn-primary btn-sm"
-                    id="basic"
-                  >
-                    Build Basic header
-                  </button>
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="How this works" aria-label="How this works">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
                 </div>
-                <div class="section-divider"></div>
-                <label class="field-label" for="decode-input"
-                  >Decode an existing header</label
-                ><textarea
-                  id="decode-input"
-                  class="editor short"
-                  aria-label="Existing Basic header"
-                  spellcheck="false"
-                  placeholder="Authorization: Basic …"
-                ></textarea>
-                <div class="form-actions">
-                  <button
-                    type="button"
-                    class="btn btn-secondary btn-sm"
-                    id="decode"
-                  >
-                    Decode header
-                  </button>
-                </div>
-                <p class="note">
-                  UTF-8 encoding · Use HTTPS. Base64 is not encryption.
-                </p>
-              </div>
-              <div
-                id="auth-bearer"
-                role="tabpanel"
-                aria-labelledby="tab-bearer"
-                hidden
-              >
-                <label class="field" for="token"
-                  ><span class="field-label">Bearer token</span
-                  ><input
-                    id="token"
-                    type="password"
-                    value=""
-                    placeholder="Paste your token"
-                    autocomplete="off"
-                    spellcheck="false"
-                /></label>
-                <div class="form-actions">
-                  <button
-                    type="button"
-                    class="btn btn-primary btn-sm"
-                    id="bearer"
-                  >
-                    Build Bearer header
-                  </button>
-                </div>
-                <p class="note">
-                  The token stays in this page. Nothing is sent to the request
-                  URL.
-                </p>
-              </div>
-              <div
-                id="auth-api"
-                role="tabpanel"
-                aria-labelledby="tab-api"
-                hidden
-              >
-                <label class="field" for="header-name"
-                  ><span class="field-label">Header name</span
-                  ><input
-                    id="header-name"
-                    type="text"
-                    value="X-API-Key"
-                    placeholder=""
-                    autocomplete="off"
-                    spellcheck="false" /></label
-                ><label class="field" for="api-key"
-                  ><span class="field-label">API key</span
-                  ><input
-                    id="api-key"
-                    type="password"
-                    value=""
-                    placeholder="Paste your API key"
-                    autocomplete="off"
-                    spellcheck="false"
-                /></label>
-                <div class="form-actions">
-                  <button type="button" class="btn btn-primary btn-sm" id="api">
-                    Build API-key header
-                  </button>
-                </div>
-              </div>
             </div>
-          </section>
-          <div class="stack">
-            <section class="panel">
-              <div class="panel-header">
-                <h2 class="panel-title">Request</h2>
-                <div class="action-group"></div>
-              </div>
-              <div class="panel-body">
-                <label class="field" for="url"
-                  ><span class="field-label">Request URL</span
-                  ><input
-                    id="url"
-                    type="text"
-                    value="https://example.com/api"
-                    placeholder=""
-                    autocomplete="off"
-                    spellcheck="false"
-                /></label>
-              </div>
-            </section>
-            <section class="panel output-panel">
-              <div class="panel-header">
-                <h2 class="panel-title">HTTP header</h2>
-                <div class="action-group">
-                  <button
-                    type="button"
-                    class="action-btn"
-                    id="copy"
-                    aria-label="Copy output"
-                    data-tooltip="Copy output"
-                  >
-                    <svg aria-hidden="true" viewBox="0 0 24 24">
-                      <use href="#i-copy"></use>
-                    </svg>
-                  </button>
+        </header>
+
+        <div class="main-content">
+            <div class="column input-column">
+            <section class="panel input-panel" aria-labelledby="credentialsTitle">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="credentialsTitle">Credentials</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Load sample" aria-label="Load sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear credentials">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
                 </div>
-              </div>
-              <div class="panel-body">
-                <textarea
-                  id="output"
-                  class="editor"
-                  aria-label="HTTP header"
-                  spellcheck="false"
-                  readonly
-                  placeholder="Your result appears here."
-                ></textarea>
-              </div>
-            </section>
-            <section class="panel output-panel">
-              <div class="panel-header">
-                <h2 class="panel-title">curl · POSIX shell</h2>
-                <div class="action-group">
-                  <button
-                    type="button"
-                    class="action-btn"
-                    id="copy-curl"
-                    aria-label="Copy curl · POSIX shell"
-                    data-tooltip="Copy curl · POSIX shell"
-                  >
-                    <svg aria-hidden="true" viewBox="0 0 24 24">
-                      <use href="#i-copy"></use>
-                    </svg>
-                  </button>
+
+                <div class="panel-body input-body">
+                    <!-- Basic -->
+                    <div class="mode-fields" id="fields-basic" role="tabpanel" aria-labelledby="tab-basic" data-for-mode="basic">
+                        <div class="field">
+                            <label class="field-label" for="username">Username</label>
+                            <input type="text" id="username" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="username" aria-describedby="usernameError">
+                            <p class="field-error" id="usernameError" hidden></p>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="password">Password</label>
+                            <div class="secret-row">
+                                <input type="password" id="password" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="password" aria-describedby="passwordError">
+                                <button class="action-btn" type="button" data-reveal="password" aria-controls="password" aria-pressed="false" aria-label="Show password" data-tooltip="Show password">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="eye-open"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g><g class="eye-closed"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.9 9.9 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></g></svg>
+                                </button>
+                            </div>
+                            <p class="field-error" id="passwordError" hidden></p>
+                            <p class="field-hint" id="basicHint" hidden>Contains non-ASCII characters. They are sent as UTF-8, so the server must accept <span class="hint-code">charset="UTF-8"</span>.</p>
+                        </div>
+                    </div>
+
+                    <!-- Bearer -->
+                    <div class="mode-fields" id="fields-bearer" role="tabpanel" aria-labelledby="tab-bearer" data-for-mode="bearer" hidden>
+                        <div class="field">
+                            <label class="field-label" for="token">Bearer token</label>
+                            <div class="secret-row">
+                                <input type="password" id="token" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Paste your token" aria-describedby="tokenMessage tokenJwt">
+                                <button class="action-btn" type="button" data-reveal="token" aria-controls="token" aria-pressed="false" aria-label="Show token" data-tooltip="Show token">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="eye-open"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g><g class="eye-closed"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.9 9.9 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></g></svg>
+                                </button>
+                            </div>
+                            <p class="field-error" id="tokenMessage" hidden></p>
+                            <p class="jwt-note" id="tokenJwt" hidden></p>
+                        </div>
+                    </div>
+
+                    <!-- API key -->
+                    <div class="mode-fields" id="fields-api-key" role="tabpanel" aria-labelledby="tab-api-key" data-for-mode="api-key" hidden>
+                        <div class="field">
+                            <span class="field-label" id="placementLabel">Send as</span>
+                            <div class="segment" id="placementSwitch" role="group" aria-labelledby="placementLabel">
+                                <button class="segment-btn active" type="button" data-placement="header" aria-pressed="true">Header</button>
+                                <button class="segment-btn" type="button" data-placement="query" aria-pressed="false">Query parameter</button>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="apiName" id="apiNameLabel">Header name</label>
+                            <input type="text" id="apiName" value="X-API-Key" spellcheck="false" autocomplete="off" autocapitalize="off" aria-describedby="apiNameError">
+                            <p class="field-error" id="apiNameError" hidden></p>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="apiKey">Value</label>
+                            <div class="secret-row">
+                                <input type="password" id="apiKey" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Paste your API key" aria-describedby="apiKeyError">
+                                <button class="action-btn" type="button" data-reveal="apiKey" aria-controls="apiKey" aria-pressed="false" aria-label="Show API key" data-tooltip="Show API key">
+                                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><g class="eye-open"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g><g class="eye-closed"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.4 2 12 2 12s3.5 7 10 7a9.9 9.9 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></g></svg>
+                                </button>
+                            </div>
+                            <p class="field-error" id="apiKeyError" hidden></p>
+                            <p class="field-hint" id="apiQueryHint" hidden>Query strings end up in server logs, proxies and browser history. Prefer a header when the API allows it.</p>
+                        </div>
+                    </div>
+
+                    <div class="status-bar security-line">
+                        <span class="status-text">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                            Base64 is not encryption · Use HTTPS · Nothing leaves this page
+                        </span>
+                    </div>
                 </div>
-              </div>
-              <div class="panel-body">
-                <textarea
-                  id="curl"
-                  class="editor"
-                  aria-label="curl · POSIX shell"
-                  spellcheck="false"
-                  readonly
-                  placeholder="Your result appears here."
-                ></textarea>
-              </div>
             </section>
-          </div>
+
+            <section class="panel decode-panel" aria-labelledby="decodeTitle">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="decodeTitle">Decode an existing header</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample-decode" data-tooltip="Load sample" aria-label="Load sample header">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste-decode" data-tooltip="Paste" aria-label="Paste header to decode">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear-decode" data-tooltip="Clear" aria-label="Clear header to decode">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body decode-body">
+                    <textarea id="decodeInput" class="decode-input" rows="2" spellcheck="false" autocomplete="off" aria-label="Header to decode" aria-describedby="decodeError"
+                              placeholder="Authorization: Basic YWxhZGRpbjpvcGVuc2VzYW1l"></textarea>
+                    <p class="field-error" id="decodeError" hidden></p>
+                    <div class="decode-result" id="decodeResult" hidden>
+                        <dl class="decode-list" id="decodeList"></dl>
+                        <button class="btn btn-secondary btn-sm" type="button" data-action="load-decoded" id="loadDecoded">Load into form</button>
+                    </div>
+                    <p class="empty-state decode-empty" id="decodeEmpty"><span>Paste an <span class="hint-code">Authorization</span> header to see the credentials inside it.</span></p>
+                    <div class="status-bar">
+                        <span class="status-text" id="decodeStatus" role="status">Waiting for a header</span>
+                        <span class="char-count" id="decodeCount">0 chars</span>
+                    </div>
+                </div>
+            </section>
+            </div>
+
+            <div class="column output-column">
+                <section class="panel request-panel" aria-labelledby="requestTitle">
+                    <div class="panel-header">
+                        <h2 class="panel-title" id="requestTitle">Request</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="request-line">
+                            <div class="dd method-dd" id="methodDropdown" data-dd data-dd-select="#method">
+                                <button class="dd__trigger" id="methodTrigger" type="button" aria-label="HTTP method">
+                                    <span class="dd__value" id="methodValue">GET</span>
+                                </button>
+                                <div class="dd__menu" role="listbox" aria-label="HTTP method">
+                                    <button class="dd__option is-active" type="button" role="option" data-value="GET" aria-selected="true">GET</button>
+                                    <button class="dd__option" type="button" role="option" data-value="POST">POST</button>
+                                    <button class="dd__option" type="button" role="option" data-value="PUT">PUT</button>
+                                    <button class="dd__option" type="button" role="option" data-value="PATCH">PATCH</button>
+                                    <button class="dd__option" type="button" role="option" data-value="DELETE">DELETE</button>
+                                    <button class="dd__option" type="button" role="option" data-value="HEAD">HEAD</button>
+                                </div>
+                                <select id="method" class="native-select" aria-hidden="true" tabindex="-1">
+                                    <option value="GET" selected>GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="PATCH">PATCH</option>
+                                    <option value="DELETE">DELETE</option>
+                                    <option value="HEAD">HEAD</option>
+                                </select>
+                            </div>
+                            <input type="text" id="url" value="https://api.example.com/v1/me" spellcheck="false" autocomplete="off" autocapitalize="off" inputmode="url" aria-label="Request URL" aria-describedby="urlError">
+                        </div>
+                        <p class="field-error" id="urlError" hidden></p>
+                        <div class="field">
+                            <label class="field-label" for="extraHeaders">Extra headers <span class="label-meta">one <span class="hint-code">Name: value</span> per line</span></label>
+                            <textarea id="extraHeaders" class="extra-input" rows="3" spellcheck="false" autocomplete="off" aria-describedby="extraErrors"
+                                      placeholder="Accept: application/json">Accept: application/json</textarea>
+                            <ul class="line-errors" id="extraErrors" aria-live="polite" hidden></ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel output-panel" aria-label="Output">
+                    <div class="panel-header">
+                        <div class="segment" id="formatSwitch" role="group" aria-label="Snippet format">
+                            <button class="segment-btn active" type="button" data-format="curl" aria-pressed="true">curl</button>
+                            <button class="segment-btn" type="button" data-format="fetch" aria-pressed="false">fetch</button>
+                            <button class="segment-btn" type="button" data-format="httpie" aria-pressed="false">HTTPie</button>
+                        </div>
+                        <div class="action-group">
+                            <button class="action-btn" type="button" data-action="copy-snippet" id="copySnippet" data-tooltip="Copy snippet" aria-label="Copy snippet">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                            </button>
+                            <button class="action-btn" type="button" data-action="download-snippet" id="downloadSnippet" data-tooltip="Download snippet" aria-label="Download snippet">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-download"></use></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-body output-body">
+                        <div class="header-row" id="headerRow">
+                            <span class="header-row-label" id="headerRowLabel">Header</span>
+                            <output class="header-value" id="headerLine" aria-labelledby="headerRowLabel"></output>
+                            <button class="action-btn" type="button" data-action="copy-header" id="copyHeader" data-tooltip="Copy header" aria-label="Copy header">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                            </button>
+                        </div>
+                        <pre class="code-output" id="snippet" tabindex="0" aria-label="Request snippet"></pre>
+                        <div class="status-bar">
+                            <span class="status-text" id="outputStatus" role="status">Ready</span>
+                            <span class="char-count" id="charCount">0 chars</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
-        <p id="error" class="notice error" role="status" aria-live="polite"></p>
-      </main>
-      <div class="modal-overlay" id="helpModal" data-modal>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">Using HTTP Header Builder</h3>
-            <button
-              type="button"
-              class="action-btn"
-              aria-label="Close"
-              data-tooltip="Close"
-              data-modal-close
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <use href="#i-close"></use>
-              </svg>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>
-              Choose Basic, Bearer or API key, fill in the values, then build
-              the header. Copy actions sit at the right of each output panel.
-            </p>
-            <p>
-              Basic uses UTF-8 Base64. The server must support UTF-8
-              credentials; a username cannot contain a colon. Decoding splits at
-              the first colon so passwords can contain additional colons.
-            </p>
-            <p>
-              Basic is not encryption. Use HTTPS. Credentials are neither saved
-              nor sent by this tool. The curl command quotes values for a POSIX
-              shell.
-            </p>
-          </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How this works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Base64 is not encryption.</strong> Anyone who sees a Basic header can read the password, so only send it over HTTPS. Nothing is saved or sent anywhere: the header and snippets are built in this tab.</p>
+                    </div>
+                    <ul class="tip-list">
+                        <li><strong>Basic</strong> (RFC 7617) is <span class="hint-code">base64(username:password)</span> encoded as UTF-8. A username cannot contain a colon; a password can, because decoding splits at the first colon.</li>
+                        <li><strong>Bearer</strong> (RFC 6750) tokens are sent as-is. Tokens outside the <span class="hint-code">b64token</span> alphabet get a warning, but whitespace and control characters are refused. JWTs show their <span class="hint-code">alg</span> and expiry.</li>
+                        <li><strong>API key</strong> goes in a header (default <span class="hint-code">X-API-Key</span>) or, if the API expects it, a query parameter, which changes the URL in every snippet.</li>
+                        <li><strong>Decode</strong> accepts <span class="hint-code">Authorization: Basic …</span>, <span class="hint-code">Basic …</span> or <span class="hint-code">Bearer …</span>, and can load the result back into the form.</li>
+                        <li><strong>Snippets</strong>: curl and HTTPie are single-quoted for a POSIX shell (a quote becomes <span class="hint-code">'\''</span>); fetch uses JSON string literals. Extra header names must be RFC 7230 tokens.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
+
     <script src="../main.js"></script>
-    <script src="../utility-ui.js"></script>
     <script src="script.js"></script>
-  </body>
+</body>
 </html>

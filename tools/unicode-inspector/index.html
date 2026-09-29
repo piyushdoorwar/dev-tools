@@ -1,235 +1,188 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unicode / Character Inspector</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="stylesheet" href="../main.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
     <div class="app-container">
-      <header class="header">
-        <div class="header-left">
-          <h1 class="app-title">Unicode / Character Inspector</h1>
-          <p class="app-subtitle">
-            Reveal invisible characters, inspect encodings, and copy escaped
-            text.
-          </p>
-        </div>
-        <div class="header-actions">
-          <button
-            type="button"
-            class="action-btn"
-            id="helpBtn"
-            aria-label="How to use this"
-            data-tooltip="How to use this"
-            data-modal-open="#helpModal"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <use href="#i-info"></use>
-            </svg>
-          </button>
-        </div>
-      </header>
-      <main>
-        <div class="workspace unicode-workspace">
-          <section class="panel">
-            <div class="panel-header">
-              <h2 class="panel-title">Text to inspect</h2>
-              <div class="action-group">
-                <button
-                  type="button"
-                  class="action-btn"
-                  id="paste-input"
-                  aria-label="Paste text"
-                  data-tooltip="Paste text"
-                  data-paste="input"
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24">
-                    <use href="#i-paste"></use>
-                  </svg></button
-                ><button
-                  type="button"
-                  class="action-btn"
-                  id="clear-input"
-                  aria-label="Clear text"
-                  data-tooltip="Clear text"
-                  data-clear="input"
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24">
-                    <use href="#i-trash"></use>
-                  </svg>
-                </button>
-              </div>
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Unicode / Character Inspector</h1>
             </div>
-            <div class="panel-body">
-              <textarea
-                id="input"
-                class="editor"
-                aria-label="Text"
-                spellcheck="false"
-                placeholder="Paste text to inspect…"
-              >
-Hello 👋​</textarea
-              >
-              <p class="note">One row per code point · Unicode 17.0</p>
-            </div>
-          </section>
-          <div class="stack escape-stack">
-            <section class="panel output-panel">
-              <div class="panel-header">
-                <h2 class="panel-title">JavaScript · \u{…}</h2>
-                <div class="action-group">
-                  <button
-                    type="button"
-                    class="action-btn"
-                    id="copy"
-                    aria-label="Copy output"
-                    data-tooltip="Copy output"
-                  >
-                    <svg aria-hidden="true" viewBox="0 0 24 24">
-                      <use href="#i-copy"></use>
-                    </svg>
-                  </button>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="How to read this" aria-label="How to read this">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
                 </div>
-              </div>
-              <div class="panel-body">
-                <textarea
-                  id="output"
-                  class="editor"
-                  aria-label="JavaScript · \u{…}"
-                  spellcheck="false"
-                  readonly
-                  placeholder="Your result appears here."
-                ></textarea>
-              </div>
-            </section>
-            <section class="panel output-panel">
-              <div class="panel-header">
-                <h2 class="panel-title">HTML · &amp;#x…;</h2>
-                <div class="action-group">
-                  <button
-                    type="button"
-                    class="action-btn"
-                    id="copy-html"
-                    aria-label="Copy HTML · &amp;#x…;"
-                    data-tooltip="Copy HTML · &amp;#x…;"
-                  >
-                    <svg aria-hidden="true" viewBox="0 0 24 24">
-                      <use href="#i-copy"></use>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div class="panel-body">
-                <textarea
-                  id="html"
-                  class="editor"
-                  aria-label="HTML · &amp;#x…;"
-                  spellcheck="false"
-                  readonly
-                  placeholder="Your result appears here."
-                ></textarea>
-              </div>
-            </section>
-            <section class="panel output-panel">
-              <div class="panel-header">
-                <h2 class="panel-title">CSS · \hex</h2>
-                <div class="action-group">
-                  <button
-                    type="button"
-                    class="action-btn"
-                    id="copy-css"
-                    aria-label="Copy CSS · \hex"
-                    data-tooltip="Copy CSS · \hex"
-                  >
-                    <svg aria-hidden="true" viewBox="0 0 24 24">
-                      <use href="#i-copy"></use>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div class="panel-body">
-                <textarea
-                  id="css"
-                  class="editor"
-                  aria-label="CSS · \hex"
-                  spellcheck="false"
-                  readonly
-                  placeholder="Your result appears here."
-                ></textarea>
-              </div>
-            </section>
-          </div>
-        </div>
-        <section class="panel table-panel">
-          <div class="panel-header">
-            <h2 class="panel-title">Character details</h2>
-            <div class="action-group">
-              <span id="count" class="result-count" role="status"></span>
             </div>
-          </div>
-          <div class="panel-body">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Character</th>
-                    <th>Code point</th>
-                    <th>Name / category</th>
-                    <th>UTF-8 bytes</th>
-                    <th>UTF-16 BE bytes</th>
-                  </tr>
-                </thead>
-                <tbody id="results"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-        <p id="error" class="notice error" role="status" aria-live="polite"></p>
-      </main>
-      <div class="modal-overlay" id="helpModal" data-modal>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">Using Unicode / Character Inspector</h3>
-            <button
-              type="button"
-              class="action-btn"
-              aria-label="Close"
-              data-tooltip="Close"
-              data-modal-close
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <use href="#i-close"></use>
-              </svg>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>
-              Each row is one Unicode code point, not one grapheme. A visible
-              character can comprise several code points. Hidden, control and
-              combining characters are flagged rather than displayed as blank
-              cells.
-            </p>
-            <p>
-              UTF-16 bytes are big-endian without a BOM. Lone surrogates cannot
-              be encoded as valid UTF-8. Names and categories come from bundled
-              Unicode 17.0 data, with a limit of 5,000 code points.
-            </p>
-            <p>
-              Copy text as JavaScript code-point escapes, HTML hexadecimal
-              entities or CSS escapes. HTML and CSS replace invalid scalar
-              values such as lone surrogates when interpreted.
-            </p>
-          </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel text-panel" aria-labelledby="textTitle">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="textTitle">Text</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Load sample" aria-label="Load sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste" aria-label="Paste">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea id="input" class="editor" spellcheck="false" autocomplete="off" aria-label="Text to inspect"
+                              placeholder="Paste text to find zero-width, invisible and look-alike characters…"></textarea>
+
+                    <div class="hidden-alert" id="hiddenAlert" role="status" aria-live="polite" hidden>
+                        <p class="hidden-summary" id="hiddenSummary"></p>
+                        <div class="hidden-actions">
+                            <button class="btn btn-sm" type="button" data-action="remove-hidden">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                                Remove hidden
+                            </button>
+                            <button class="btn btn-sm" type="button" data-action="copy-cleaned">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                                Copy cleaned
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="status-bar">
+                        <span class="status-text error" id="inputStatus" role="alert" hidden></span>
+                        <span class="stats" id="stats">
+                            <span id="statCodePoints">0 code points</span>
+                            <span id="statGraphemes">0 graphemes</span>
+                            <span id="statUtf8">0 UTF-8 bytes</span>
+                            <span id="statUtf16">0 UTF-16 units</span>
+                            <span id="statHidden">0 hidden</span>
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel chars-panel" aria-labelledby="charsTitle">
+                <div class="panel-header">
+                    <div class="title-group">
+                        <h2 class="panel-title" id="charsTitle">Characters</h2>
+                        <span class="result-count" id="count" role="status">0 code points</span>
+                    </div>
+                    <div class="segment" id="filterSwitch" role="radiogroup" aria-label="Show">
+                        <button class="segment-btn active" type="button" role="radio" aria-checked="true" data-filter="all">All</button>
+                        <button class="segment-btn" type="button" role="radio" aria-checked="false" tabindex="-1" data-filter="hidden">Hidden only <span class="segment-count" id="hiddenFilterCount">0</span></button>
+                    </div>
+                </div>
+                <div class="panel-body chars-body">
+                    <div class="table-wrap" id="tableWrap" tabindex="0" aria-label="Characters, use the arrow keys to move the selection">
+                        <table class="char-table">
+                            <colgroup>
+                                <col class="col-char">
+                                <col class="col-cp">
+                                <col class="col-name">
+                                <col class="col-cat">
+                                <col class="col-utf8">
+                                <col class="col-utf16">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th scope="col">Char</th>
+                                    <th scope="col">Code point</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Cat</th>
+                                    <th scope="col">UTF-8</th>
+                                    <th scope="col">UTF-16</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results"></tbody>
+                        </table>
+                        <p class="empty-state" id="emptyState" hidden></p>
+                    </div>
+
+                    <div class="detail-strip" id="detail" aria-live="polite" hidden>
+                        <div class="detail-glyph" id="detailGlyph" aria-hidden="true"></div>
+                        <div class="detail-main">
+                            <p class="detail-name" id="detailName"></p>
+                            <p class="detail-meta" id="detailMeta"></p>
+                        </div>
+                        <button class="action-btn" type="button" data-action="copy-char" data-tooltip="Copy character" aria-label="Copy character">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel escape-panel" aria-labelledby="escapeTitle">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="escapeTitle">Escape</h2>
+                    <div class="action-group">
+                        <label class="option-check" for="nonAsciiOnly">
+                            <input type="checkbox" id="nonAsciiOnly">
+                            <span>Non-ASCII only</span>
+                        </label>
+                        <button class="action-btn" type="button" id="copy" data-tooltip="Copy escaped text" aria-label="Copy escaped text">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="segment format-switch" id="formatSwitch" role="radiogroup" aria-label="Escape format">
+                        <button class="segment-btn active" type="button" role="radio" aria-checked="true" data-format="js">JS \u{…}</button>
+                        <button class="segment-btn" type="button" role="radio" aria-checked="false" tabindex="-1" data-format="js-utf16">JS \uXXXX</button>
+                        <button class="segment-btn" type="button" role="radio" aria-checked="false" tabindex="-1" data-format="html-hex">HTML hex</button>
+                        <button class="segment-btn" type="button" role="radio" aria-checked="false" tabindex="-1" data-format="html-dec">HTML dec</button>
+                        <button class="segment-btn" type="button" role="radio" aria-checked="false" tabindex="-1" data-format="css">CSS</button>
+                        <button class="segment-btn" type="button" role="radio" aria-checked="false" tabindex="-1" data-format="python">Python</button>
+                        <button class="segment-btn" type="button" role="radio" aria-checked="false" tabindex="-1" data-format="url">URL</button>
+                    </div>
+                    <textarea id="output" class="editor output-editor" spellcheck="false" readonly aria-label="Escaped text"
+                              placeholder="Escaped text appears here."></textarea>
+                    <div class="status-bar">
+                        <span class="status-text" id="escapeStatus"></span>
+                        <span class="byte-count" id="escapeCount">0 chars</span>
+                    </div>
+                </div>
+            </section>
         </div>
-      </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Reading the inspector</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>One row per code point, not per grapheme.</strong> An emoji such as 👩🏽‍💻 is one grapheme made of four code points, so the status bar counts both.</p>
+                    </div>
+                    <ul class="tip-list">
+                        <li><strong>Hidden</strong> means it renders as nothing or as an ordinary space: format characters such as <span class="hint-code">ZWSP</span>, <span class="hint-code">ZWJ</span>, <span class="hint-code">BOM</span> and bidi marks, control characters, variation selectors and non-standard spaces such as <span class="hint-code">NBSP</span>. They show as a badge and are counted in the summary.</li>
+                        <li><strong>Whitespace</strong> is drawn as <span class="hint-code">␠</span> <span class="hint-code">⇥</span> <span class="hint-code">↵</span>, and combining marks sit on a dotted circle <span class="hint-code">◌́</span>. Neither counts as hidden.</li>
+                        <li><strong>Remove hidden</strong> strips every hidden character, including the <span class="hint-code">ZWJ</span> and variation selectors inside emoji sequences, so a joined emoji splits into its parts.</li>
+                        <li><strong>UTF-16</strong> bytes are big-endian without a BOM. A lone surrogate has no valid UTF-8 form; HTML, CSS and URL output replace it with U+FFFD when read.</li>
+                        <li><strong>Non-ASCII only</strong> leaves printable ASCII as it is, but still escapes controls and the characters that would break a string in that format, such as <span class="hint-code">\</span> and quotes. URL mode keeps only <span class="hint-code">A–Z a–z 0–9 - . _ ~</span>.</li>
+                        <li><strong>CSS</strong> escapes end with a space only when the next character is a hex digit or whitespace, which is when CSS needs one.</li>
+                        <li>Names and categories come from bundled Unicode 17.0 data. The table shows up to 5,000 code points; the counts and escapes cover the whole text.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
+
     <script src="../main.js"></script>
-    <script src="../utility-ui.js"></script>
     <script src="data.js"></script>
     <script src="script.js"></script>
-  </body>
+</body>
 </html>

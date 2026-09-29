@@ -313,3 +313,112 @@ test('copying with nothing to copy warns instead of copying empty text', async (
   await expect(page.locator('.toast')).toContainText('Nothing to copy');
   expect(await lastCopied(page)).toBeNull();
 });
+
+/* --- List converter ------------------------------------------------------ */
+
+const openList = async (page) => {
+  await page.locator('#list-toggle').click();
+  await expect(page.locator('#list-body')).toBeVisible();
+};
+const pick = async (page, dropdown, label) => {
+  await page.locator(`#list-${dropdown}-dropdown .dd__trigger`).click();
+  await page.locator(`#list-${dropdown}-dropdown .dd__option`, { hasText: label }).click();
+};
+
+test('list converter is collapsed and off by default, and leaves output untouched', async ({ page }) => {
+  const { errors } = await openTool(page, 'text-utilities');
+  await expect(page.locator('#list-body')).toBeHidden();
+  await expect(page.locator('#list-state')).toHaveText('Off');
+  await setInput(page, 'a\nb');
+  await expect(page.locator('#output')).toHaveValue('a\nb');
+  await openList(page);
+  await expect(page.locator('#list-toggle')).toHaveAttribute('aria-expanded', 'true');
+  expect(errors).toEqual([]);
+});
+
+test('list quoting, affixes, truncation and join', async ({ page }) => {
+  const { errors } = await openTool(page, 'text-utilities');
+  await openList(page);
+  await setInput(page, "O'Brien\napple");
+  await pick(page, 'quote', 'Single');
+  await pick(page, 'join', 'Comma + space');
+  await expect(page.locator('#output')).toHaveValue("'O''Brien', 'apple'");
+  await expect(page.locator('#list-state')).toHaveText('On');
+  await expect(page.locator('#pipeline')).toContainText('Convert list');
+
+  await pick(page, 'quote', 'No quotes');
+  await page.locator('#list-prefix').fill('[');
+  await page.locator('#list-suffix').fill(']');
+  await page.locator('#list-limit').fill('2');
+  await expect(page.locator('#output')).toHaveValue('[O\'], [ap]');
+
+  await pick(page, 'quote', 'Backtick');
+  await page.locator('#list-prefix').fill('');
+  await page.locator('#list-suffix').fill('');
+  await page.locator('#list-limit').fill('0');
+  await setInput(page, 'a`b');
+  await expect(page.locator('#output')).toHaveValue('`a``b`');
+  expect(errors).toEqual([]);
+});
+
+test('custom separators decode \\n and \\t, and transpose splits on the chosen delimiter', async ({ page }) => {
+  await openTool(page, 'text-utilities');
+  await openList(page);
+  await expect(page.locator('#list-separator-cell')).toBeHidden();
+  await pick(page, 'join', 'Custom');
+  await expect(page.locator('#list-separator-cell')).toBeVisible();
+  await page.locator('#list-separator').fill('\\t|');
+  await setInput(page, 'a\nb');
+  await expect(page.locator('#output')).toHaveValue('a\t|b');
+
+  await page.locator('#list-separator').fill('\\n');
+  // Trimming would drop the trailing empty cell, so switch it off for this.
+  await page.locator('#op-trim').uncheck();
+  await page.locator('#list-transpose').check();
+  await setInput(page, 'a\tb\nc\td');
+  await expect(page.locator('#output')).toHaveValue('a\tc\nb\td');
+
+  await pick(page, 'delimiter', 'Comma');
+  await setInput(page, '1,2,3\n4,5,6');
+  await expect(page.locator('#output')).toHaveValue('1,4\n2,5\n3,6');
+});
+
+test('list presets build SQL IN and JSON arrays, and reset turns it off', async ({ page }) => {
+  await openTool(page, 'text-utilities');
+  await openList(page);
+  await setInput(page, "apple\nO'Brien");
+  await page.locator('[data-list-preset="sql"]').click();
+  await expect(page.locator('#output')).toHaveValue("('apple', 'O''Brien')");
+  await page.locator('[data-list-preset="json"]').click();
+  await expect(page.locator('#output')).toHaveValue('["apple", "O\'Brien"]');
+  expect(JSON.parse(await page.locator('#output').inputValue())).toEqual(['apple', "O'Brien"]);
+  await page.locator('[data-list-preset="csv"]').click();
+  await expect(page.locator('#output')).toHaveValue("apple, O'Brien");
+  await page.locator('[data-list-preset="reset"]').click();
+  await expect(page.locator('#output')).toHaveValue("apple\nO'Brien");
+  await expect(page.locator('#list-state')).toHaveText('Off');
+});
+
+test('list truncation keeps emoji whole and JSON quoting escapes quotes', async ({ page }) => {
+  await openTool(page, 'text-utilities');
+  await openList(page);
+  await setInput(page, '😀abc\n"quoted"');
+  await page.locator('#list-limit').fill('1');
+  await expect(page.locator('#output')).toHaveValue('😀\n"');
+  await pick(page, 'quote', 'Double');
+  await expect(page.locator('#output')).toHaveValue('"😀"\n"\\""');
+});
+
+test('a transpose that is too large reports the limit in pink instead of the success colour', async ({ page }) => {
+  await openTool(page, 'text-utilities');
+  await openList(page);
+  await page.locator('#list-transpose').check();
+  await page.locator('#input').evaluate((node) => {
+    node.value = Array.from({ length: 400 }, () => 'x\t'.repeat(300)).join('\n');
+    node.dispatchEvent(new Event('input'));
+  });
+  await expect(page.locator('#pipeline')).toContainText('100,000');
+  await expect(page.locator('#pipeline')).toHaveClass(/is-error/);
+  await expect(page.locator('#pipeline')).not.toHaveClass(/is-set/);
+  await expect(page.locator('#output')).toHaveValue('');
+});

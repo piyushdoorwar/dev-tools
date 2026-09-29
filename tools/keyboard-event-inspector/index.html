@@ -1,161 +1,190 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keyboard Event Inspector</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="stylesheet" href="../main.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
     <div class="app-container">
-      <header class="header">
-        <div class="header-left">
-          <h1 class="app-title">Keyboard Event Inspector</h1>
-          <p class="app-subtitle">
-            See each key, its physical code, modifiers, and repeat state.
-          </p>
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Keyboard Event Inspector</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="How capture works" aria-label="How capture works">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel capture-panel" id="capturePanel">
+                <div class="panel-header">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">Capture</h2>
+                        <span class="listen-pill" id="listenPill">Not focused</span>
+                    </div>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="copy-latest" data-tooltip="Copy event as JSON" aria-label="Copy latest event as JSON">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body capture-body">
+                    <div class="capture" id="capture" tabindex="0" autofocus role="application"
+                         aria-label="Keyboard capture area. Press any key to inspect it; Tab leaves."
+                         aria-describedby="captureHint">
+                        <div class="stage">
+                            <div class="keycap is-empty" id="keycap" aria-hidden="true">
+                                <span class="keycap-label" id="keyDisplay">Press a key</span>
+                            </div>
+                            <code class="stage-code" id="codeDisplay">event.code appears here</code>
+                            <p class="stage-hint" id="captureHint">Click here, then press any key</p>
+                        </div>
+
+                        <dl class="props" id="props">
+                            <div class="prop"><dt>key</dt><dd data-prop="key">—</dd></div>
+                            <div class="prop"><dt>code</dt><dd data-prop="code">—</dd></div>
+                            <div class="prop"><dt>keyCode <span class="prop-tag">legacy</span></dt><dd data-prop="keyCode">—</dd></div>
+                            <div class="prop"><dt>which <span class="prop-tag">legacy</span></dt><dd data-prop="which">—</dd></div>
+                            <div class="prop"><dt>location</dt><dd data-prop="location">—</dd></div>
+                            <div class="prop"><dt>repeat</dt><dd data-prop="repeat">—</dd></div>
+                            <div class="prop"><dt>isComposing</dt><dd data-prop="isComposing">—</dd></div>
+                            <div class="prop"><dt>type</dt><dd data-prop="type">—</dd></div>
+                        </dl>
+
+                        <div class="modifiers" id="modifiers" role="group" aria-label="Modifier state">
+                            <span class="chip" data-modifier="Control">Ctrl</span>
+                            <span class="chip" data-modifier="Shift">Shift</span>
+                            <span class="chip" data-modifier="Alt">Alt</span>
+                            <span class="chip" data-modifier="Meta">Meta</span>
+                            <span class="chip" data-modifier="AltGraph">AltGr</span>
+                            <span class="chip" data-modifier="CapsLock">CapsLock</span>
+                            <span class="chip" data-modifier="NumLock">NumLock</span>
+                        </div>
+                    </div>
+
+                    <div class="shortcut">
+                        <div class="shortcut-head">
+                            <h3 class="section-label">Shortcut</h3>
+                            <div class="segment" id="matchSwitch" role="group" aria-label="Match on">
+                                <button class="segment-btn active" type="button" data-match="key" aria-pressed="true">event.key</button>
+                                <button class="segment-btn" type="button" data-match="code" aria-pressed="false">event.code</button>
+                            </div>
+                        </div>
+                        <div class="command">
+                            <span class="command-label">Combo</span>
+                            <code class="command-text" id="shortcutText">—</code>
+                            <button class="action-btn" type="button" data-action="copy-shortcut" data-tooltip="Copy shortcut" aria-label="Copy shortcut">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                            </button>
+                        </div>
+                        <div class="command">
+                            <span class="command-label">JS</span>
+                            <code class="command-text" id="conditionText">—</code>
+                            <button class="action-btn" type="button" data-action="copy-condition" data-tooltip="Copy condition" aria-label="Copy JS condition">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- The latest keydown as JSON: what the copy button copies. -->
+                    <textarea id="output" hidden readonly aria-hidden="true" tabindex="-1"></textarea>
+                    <p class="sr-only" id="announce" aria-live="polite"></p>
+
+                    <div class="status-bar">
+                        <span class="status-text" id="captureStatus">Waiting for a key</span>
+                        <span class="byte-count" id="heldCount">0 held</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel history-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">History</h2>
+                    <div class="action-group">
+                        <label class="toggle" for="ignoreRepeats">
+                            <input type="checkbox" id="ignoreRepeats">
+                            <span>Ignore repeats</span>
+                        </label>
+                        <button class="action-btn" type="button" data-action="copy-history" data-tooltip="Copy history as JSON" aria-label="Copy history as JSON">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-copy"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" id="clear" data-action="clear-history" data-tooltip="Clear history" aria-label="Clear history">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body history-body">
+                    <div class="table-wrap" id="tableWrap" hidden>
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Key</th>
+                                    <th scope="col">Code</th>
+                                    <th scope="col" class="col-keycode">keyCode</th>
+                                    <th scope="col" class="col-location">Location</th>
+                                    <th scope="col">Modifiers</th>
+                                    <th scope="col" class="col-repeat">Repeat</th>
+                                    <th scope="col"><span class="sr-only">Copy</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="history"></tbody>
+                        </table>
+                    </div>
+                    <div class="empty" id="historyEmpty">
+                        <div class="empty-glyph" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="6" width="20" height="12" rx="2.5"></rect>
+                                <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"></path>
+                            </svg>
+                        </div>
+                        <p class="empty-title">No key presses yet</p>
+                        <p class="empty-text">Press keys in the capture area. The latest 30 keydowns are listed here, newest first.</p>
+                    </div>
+                    <div class="status-bar">
+                        <span class="status-text" id="historyStatus">Newest first</span>
+                        <span class="byte-count" id="historyCount">0 / 30 events</span>
+                    </div>
+                </div>
+            </section>
         </div>
-        <div class="header-actions">
-          <button
-            type="button"
-            class="action-btn"
-            id="helpBtn"
-            aria-label="How to use this"
-            data-tooltip="How to use this"
-            data-modal-open="#helpModal"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <use href="#i-info"></use>
-            </svg>
-          </button>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">How capture works</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Keys are read only while the capture area has focus.</strong> It takes focus when the page opens; if the status says <span class="hint-code">Not focused</span>, click it once. Nothing is sent anywhere.</p>
+                    </div>
+                    <ul class="tip-list">
+                        <li><strong>key vs code.</strong> <span class="hint-code">key</span> is the character the layout produced (<span class="hint-code">"A"</span>, <span class="hint-code">"é"</span>, <span class="hint-code">"Dead"</span> for an accent key). <span class="hint-code">code</span> is the physical position (<span class="hint-code">KeyA</span>) and ignores layout, Shift and CapsLock.</li>
+                        <li><strong>Pick the match for your shortcut.</strong> Match on <span class="hint-code">key</span> for mnemonic shortcuts like <span class="hint-code">Ctrl+K</span>; match on <span class="hint-code">code</span> for position-based ones such as WASD, which should stay put on AZERTY. The combo uses the physical key, so <span class="hint-code">Shift+1</span> reads as 1, not !.</li>
+                        <li><strong>The condition only checks the modifiers you held.</strong> Add <span class="hint-code">!e.altKey</span> and friends if Ctrl+Alt+K must not also fire Ctrl+K.</li>
+                        <li><strong>location</strong> tells left from right: 0 Standard, 1 Left (ShiftLeft), 2 Right (ShiftRight), 3 Numpad.</li>
+                        <li><strong>Tab and Escape are not intercepted,</strong> so you can always leave the capture area with the keyboard. <strong>Ctrl and Meta combinations are not blocked either,</strong> so browser shortcuts such as copy, reload and close tab keep working. Some OS shortcuts never reach the page at all.</li>
+                        <li><strong>Modifier chips are live.</strong> They light up on keydown and release on keyup; leaving the window releases them too, because the browser drops that keyup.</li>
+                        <li><strong>keyCode and which are deprecated.</strong> They are shown for old code you may be reading; use <span class="hint-code">key</span> or <span class="hint-code">code</span> in new work.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-      </header>
-      <main>
-        <div class="workspace">
-          <section class="panel">
-            <div class="panel-header">
-              <h2 class="panel-title">Keyboard input</h2>
-              <div class="action-group"></div>
-            </div>
-            <div class="panel-body">
-              <div
-                id="capture"
-                tabindex="0"
-                role="region"
-                aria-label="Keyboard capture area"
-              >
-                <span class="capture-label">FOCUS HERE, THEN PRESS A KEY</span
-                ><span id="key-display" class="key-display">⌨</span
-                ><span id="key-code" class="note"
-                  >Click or Tab into this area to start</span
-                >
-              </div>
-              <div id="modifiers" class="modifier-list">
-                <span class="modifier" data-modifier="Control">Control</span
-                ><span class="modifier" data-modifier="Alt">Alt</span
-                ><span class="modifier" data-modifier="Shift">Shift</span
-                ><span class="modifier" data-modifier="Meta">Meta</span
-                ><span class="modifier" data-modifier="CapsLock">CapsLock</span
-                ><span class="modifier" data-modifier="NumLock">NumLock</span>
-              </div>
-              <p class="note">
-                Tab and Escape remain available. Browser or OS shortcuts may not
-                reach this page.
-              </p>
-            </div>
-          </section>
-          <section class="panel output-panel event-output">
-            <div class="panel-header">
-              <h2 class="panel-title">Latest event · JSON</h2>
-              <div class="action-group">
-                <button
-                  type="button"
-                  class="action-btn"
-                  id="copy"
-                  aria-label="Copy output"
-                  data-tooltip="Copy output"
-                >
-                  <svg aria-hidden="true" viewBox="0 0 24 24">
-                    <use href="#i-copy"></use>
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <div class="panel-body">
-              <textarea
-                id="output"
-                class="editor"
-                aria-label="Latest event · JSON"
-                spellcheck="false"
-                readonly
-                placeholder="Your result appears here."
-              ></textarea>
-            </div>
-          </section>
-        </div>
-        <section class="panel">
-          <div class="panel-header">
-            <h2 class="panel-title">Recent presses</h2>
-            <div class="action-group">
-              <button
-                type="button"
-                class="action-btn"
-                id="clear"
-                aria-label="Clear history"
-                data-tooltip="Clear history"
-              >
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <use href="#i-trash"></use>
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div class="panel-body">
-            <div
-              id="history"
-              class="history-list"
-              data-empty="Press a key in the capture area to start your history."
-            ></div>
-          </div>
-        </section>
-        <p id="error" class="notice error" role="status" aria-live="polite"></p>
-      </main>
-      <div class="modal-overlay" id="helpModal" data-modal>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">Using Keyboard Event Inspector</h3>
-            <button
-              type="button"
-              class="action-btn"
-              aria-label="Close"
-              data-tooltip="Close"
-              data-modal-close
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <use href="#i-close"></use>
-              </svg>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>
-              Events are captured only while the keyboard input area has focus.
-              Press a key to see its logical key, physical code, location,
-              modifiers, repeat state and composition state. History keeps the
-              latest 30 keydown events.
-            </p>
-            <p>
-              Tab and Escape are not intercepted. OS and browser shortcuts may
-              never reach the page. The keyCode property is deprecated; use key
-              or code for new shortcuts.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
+
     <script src="../main.js"></script>
-    <script src="../utility-ui.js"></script>
     <script src="script.js"></script>
-  </body>
+</body>
 </html>

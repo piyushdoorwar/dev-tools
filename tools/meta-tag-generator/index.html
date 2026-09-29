@@ -1,207 +1,216 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open Graph / Meta Tag Generator</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="stylesheet" href="../main.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
     <div class="app-container">
-      <header class="header">
-        <div class="header-left">
-          <h1 class="app-title">Open Graph / Meta Tag Generator</h1>
-          <p class="app-subtitle">
-            Compose your page details and preview the link before sharing.
-          </p>
-        </div>
-        <div class="header-actions">
-          <button
-            type="button"
-            class="action-btn"
-            id="helpBtn"
-            aria-label="How to use this"
-            data-tooltip="How to use this"
-            data-modal-open="#helpModal"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <use href="#i-info"></use>
-            </svg>
-          </button>
-        </div>
-      </header>
-      <main>
-        <div class="workspace">
-          <div class="stack">
-            <section class="panel">
-              <div class="panel-header">
-                <h2 class="panel-title">Page details</h2>
-                <div class="action-group"></div>
-              </div>
-              <div class="panel-body">
-                <label class="field" for="title"
-                  ><span class="field-label">Title</span
-                  ><input
-                    id="title"
-                    type="text"
-                    value="My page"
-                    placeholder=""
-                    autocomplete="off"
-                    spellcheck="false" /></label
-                ><label class="field" for="description"
-                  ><span class="field-label">Description</span
-                  ><input
-                    id="description"
-                    type="text"
-                    value="A useful page worth sharing."
-                    placeholder=""
-                    autocomplete="off"
-                    spellcheck="false" /></label
-                ><label class="field" for="url"
-                  ><span class="field-label">Page URL</span
-                  ><input
-                    id="url"
-                    type="text"
-                    value="https://example.com/"
-                    placeholder=""
-                    autocomplete="off"
-                    spellcheck="false" /></label
-                ><label class="field" for="image"
-                  ><span class="field-label">Image URL</span
-                  ><input
-                    id="image"
-                    type="text"
-                    value=""
-                    placeholder="https://example.com/social-card.jpg"
-                    autocomplete="off"
-                    spellcheck="false" /></label
-                ><label class="field" for="alt"
-                  ><span class="field-label">Image description</span
-                  ><input
-                    id="alt"
-                    type="text"
-                    value=""
-                    placeholder="Describe the image"
-                    autocomplete="off"
-                    spellcheck="false" /></label
-                ><label class="field" for="site"
-                  ><span class="field-label">Site name</span
-                  ><input
-                    id="site"
-                    type="text"
-                    value="Example"
-                    placeholder=""
-                    autocomplete="off"
-                    spellcheck="false"
-                /></label>
-              </div>
-            </section>
-          </div>
-          <div class="stack">
-            <section class="panel">
-              <div class="panel-header">
-                <h2 class="panel-title">Link preview</h2>
-                <div class="action-group">
-                  <button
-                    type="button"
-                    class="action-btn"
-                    id="load-image"
-                    aria-label="Load image preview"
-                    data-tooltip="Load image preview"
-                  >
-                    <svg aria-hidden="true" viewBox="0 0 24 24">
-                      <use href="#i-download"></use>
-                    </svg>
-                  </button>
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Open Graph / Meta Tag Generator</h1>
+            </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="Which tags each platform reads" aria-label="Which tags each platform reads">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-info"></use></svg>
+                    </button>
                 </div>
-              </div>
-              <div class="panel-body">
-                <div class="social-card" id="preview">
-                  <div id="preview-image" class="social-image">
-                    Load an image to preview your card
-                  </div>
-                  <div class="social-copy">
-                    <small id="preview-url"></small>
-                    <h3 id="preview-title"></h3>
-                    <p id="preview-description"></p>
-                  </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <section class="panel details-panel" aria-labelledby="detailsTitle">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="detailsTitle">Page details</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="sample" data-tooltip="Load sample" aria-label="Load sample">
+                            <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-file-text"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="paste" data-tooltip="Paste HTML to import its tags" aria-label="Paste HTML to import its tags">
+                            <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-paste"></use></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="clear" data-tooltip="Clear" aria-label="Clear">
+                            <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-trash"></use></svg>
+                        </button>
+                    </div>
                 </div>
-                <p class="note">
-                  Illustrative preview · Loading an image contacts its host.
-                </p>
-              </div>
-            </section>
-            <section class="panel output-panel meta-output">
-              <div class="panel-header">
-                <h2 class="panel-title">SEO & social tags</h2>
-                <div class="action-group">
-                  <button
-                    type="button"
-                    class="action-btn"
-                    id="copy"
-                    aria-label="Copy output"
-                    data-tooltip="Copy output"
-                  >
-                    <svg aria-hidden="true" viewBox="0 0 24 24">
-                      <use href="#i-copy"></use>
-                    </svg>
-                  </button>
+                <div class="panel-body">
+                    <form class="fields" id="fields" autocomplete="off" novalidate>
+                        <div class="field">
+                            <div class="field-head"><label class="field-label" for="title">Title</label><span class="field-tag">&lt;title&gt; · og:title</span></div>
+                            <input id="title" type="text" spellcheck="true" aria-describedby="title-hint title-count" placeholder="Page title">
+                            <div class="field-meta">
+                                <span class="field-note" id="title-hint" data-hint="Search result heading and browser tab">Search result heading and browser tab</span>
+                                <span class="char-count" id="title-count">0 / 60</span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-head"><label class="field-label" for="description">Description</label><span class="field-tag">description · og:description</span></div>
+                            <textarea id="description" rows="2" spellcheck="true" aria-describedby="description-hint description-count" placeholder="One or two sentences that sell the click"></textarea>
+                            <div class="field-meta">
+                                <span class="field-note" id="description-hint" data-hint="Search snippet and card body">Search snippet and card body</span>
+                                <span class="char-count" id="description-count">0 / 160</span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-head"><label class="field-label" for="url">Canonical URL</label><span class="field-tag">canonical · og:url</span></div>
+                            <input id="url" type="text" inputmode="url" spellcheck="false" aria-describedby="url-hint" placeholder="https://example.com/page">
+                            <div class="field-meta">
+                                <span class="field-note" id="url-hint" data-hint="Absolute HTTP or HTTPS URL">Absolute HTTP or HTTPS URL</span>
+                            </div>
+                        </div>
+
+                        <div class="field-row field-row--3">
+                            <div class="field">
+                                <div class="field-head"><span class="field-label" id="type-label">Type</span><span class="field-tag">og:type</span></div>
+                                <select id="type" hidden>
+                                    <option value="website">website</option>
+                                    <option value="article">article</option>
+                                    <option value="product">product</option>
+                                    <option value="profile">profile</option>
+                                </select>
+                                <div class="dd type-dd" data-dd data-dd-select="#type">
+                                    <button class="dd__trigger" type="button" aria-labelledby="type-label" id="type-trigger">
+                                        <span class="dd__value">website</span>
+                                    </button>
+                                    <div class="dd__menu" role="listbox">
+                                        <button class="dd__option" type="button" role="option" data-value="website">website</button>
+                                        <button class="dd__option" type="button" role="option" data-value="article">article</button>
+                                        <button class="dd__option" type="button" role="option" data-value="product">product</button>
+                                        <button class="dd__option" type="button" role="option" data-value="profile">profile</button>
+                                    </div>
+                                </div>
+                                <div class="field-meta">
+                                    <span class="field-note">Kind of page</span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="field-head"><label class="field-label" for="theme">Theme</label><span class="field-tag">theme-color</span></div>
+                                <div class="color-control">
+                                    <div class="picker" id="themePicker" data-color-picker data-alpha="false"
+                                         data-value="#6739B7" data-label="theme colour"></div>
+                                    <input id="theme" type="text" spellcheck="false" maxlength="7" aria-describedby="theme-hint" placeholder="#6739B7">
+                                </div>
+                                <div class="field-meta">
+                                    <span class="field-note" id="theme-hint" data-hint="Optional browser tint">Optional browser tint</span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="field-head"><label class="field-label" for="handle">X handle</label><span class="field-tag">twitter:site</span></div>
+                                <input id="handle" type="text" spellcheck="false" aria-describedby="handle-hint" placeholder="@example">
+                                <div class="field-meta">
+                                    <span class="field-note" id="handle-hint" data-hint="The site's X account">The site's X account</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="field-head"><label class="field-label" for="image">Image URL</label><span class="field-tag">og:image · twitter:image</span></div>
+                            <input id="image" type="text" inputmode="url" spellcheck="false" aria-describedby="image-hint" placeholder="https://example.com/social-card.png">
+                            <div class="field-meta">
+                                <span class="field-note" id="image-hint" data-hint="1200 × 630 recommended · loads only on request">1200 × 630 recommended · loads only on request</span>
+                            </div>
+                        </div>
+
+                        <div class="field-row field-row--2">
+                            <div class="field">
+                                <div class="field-head"><label class="field-label" for="alt">Image alt text</label><span class="field-tag">og:image:alt</span></div>
+                                <input id="alt" type="text" spellcheck="true" aria-describedby="alt-hint" placeholder="Describe the image">
+                                <div class="field-meta">
+                                    <span class="field-note" id="alt-hint" data-hint="Read aloud by screen readers">Read aloud by screen readers</span>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="field-head"><label class="field-label" for="site">Site name</label><span class="field-tag">og:site_name</span></div>
+                                <input id="site" type="text" spellcheck="false" aria-describedby="site-hint" placeholder="Example">
+                                <div class="field-meta">
+                                    <span class="field-note" id="site-hint">Brand shown above the title</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+
+                    <div class="status-bar">
+                        <span class="status-text" id="detailsStatus" aria-live="polite">Ready</span>
+                        <span class="byte-count" id="filledCount">0 of 9 filled</span>
+                    </div>
                 </div>
-              </div>
-              <div class="panel-body">
-                <textarea
-                  id="output"
-                  class="editor"
-                  aria-label="SEO &amp; social tags"
-                  spellcheck="false"
-                  readonly
-                  placeholder="Your result appears here."
-                ></textarea>
-              </div>
             </section>
-          </div>
+
+            <div class="right-column">
+                <section class="panel preview-panel" aria-label="Link preview">
+                    <div class="panel-header">
+                        <div class="segment surface-switch" id="surfaceSwitch" role="tablist" aria-label="Preview surface">
+                            <button class="segment-btn active" type="button" role="tab" aria-selected="true" aria-controls="preview" data-surface="google" id="tab-google">Google</button>
+                            <button class="segment-btn" type="button" role="tab" aria-selected="false" aria-controls="preview" data-surface="facebook" id="tab-facebook" tabindex="-1">Facebook</button>
+                            <button class="segment-btn" type="button" role="tab" aria-selected="false" aria-controls="preview" data-surface="x" id="tab-x" tabindex="-1">X</button>
+                            <button class="segment-btn" type="button" role="tab" aria-selected="false" aria-controls="preview" data-surface="linkedin" id="tab-linkedin" tabindex="-1">LinkedIn</button>
+                            <button class="segment-btn" type="button" role="tab" aria-selected="false" aria-controls="preview" data-surface="slack" id="tab-slack" tabindex="-1">Slack</button>
+                        </div>
+                        <span class="badge info" title="Mock-ups only. Each platform renders, crops and caches differently.">Illustrative mock-up</span>
+                    </div>
+                    <div class="panel-body preview-body">
+                        <div class="preview-stage" id="preview" role="tabpanel" aria-labelledby="tab-google" tabindex="-1"></div>
+                    </div>
+                </section>
+
+                <section class="panel tags-panel" aria-labelledby="tagsTitle">
+                    <div class="panel-header">
+                        <h2 class="panel-title" id="tagsTitle">Tags</h2>
+                        <div class="action-group">
+                            <button class="action-btn" type="button" data-action="copy" id="copy" data-tooltip="Copy tags" aria-label="Copy tags">
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-copy"></use></svg>
+                            </button>
+                            <button class="action-btn" type="button" data-action="download" id="download" data-tooltip="Download meta-tags.html" aria-label="Download meta-tags.html">
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-download"></use></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <pre class="code-view" id="output" tabindex="0" aria-label="Generated head tags"></pre>
+                        <div class="status-bar">
+                            <span class="status-text" id="tagsStatus">Paste into your page's &lt;head&gt;</span>
+                            <span class="byte-count" id="tagCount" aria-live="polite">0 tags</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
-        <p id="error" class="notice error" role="status" aria-live="polite"></p>
-      </main>
-      <div class="modal-overlay" id="helpModal" data-modal>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">Using Open Graph / Meta Tag Generator</h3>
-            <button
-              type="button"
-              class="action-btn"
-              aria-label="Close"
-              data-tooltip="Close"
-              data-modal-close
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <use href="#i-close"></use>
-              </svg>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>
-              Fill in the title, description, page URL and image URL. The
-              generator produces basic SEO, Open Graph and Twitter Card tags
-              with escaped attribute values.
-            </p>
-            <p>
-              The text preview updates as you type. Use Load image preview to
-              fetch the image from its host. URLs must use HTTP or HTTPS.
-            </p>
-            <p>
-              Social platforms may crop images differently and cache old
-              metadata. The card is illustrative, not a guarantee of a specific
-              platform’s rendering.
-            </p>
-          </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Which tags each platform reads</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="legend-intro">
+                        <p><strong>Everything runs locally.</strong> Tags are built in this tab. The preview image is only fetched when you press Load image, and is requested with no referrer.</p>
+                    </div>
+                    <ul class="tip-list">
+                        <li><strong>Google</strong> uses <span class="hint-code">&lt;title&gt;</span>, <span class="hint-code">meta description</span> and <span class="hint-code">rel="canonical"</span>. It truncates titles near 60 characters and snippets near 160, and may rewrite either.</li>
+                        <li><strong>Facebook, LinkedIn and Slack</strong> read Open Graph: <span class="hint-code">og:title</span>, <span class="hint-code">og:description</span>, <span class="hint-code">og:image</span>, <span class="hint-code">og:url</span>.</li>
+                        <li><strong>X</strong> needs <span class="hint-code">twitter:card</span>; it falls back to <span class="hint-code">og:*</span> for the title, description and image. With an image the card is <span class="hint-code">summary_large_image</span>, otherwise <span class="hint-code">summary</span>.</li>
+                        <li><strong>Images:</strong> 1200 × 630 (1.91:1), PNG or JPEG, under 5 MB. Keep text away from the edges, since some surfaces crop to a square.</li>
+                        <li><strong>URLs must be absolute</strong> and use HTTP or HTTPS. A relative <span class="hint-code">/og.png</span> is ignored by crawlers.</li>
+                        <li><strong>Previews are cached.</strong> Re-scrape with the Facebook Sharing Debugger or LinkedIn Post Inspector, or change the image URL (<span class="hint-code">?v=2</span>) to force a refresh.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
+
     <script src="../main.js"></script>
-    <script src="../utility-ui.js"></script>
     <script src="script.js"></script>
-  </body>
+</body>
 </html>

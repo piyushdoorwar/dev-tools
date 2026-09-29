@@ -124,19 +124,93 @@
                         </div>
                     </div>
 
-                    <details class="list-options"><summary>List converter</summary>
-<p>Runs after cleanup: transpose delimited columns, truncate each value, add prefix/suffix, quote, then join. Transpose uses literal delimiters, not CSV parsing. Empty cells are preserved.</p>
-<div class="list-fields">
-<label>Prefix per value<input id="list-prefix" type="text"></label>
-<label>Suffix per value<input id="list-suffix" type="text"></label>
-<label>Maximum code points (0 = unlimited)<input id="list-limit" type="number" min="0" value="0"></label>
-<label>Join separator (\n and \t supported)<input id="list-separator" type="text" value="\n"></label>
-<label><input id="list-quote" type="checkbox"> SQL single quotes (apostrophes doubled)</label>
-<label><input id="list-json" type="checkbox"> JSON double quotes (takes precedence)</label>
-<label><input id="list-transpose" type="checkbox"> Transpose columns</label>
-<label>Column delimiter (\t supported)<input id="list-delimiter" type="text" value="\t"></label>
-</div><p>For SQL IN lists, select SQL quotes and use a comma separator, then place the result inside IN (…). Use bound parameters for untrusted SQL values.</p></details>
-<p class="pipeline" id="pipeline">No changes — the output matches the input.</p>
+                    <section class="list-section" aria-labelledby="list-toggle">
+                        <button class="list-toggle" id="list-toggle" type="button" aria-expanded="false" aria-controls="list-body">
+                            <span class="list-toggle-label">List converter</span>
+                            <span class="list-toggle-state" id="list-state">Off</span>
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-chevron-down"></use></svg>
+                        </button>
+                        <div class="list-body" id="list-body" hidden>
+                            <div class="list-presets" role="group" aria-label="List presets">
+                                <button class="segment-btn" type="button" data-list-preset="sql">SQL IN (…)</button>
+                                <button class="segment-btn" type="button" data-list-preset="json">JSON array</button>
+                                <button class="segment-btn" type="button" data-list-preset="csv">Comma list</button>
+                                <button class="segment-btn" type="button" data-list-preset="reset">Reset</button>
+                            </div>
+                            <div class="list-grid">
+                                <div class="op-cell">
+                                    <span class="field-label">Quote</span>
+                                    <div id="list-quote-dropdown" class="dd" data-dd aria-label="Quote each value">
+                                        <button class="dd__trigger" type="button" aria-label="Quote each value">
+                                            <span class="dd__value">No quotes</span>
+                                        </button>
+                                        <div class="dd__menu" role="listbox" aria-label="Quote each value options">
+                                            <button class="dd__option is-active" type="button" role="option" data-value="none" aria-selected="true">No quotes</button>
+                                            <button class="dd__option" type="button" role="option" data-value="sql">'Single' (SQL)</button>
+                                            <button class="dd__option" type="button" role="option" data-value="json">"Double" (JSON)</button>
+                                            <button class="dd__option" type="button" role="option" data-value="backtick">`Backtick`</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="op-cell">
+                                    <span class="field-label">Join with</span>
+                                    <div id="list-join-dropdown" class="dd" data-dd aria-label="Join values with">
+                                        <button class="dd__trigger" type="button" aria-label="Join values with">
+                                            <span class="dd__value">New line</span>
+                                        </button>
+                                        <div class="dd__menu" role="listbox" aria-label="Join values with options">
+                                            <button class="dd__option is-active" type="button" role="option" data-value="\n" aria-selected="true">New line</button>
+                                            <button class="dd__option" type="button" role="option" data-value=", ">Comma + space</button>
+                                            <button class="dd__option" type="button" role="option" data-value=",">Comma</button>
+                                            <button class="dd__option" type="button" role="option" data-value="\t">Tab</button>
+                                            <button class="dd__option" type="button" role="option" data-value=" | ">Pipe</button>
+                                            <button class="dd__option" type="button" role="option" data-value=" ">Space</button>
+                                            <button class="dd__option" type="button" role="option" data-value="custom">Custom…</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <label class="op-cell" id="list-separator-cell" hidden>
+                                    <span class="field-label">Custom separator <span class="field-hint">\n and \t work</span></span>
+                                    <input id="list-separator" type="text" value="\n" spellcheck="false" autocomplete="off">
+                                </label>
+                                <label class="op-cell">
+                                    <span class="field-label">Prefix</span>
+                                    <input id="list-prefix" type="text" spellcheck="false" autocomplete="off" placeholder="none">
+                                </label>
+                                <label class="op-cell">
+                                    <span class="field-label">Suffix</span>
+                                    <input id="list-suffix" type="text" spellcheck="false" autocomplete="off" placeholder="none">
+                                </label>
+                                <label class="op-cell">
+                                    <span class="field-label">Wrap start</span>
+                                    <input id="list-open" type="text" spellcheck="false" autocomplete="off" placeholder="e.g. (">
+                                </label>
+                                <label class="op-cell">
+                                    <span class="field-label">Wrap end</span>
+                                    <input id="list-close" type="text" spellcheck="false" autocomplete="off" placeholder="e.g. )">
+                                </label>
+                                <label class="op-cell">
+                                    <span class="field-label">Max length <span class="field-hint">0 = off</span></span>
+                                    <input id="list-limit" type="number" min="0" value="0" inputmode="numeric">
+                                </label>
+                            </div>
+                            <div class="list-transpose">
+                                <label class="op"><input type="checkbox" id="list-transpose"> Transpose columns, split on</label>
+                                <div id="list-delimiter-dropdown" class="dd" data-dd aria-label="Column delimiter">
+                                    <button class="dd__trigger" type="button" aria-label="Column delimiter">
+                                        <span class="dd__value">Tab</span>
+                                    </button>
+                                    <div class="dd__menu" role="listbox" aria-label="Column delimiter options">
+                                        <button class="dd__option is-active" type="button" role="option" data-value="\t" aria-selected="true">Tab</button>
+                                        <button class="dd__option" type="button" role="option" data-value=",">Comma</button>
+                                        <button class="dd__option" type="button" role="option" data-value=";">Semicolon</button>
+                                        <button class="dd__option" type="button" role="option" data-value="|">Pipe</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <p class="pipeline" id="pipeline">No changes — the output matches the input.</p>
                     <textarea id="output" class="editor" readonly spellcheck="false"
                               placeholder="The cleaned text appears here."></textarea>
                 </div>
@@ -220,6 +294,8 @@
                         <p><strong>Cleaning order</strong></p>
                         <ul class="tip-list">
                             <li>Operations always run in the order shown above the output: trim, collapse, drop empty lines, dedupe, sort, recase, number. The pipeline line names the steps that are actually active.</li>
+                            <li><strong>List converter</strong> runs last: transpose columns, truncate each value, add the prefix and suffix, quote, join, then wrap the whole result. Transpose splits on the literal delimiter — it is not a CSV parser — and keeps empty cells, so switch off <em>Trim each line</em> if trailing cells matter.</li>
+                            <li><strong>SQL IN (…)</strong> doubles apostrophes inside single quotes. That is fine for a one-off query you read before running; for anything built from untrusted input, use bound parameters instead.</li>
                         </ul>
                     </div>
                 </div>

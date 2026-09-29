@@ -7,4 +7,4 @@
 
 The Unicode license is embedded in the file. Control and correction aliases replace placeholder names. First/Last records are stored as ranges; Hangul syllables and CJK/Tangut ideograph names are expanded at runtime. Unassigned code points are labelled Cn. Private-use and surrogate ranges retain descriptive range labels.
 
-The page operates on code points, not grapheme clusters. UTF-16 bytes are big-endian without a BOM. UTF-8 is omitted for lone surrogates. Input is limited to 5,000 code points to keep the table responsive. No runtime data request is made.
+The table has one row per code point, not per grapheme; the status bar counts both (graphemes via `Intl.Segmenter`). UTF-16 bytes are big-endian without a BOM. UTF-8 is omitted for lone surrogates. The table shows at most 5,000 code points to stay responsive; longer input shows an inline status error, while the counts, hidden-character summary and escapes still cover the whole text. No runtime data request is made.

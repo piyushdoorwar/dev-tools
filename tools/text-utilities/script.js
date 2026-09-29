@@ -76,7 +76,11 @@ function analyse(text) {
   const words = text.match(WORD_RE) || [];
   const lowered = words.map((word) => word.toLowerCase());
   const lines = text === "" ? [] : text.split(/\r?\n/);
-  const sentences = text.match(/[^\s.!?…][^.!?…]*[.!?…]+/g) || [];
+  // A sentence is a run with visible text that ends in a terminator. Splitting
+  // on terminators is linear; the equivalent regex /[^\s.!?…][^.!?…]*[.!?…]+/g
+  // rescanned to the end from every start on text with no full stop (a pasted
+  // TSV of 240 KB froze the tab for 15 s).
+  const sentences = text.split(/[.!?…]+/).slice(0, -1).filter((part) => /\S/.test(part));
   const paragraphs = text.split(/\n\s*\n/).filter((part) => part.trim() !== "");
   const letters = [...text];
 
@@ -348,6 +352,8 @@ function render() {
   } catch (error) {
     output.value = "";
     pipelineNode.textContent = error.message;
+    pipelineNode.classList.remove("is-set");
+    pipelineNode.classList.add("is-error");
     renderStats(analyse(text));
     return;
   }
@@ -358,6 +364,7 @@ function render() {
     ? `Applied in order: ${steps.join(" → ")}`
     : "No changes — the output matches the input.";
   pipelineNode.classList.toggle("is-set", steps.length > 0);
+  pipelineNode.classList.remove("is-error");
 
   renderStats(analyse(text));
 }
@@ -521,35 +528,45 @@ function init() {
   render();
 }
 
-init();
-
 // List transforms are opt-in and run after the existing cleaner pipeline.
+// Dropdown values arrive as written in the markup, so "\n" and "\t" are
+// escape sequences here, the same as in the custom separator field.
+const LIST_DEFAULTS = { quote: "none", join: "\\n", delimiter: "\\t" };
+const listState = { ...LIST_DEFAULTS };
+const LIST_PRESETS = {
+  sql: { quote: "sql", join: ", ", open: "(", close: ")" },
+  json: { quote: "json", join: ", ", open: "[", close: "]" },
+  csv: { quote: "none", join: ", ", open: "", close: "" },
+};
+const listField = (id) => document.getElementById("list-" + id);
+const decodeEscapes = (text) => text.replace(/\\n/g, "\n").replace(/\\t/g, "\t");
+
 function listSettings() {
-  const get = (id) => document.getElementById("list-" + id);
-  const decode = (text) => text.replace(/\\n/g, "\n").replace(/\\t/g, "\t");
   return {
-    prefix: get("prefix").value,
-    suffix: get("suffix").value,
-    limit: Math.max(0, Math.floor(Number(get("limit").value) || 0)),
-    separator: decode(get("separator").value),
-    quote: get("quote").checked,
-    json: get("json").checked,
-    transpose: get("transpose").checked,
-    delimiter: decode(get("delimiter").value),
+    prefix: listField("prefix").value,
+    suffix: listField("suffix").value,
+    open: listField("open").value,
+    close: listField("close").value,
+    limit: Math.max(0, Math.floor(Number(listField("limit").value) || 0)),
+    separator: decodeEscapes(listState.join === "custom" ? listField("separator").value : listState.join),
+    quote: listState.quote,
+    transpose: listField("transpose").checked,
+    delimiter: decodeEscapes(listState.delimiter),
   };
 }
 function listIsActive() {
   const o = listSettings();
-  return (
-    o.prefix ||
-    o.suffix ||
-    o.limit ||
-    o.separator !== "\n" ||
-    o.quote ||
-    o.json ||
-    o.transpose
+  return Boolean(
+    o.prefix || o.suffix || o.open || o.close || o.limit ||
+    o.separator !== "\n" || o.quote !== "none" || o.transpose,
   );
 }
+const QUOTERS = {
+  none: (value) => value,
+  sql: (value) => "'" + value.replace(/'/g, "''") + "'",
+  json: (value) => JSON.stringify(value),
+  backtick: (value) => "`" + value.replace(/`/g, "``") + "`",
+};
 function convertList(text) {
   if (!text) return "";
   const o = listSettings();
@@ -563,18 +580,64 @@ function convertList(text) {
       rows.map((row) => row[i] ?? "").join(o.delimiter),
     );
   }
-  return lines
+  const body = lines
     .map((line) => {
-      let result = o.limit ? Array.from(line).slice(0, o.limit).join("") : line;
-      result = o.prefix + result + o.suffix;
-      return o.json
-        ? JSON.stringify(result)
-        : o.quote
-          ? "'" + result.replace(/'/g, "''") + "'"
-          : result;
+      // Truncate by code point so an emoji is never split into a lone surrogate.
+      const value = o.limit ? Array.from(line).slice(0, o.limit).join("") : line;
+      return QUOTERS[o.quote](o.prefix + value + o.suffix);
     })
     .join(o.separator);
+  return o.open + body + o.close;
 }
-document
-  .querySelectorAll(".list-options input")
-  .forEach((field) => field.addEventListener("input", render));
+
+function syncListChrome() {
+  const active = listIsActive();
+  const state = document.getElementById("list-state");
+  state.textContent = active ? "On" : "Off";
+  state.classList.toggle("is-on", active);
+  document.getElementById("list-separator-cell").hidden = listState.join !== "custom";
+}
+function setListExpanded(open) {
+  document.getElementById("list-toggle").setAttribute("aria-expanded", String(open));
+  document.getElementById("list-body").hidden = !open;
+}
+function applyListPreset(name) {
+  const preset = name === "reset"
+    ? { ...LIST_DEFAULTS, open: "", close: "", prefix: "", suffix: "", limit: "0", transpose: false }
+    : LIST_PRESETS[name];
+  for (const key of ["quote", "join", "delimiter"]) {
+    if (!(key in preset)) continue;
+    listState[key] = preset[key];
+    window.DevToolsMain.selectDropdownValue(document.getElementById(`list-${key}-dropdown`), preset[key], { emit: false });
+  }
+  for (const key of ["open", "close", "prefix", "suffix", "limit"]) {
+    if (key in preset) listField(key).value = preset[key];
+  }
+  if ("transpose" in preset) listField("transpose").checked = preset.transpose;
+  syncListChrome();
+  render();
+}
+
+document.getElementById("list-toggle").addEventListener("click", () => {
+  setListExpanded(document.getElementById("list-body").hidden);
+});
+for (const key of ["quote", "join", "delimiter"]) {
+  document.getElementById(`list-${key}-dropdown`).addEventListener("dd:change", (event) => {
+    listState[key] = event.detail.value;
+    syncListChrome();
+    if (key === "join" && event.detail.value === "custom") listField("separator").focus();
+    render();
+  });
+}
+document.querySelectorAll(".list-body input").forEach((field) => {
+  field.addEventListener("input", () => {
+    syncListChrome();
+    render();
+  });
+});
+document.querySelectorAll("[data-list-preset]").forEach((button) => {
+  button.addEventListener("click", () => applyListPreset(button.dataset.listPreset));
+});
+syncListChrome();
+
+init();

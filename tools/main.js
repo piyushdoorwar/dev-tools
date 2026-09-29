@@ -27,10 +27,16 @@
    * `id` must be a catalog id; `path` overrides the directory when a tool's
    * id and folder differ.
    */
+  // Opened from disk (file://), the origin is the string "null", which
+  // postMessage rejects as a target and throws on — so every tab switch in a
+  // tool broke. The messages only carry a tool id or view hash, and the shell
+  // checks that they come from its own frame, so "*" is safe there.
+  const shellOrigin = () => (window.location.origin === "null" ? "*" : window.location.origin);
+
   root.openTool = root.openTool || function openTool({ id, path = id, hash = "" } = {}) {
     if (!id) return;
     if (window.parent !== window) {
-      window.parent.postMessage({ type: "devtools:open-tool", toolId: id, hash }, window.location.origin);
+      window.parent.postMessage({ type: "devtools:open-tool", toolId: id, hash }, shellOrigin());
       return;
     }
     window.location.href = `../${path}/${hash}`;
@@ -68,7 +74,7 @@
       window.history.replaceState(null, "", `${pathname}${search}${next}`);
     }
     if (window.parent !== window) {
-      window.parent.postMessage({ type: "devtools:hash-change", hash: next }, window.location.origin);
+      window.parent.postMessage({ type: "devtools:hash-change", hash: next }, shellOrigin());
     }
   };
 

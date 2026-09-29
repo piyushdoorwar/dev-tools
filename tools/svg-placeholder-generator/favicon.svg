@@ -1,28 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
-    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#ffd700" />
-      <stop offset="1" stop-color="#8b5cf6" />
+    <linearGradient id="svgph-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700">
+        <animate attributeName="stop-color" values="#FFD700;#8B5CF6;#FFD700" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#8B5CF6">
+        <animate attributeName="stop-color" values="#8B5CF6;#FFD700;#8B5CF6" dur="3s" repeatCount="indefinite" />
+      </stop>
     </linearGradient>
   </defs>
-  <circle
-    cx="50"
-    cy="50"
-    r="47"
-    fill="#1e1e1e"
-    stroke="url(#rim)"
-    stroke-width="3"
-  />
-  <g
-    fill="none"
-    stroke="#ffd700"
-    stroke-width="4"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <rect x="21" y="24" width="58" height="51" rx="5" />
-    <circle cx="60" cy="40" r="7" stroke="#8b5cf6" />
-    <path d="m23 67 17-19 15 16 9-9 14 15" />
-    <path d="M17 20h8m-4-4v8m54 55h8m-4-4v8" stroke="#8b5cf6" />
-  </g>
+
+  <circle cx="50" cy="50" r="47" fill="#1e1e1e" stroke="url(#svgph-ring)" stroke-width="3" />
+
+  <!-- Image frame -->
+  <rect x="21" y="26" width="58" height="48" rx="7" fill="none" stroke="#FFD700" stroke-width="6" stroke-linejoin="round" />
+
+  <!-- Mountains -->
+  <path d="M27 68 L42 49 L52 60 L59 53 L73 68 Z" fill="#8B5CF6" stroke="#8B5CF6" stroke-width="3" stroke-linejoin="round" />
+
+  <!-- Sun -->
+  <circle cx="61" cy="40" r="6" fill="#FFD700">
+    <animate attributeName="opacity" values="1;0.5;1" dur="2.4s" repeatCount="indefinite" />
+  </circle>
 </svg>

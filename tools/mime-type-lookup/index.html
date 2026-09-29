@@ -1,113 +1,131 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MIME Type Lookup</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="stylesheet" href="../main.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
     <div class="app-container">
-      <header class="header">
-        <div class="header-left">
-          <h1 class="app-title">MIME Type Lookup</h1>
-          <p class="app-subtitle">
-            Find a Content-Type from an extension, filename, or media type.
-          </p>
-        </div>
-        <div class="header-actions">
-          <button
-            type="button"
-            class="action-btn"
-            id="helpBtn"
-            aria-label="How to use this"
-            data-tooltip="How to use this"
-            data-modal-open="#helpModal"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <use href="#i-info"></use>
-            </svg>
-          </button>
-        </div>
-      </header>
-      <main>
-        <div class="toolbar">
-          <div class="search-field">
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <use href="#i-search"></use></svg
-            ><input
-              class="search-input"
-              id="search"
-              type="search"
-              aria-label="Search reference"
-              value="webp"
-              placeholder="Search .webp, photo.png, application/json…"
-              autocomplete="off"
-              spellcheck="false"
-            />
-          </div>
-          <span class="result-count" id="count" role="status"></span>
-        </div>
-        <section class="panel reference-panel">
-          <div class="panel-header">
-            <h2 class="panel-title">Common media types</h2>
-            <div class="action-group">
-              <p class="note">Curated reference</p>
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">MIME Type Lookup</h1>
             </div>
-          </div>
-          <div class="panel-body">
-            <div id="results" class="reference-list mime-list"></div>
-          </div>
-        </section>
-        <p id="error" class="notice error" role="status" aria-live="polite"></p>
-      </main>
-      <div class="modal-overlay" id="helpModal" data-modal>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">Using MIME Type Lookup</h3>
-            <button
-              type="button"
-              class="action-btn"
-              aria-label="Close"
-              data-tooltip="Close"
-              data-modal-close
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <use href="#i-close"></use>
-              </svg>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>
-              Search in either direction, then copy the Content-Type header
-              using the icon on its right. Filename extensions are hints, not
-              validation of file contents.
-            </p>
-            <p>
-              <code>Content-Type</code> describes the body;
-              <code>Content-Encoding</code> describes compression. Use
-              charset=UTF-8 for text when appropriate. Let the browser set
-              multipart boundaries for FormData.
-            </p>
-            <p>
-              Unknown binary data commonly uses application/octet-stream. This
-              is a common-type reference, not the complete
-              <a
-                href="https://www.iana.org/assignments/media-types/"
-                target="_blank"
-                rel="noopener noreferrer"
-                >IANA registry</a
-              >.
-            </p>
-          </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="Content-Type pitfalls" aria-label="Content-Type pitfalls">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <div class="search-field">
+                    <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24"><use href="#i-search"></use></svg>
+                    <input id="search" class="search-input" type="search" autocomplete="off" spellcheck="false"
+                           placeholder="Search .webp, image/png, photo.jpg, font…" aria-label="Search by extension, filename or media type"
+                           aria-controls="type-list">
+                    <button class="search-clear" type="button" data-action="clear" aria-label="Clear search" hidden>
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <div class="segment" id="category-filter" role="group" aria-label="Filter by category">
+                    <button class="segment-btn active" type="button" data-category="all" aria-pressed="true">All</button>
+                    <button class="segment-btn" type="button" data-category="text" aria-pressed="false">Text</button>
+                    <button class="segment-btn" type="button" data-category="image" aria-pressed="false">Image</button>
+                    <button class="segment-btn" type="button" data-category="audio" aria-pressed="false">Audio</button>
+                    <button class="segment-btn" type="button" data-category="video" aria-pressed="false">Video</button>
+                    <button class="segment-btn" type="button" data-category="font" aria-pressed="false">Font</button>
+                    <button class="segment-btn" type="button" data-category="application" aria-pressed="false">Application</button>
+                </div>
+                <span class="result-count" id="result-count" role="status" aria-live="polite">—</span>
+            </div>
         </div>
-      </div>
+
+        <div class="main-content">
+            <section class="panel list-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Media types</h2>
+                    <span class="panel-note">↑↓ to browse</span>
+                </div>
+                <div class="panel-body list-body">
+                    <div class="type-list" id="type-list" role="listbox" aria-label="Media types"></div>
+                </div>
+                <div class="status-bar">
+                    <span class="status-text" id="query-status">Showing every type</span>
+                    <span class="status-count" id="tier-count"></span>
+                </div>
+            </section>
+
+            <section class="panel detail-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Detail</h2>
+                    <div class="action-group">
+                        <button class="action-btn" type="button" data-action="copy-link" data-tooltip="Copy link to this type" aria-label="Copy link to this type">
+                            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>
+                        </button>
+                        <button class="action-btn" type="button" data-action="copy-detail" data-tooltip="Copy detail as text" aria-label="Copy detail as text">
+                            <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-copy"></use></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <article class="detail" id="detail" aria-live="polite"></article>
+                </div>
+            </section>
+        </div>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Content-Type pitfalls</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <section class="modal-section">
+                        <h4 class="modal-section-title">Searching</h4>
+                        <ul class="tip-list">
+                            <li>Type an extension (<span class="hint-code">.webp</span>), a filename (<span class="hint-code">archive.tar.gz</span>), a media type, or a whole header (<span class="hint-code">text/html; charset=utf-8</span>). Parameters you type are echoed in the detail and carried into the copied header.</li>
+                            <li>Exact extension and type matches come first, then prefixes, then types whose notes mention the word. The list headings say which is which.</li>
+                            <li>Press <span class="hint-code">↓</span> to move into the list and <span class="hint-code">↑</span> / <span class="hint-code">↓</span> to browse. The selected type is kept in the address, so a link such as <span class="hint-code">#image/webp</span> opens on it.</li>
+                        </ul>
+                    </section>
+                    <section class="modal-section">
+                        <h4 class="modal-section-title">Content-Type mistakes that actually ship</h4>
+                        <ul class="tip-list">
+                            <li><strong>Text without a charset.</strong> Send <span class="hint-code">text/html; charset=utf-8</span>. Without it the browser guesses the encoding, and a wrong guess shows mojibake.</li>
+                            <li><strong><span class="hint-code">X-Content-Type-Options: nosniff</span></strong> stops the browser from guessing a type from the bytes. Scripts and stylesheets with the wrong type are then refused outright, so the type has to be right.</li>
+                            <li><strong><span class="hint-code">text/javascript</span>, not <span class="hint-code">application/javascript</span>.</strong> RFC 9239 (2022) made text/javascript the standard; the application/ form is obsolete but still works.</li>
+                            <li><strong><span class="hint-code">.ts</span> is two things:</strong> an MPEG transport stream (<span class="hint-code">video/mp2t</span>) and TypeScript source. Many server type maps pick video, so raw TypeScript arrives as a video.</li>
+                            <li><strong><span class="hint-code">image/jpg</span> is not a type.</strong> The subtype is always <span class="hint-code">jpeg</span>, whatever the file is called.</li>
+                            <li><strong><span class="hint-code">application/json</span> has no charset parameter.</strong> JSON between systems must be UTF-8 (RFC 8259), so <span class="hint-code">; charset=utf-8</span> is ignored.</li>
+                        </ul>
+                    </section>
+                    <section class="modal-section">
+                        <h4 class="modal-section-title">Headers and servers</h4>
+                        <ul class="tip-list">
+                            <li><strong>Content-Type is not Content-Encoding.</strong> Compression on the wire keeps the real type and adds <span class="hint-code">Content-Encoding: gzip</span>. A <span class="hint-code">.gz</span> download is <span class="hint-code">application/gzip</span> with no encoding header.</li>
+                            <li><strong>Let the browser set multipart boundaries.</strong> When you send <span class="hint-code">FormData</span> with fetch, leave Content-Type unset.</li>
+                            <li><strong>An nginx <span class="hint-code">types { }</span> block replaces the inherited map</strong> in that context. Add lines to <span class="hint-code">mime.types</span>, or include it first.</li>
+                        </ul>
+                    </section>
+                    <p class="footnote">A curated list of common types, not the whole registry. The authority is the <a href="https://www.iana.org/assignments/media-types/" target="_blank" rel="noopener noreferrer">IANA Media Types registry</a>; types marked <em>unregistered</em> are de facto names IANA has never registered. An extension is a hint, not a check of what the file contains.</p>
+                </div>
+            </div>
+        </div>
     </div>
+
     <script src="../main.js"></script>
-    <script src="../utility-ui.js"></script>
     <script src="data.js"></script>
     <script src="script.js"></script>
-  </body>
+</body>
 </html>

@@ -4,28 +4,23 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 
 ## Available tools
 
-- HTTP Header Builder (Basic, Bearer, API keys and curl)
-- Open Graph / Meta Tag Generator
-- MIME Type Lookup
-- Keyboard Event Inspector
-- Git Cheatsheet
-- Math / Expression Evaluator
-- Unicode / Character Inspector
-- SVG Placeholder Generator
-
 - Base Converter
 - Bcrypt Hash Generator
+- Certificate Decoder
 - Chmod Calculator
 - Color Converter
 - Cron Expression Generator
 - Crypto Generator
+- CSV ⇄ JSON Converter
 - Docker Run to Compose Converter
 - Encoder / Decoder (text and files)
 - .env ⇄ JSON ⇄ Shell Converter
 - Fake Data Generator
 - File Compressor
+- Git Cheatsheet
 - Hash Generator
 - HTML Preview
+- HTTP Header Builder (Basic, Bearer, API keys and curl)
 - HTTP Status Codes
 - ID Generator
 - Image Converter
@@ -36,8 +31,12 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - JSON ⇄ YAML ⇄ TOML Converter
 - JWT Debugger
 - Key Pair Generator (RSA / ECDSA / Ed25519)
+- Keyboard Event Inspector
 - Lorem Ipsum Generator
 - Markdown Editor
+- Math / Expression Evaluator
+- MIME Type Lookup
+- Open Graph / Meta Tag Generator
 - OTP Generator (TOTP / HOTP)
 - QR Generator
 - Regex Cheat Sheet
@@ -45,10 +44,12 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - Slug Generator / String Escaper
 - SQL Formatter
 - Subnet Calculator (IPv4 / IPv6)
+- SVG Placeholder Generator
 - Text Cleaner (including list conversion, quoting, joining, transposing and truncation)
 - Text Diff
 - Text Encrypt / Decrypt (AES-256-GCM)
 - Timestamp Converter
+- Unicode / Character Inspector
 - Unit Converter
 - URL Parser
 - User-Agent Parser

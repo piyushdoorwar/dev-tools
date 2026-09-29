@@ -1,31 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
-    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#ffd700" />
-      <stop offset="1" stop-color="#8b5cf6" />
+    <linearGradient id="hhb-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700">
+        <animate attributeName="stop-color" values="#FFD700;#8B5CF6;#FFD700" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#8B5CF6">
+        <animate attributeName="stop-color" values="#8B5CF6;#FFD700;#8B5CF6" dur="3s" repeatCount="indefinite" />
+      </stop>
     </linearGradient>
   </defs>
-  <circle
-    cx="50"
-    cy="50"
-    r="47"
-    fill="#1e1e1e"
-    stroke="url(#rim)"
-    stroke-width="3"
-  />
-  <g
-    fill="none"
-    stroke="#ffd700"
-    stroke-width="4"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path
-      d="M50 20 73 29v19c0 17-12 27-23 33-11-6-23-16-23-33V29Z"
-      fill="#6739b7"
-      fill-opacity=".3"
-    />
-    <circle cx="46" cy="44" r="8" />
-    <path d="m51 50 13 13m-5-5 5-5m-1 9 5-5" />
+
+  <circle cx="50" cy="50" r="47" fill="#1e1e1e" stroke="url(#hhb-ring)" stroke-width="3" />
+
+  <!-- Key bow -->
+  <circle cx="34" cy="50" r="13" fill="none" stroke="#FFD700" stroke-width="6" />
+  <circle cx="34" cy="50" r="3.5" fill="#FFD700" />
+
+  <!-- Shaft and teeth -->
+  <g fill="none" stroke="#8B5CF6" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M47 50H78" />
+    <path d="M70 50v11">
+      <animate attributeName="opacity" values="1;0.45;1" dur="2.4s" repeatCount="indefinite" />
+    </path>
+    <path d="M60 50v7" />
   </g>
 </svg>

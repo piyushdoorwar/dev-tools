@@ -1,26 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
-    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#ffd700" />
-      <stop offset="1" stop-color="#8b5cf6" />
+    <linearGradient id="unicodeInspectorRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700">
+        <animate attributeName="stop-color" values="#FFD700;#8B5CF6;#FFD700" dur="3s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#8B5CF6">
+        <animate attributeName="stop-color" values="#8B5CF6;#FFD700;#8B5CF6" dur="3s" repeatCount="indefinite" />
+      </stop>
     </linearGradient>
   </defs>
-  <circle
-    cx="50"
-    cy="50"
-    r="47"
-    fill="#1e1e1e"
-    stroke="url(#rim)"
-    stroke-width="3"
-  />
-  <g
-    fill="none"
-    stroke="#ffd700"
-    stroke-width="4"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <path d="M32 27H22v47h10m36-47h10v47H68M39 35v23c0 15 22 15 22 0V35" />
-    <circle cx="50" cy="22" r="3" fill="#8b5cf6" stroke="none" />
+
+  <circle cx="50" cy="50" r="47" fill="#1e1e1e" stroke="url(#unicodeInspectorRing)" stroke-width="3" />
+
+  <!-- U -->
+  <path d="M22 27 V51 A16 16 0 0 0 54 51 V27" fill="none" stroke="#FFD700" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- + -->
+  <g fill="none" stroke="#8B5CF6" stroke-width="6" stroke-linecap="round">
+    <line x1="72" y1="28" x2="72" y2="46" />
+    <line x1="63" y1="37" x2="81" y2="37" />
   </g>
+
+  <!-- the hidden character: a dotted placeholder that fades in and out -->
+  <circle cx="72" cy="64" r="7" fill="none" stroke="#8B5CF6" stroke-width="4" stroke-dasharray="3.2 3.2" stroke-linecap="round">
+    <animate attributeName="opacity" values="1;0.35;1" dur="2.4s" repeatCount="indefinite" />
+  </circle>
 </svg>

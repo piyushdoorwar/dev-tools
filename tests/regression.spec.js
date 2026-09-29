@@ -1189,3 +1189,16 @@ test('Escape on a dropdown inside a modal closes only the dropdown', async ({ pa
   await page.keyboard.press('Escape');
   await expect(modal).toBeHidden();
 });
+
+test('text-utilities: counting long text with no full stop stays linear', async ({ page }) => {
+  // The sentence regex rescanned to the end of the text from every start
+  // position, so 240 KB of tab-separated cells froze the tab for ~15 s.
+  await openTool(page, 'text-utilities');
+  const elapsed = await page.locator('#input').evaluate((node) => {
+    node.value = Array.from({ length: 400 }, () => 'x\t'.repeat(300)).join('\n');
+    const start = performance.now();
+    node.dispatchEvent(new Event('input'));
+    return performance.now() - start;
+  });
+  expect(elapsed).toBeLessThan(1500);
+});

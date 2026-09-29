@@ -1872,6 +1872,13 @@ select[size]:not([size='1']) {
     color: var(--text-muted);
   }
 
+  /* The muted colour above sits in the shared layer, which outranks every
+     tool's own `.status-text.error` rule — so tools' status lines never
+     turned pink, green or yellow. The states have to live here too. */
+  .status-text.success { color: var(--accent-green); }
+  .status-text.warning { color: var(--accent-yellow); }
+  .status-text.error { color: var(--accent-pink); }
+
   .empty-state {
     color: var(--text-disabled);
     font-size: var(--text-base);

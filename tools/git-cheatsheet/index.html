@@ -1,110 +1,144 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Git Cheatsheet</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="stylesheet" href="../main.css" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
     <div class="app-container">
-      <header class="header">
-        <div class="header-left">
-          <h1 class="app-title">Git Cheatsheet</h1>
-          <p class="app-subtitle">
-            Everyday commands, recovery steps, and the context to use them.
-          </p>
-        </div>
-        <div class="header-actions">
-          <button
-            type="button"
-            class="action-btn"
-            id="helpBtn"
-            aria-label="How to use this"
-            data-tooltip="How to use this"
-            data-modal-open="#helpModal"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <use href="#i-info"></use>
-            </svg>
-          </button>
-        </div>
-      </header>
-      <main>
-        <div class="toolbar">
-          <div class="search-field">
-            <svg aria-hidden="true" viewBox="0 0 24 24">
-              <use href="#i-search"></use></svg
-            ><input
-              class="search-input"
-              id="search"
-              type="search"
-              aria-label="Search reference"
-              value=""
-              placeholder="Search commands, rebase, stash, undo…"
-              autocomplete="off"
-              spellcheck="false"
-            />
-          </div>
-          <span class="result-count" id="count" role="status"></span>
-        </div>
-        <section class="panel reference-panel">
-          <div class="panel-header">
-            <h2 class="panel-title">Command reference</h2>
-            <div class="action-group">
-              <p class="note">Replace &lt;placeholders&gt; before running</p>
+        <div id="toast-container"></div>
+
+        <header class="header">
+            <div class="header-left">
+                <h1 class="app-title">Git Cheatsheet</h1>
             </div>
-          </div>
-          <div class="panel-body">
-            <div id="results" class="reference-list"></div>
-          </div>
-        </section>
-        <p id="error" class="notice error" role="status" aria-live="polite"></p>
-      </main>
-      <div class="modal-overlay" id="helpModal" data-modal>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">Using Git Cheatsheet</h3>
-            <button
-              type="button"
-              class="action-btn"
-              aria-label="Close"
-              data-tooltip="Close"
-              data-modal-close
-            >
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <use href="#i-close"></use>
-              </svg>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>
-              Search by task or command. Copy a command using the icon on its
-              right. Replace placeholders such as &lt;commit&gt; and
-              &lt;branch&gt; before running commands.
-            </p>
-            <p>
-              Check <code>git status</code> first. Commands that discard work or
-              rewrite history include a note beside them. Prefer revert for
-              commits that have already been shared.
-            </p>
-            <p>
-              <a
-                href="https://git-scm.com/docs"
-                target="_blank"
-                rel="noopener noreferrer"
-                >Read the Git documentation</a
-              >
-            </p>
-          </div>
+            <div class="header-right">
+                <div class="action-group header-actions">
+                    <button class="action-btn" type="button" id="helpBtn" data-tooltip="How to use this" aria-label="How to use this">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-info"></use></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <div class="toolbar-row">
+                <div class="toolbar-left">
+                    <select id="category" hidden aria-hidden="true" tabindex="-1">
+                        <option value="all">All categories</option>
+                    </select>
+                    <div class="dd category-dd" id="category-dd" data-dd data-dd-select="#category">
+                        <button class="dd__trigger" type="button" aria-label="Category">
+                            <span class="dd__value">All categories</span>
+                        </button>
+                        <div class="dd__menu dd__menu--wrap" role="listbox" id="category-menu"></div>
+                    </div>
+                    <div class="search-field">
+                        <svg class="search-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-search"></use></svg>
+                        <input id="search" class="search-input" type="search" autocomplete="off" spellcheck="false"
+                               placeholder="Search undo, stash, detached…" aria-label="Search Git tasks">
+                    </div>
+                </div>
+                <div class="toolbar-right">
+                    <span class="result-count" id="result-count" role="status" aria-live="polite">—</span>
+                </div>
+            </div>
+
+            <div class="fill-bar" role="group" aria-labelledby="fill-label">
+                <span class="fill-label" id="fill-label">Placeholders</span>
+                <div class="fill-fields">
+                    <label class="fill-field">
+                        <span class="ph fill-key">&lt;branch&gt;</span>
+                        <input id="fill-branch" data-fill="branch" type="text" autocomplete="off" spellcheck="false" placeholder="optional" aria-label="Value for branch placeholder" aria-describedby="fill-status">
+                    </label>
+                    <label class="fill-field">
+                        <span class="ph fill-key">&lt;commit&gt;</span>
+                        <input id="fill-commit" data-fill="commit" type="text" autocomplete="off" spellcheck="false" placeholder="optional" aria-label="Value for commit placeholder" aria-describedby="fill-status">
+                    </label>
+                    <label class="fill-field">
+                        <span class="ph fill-key">&lt;file&gt;</span>
+                        <input id="fill-file" data-fill="file" type="text" autocomplete="off" spellcheck="false" placeholder="optional" aria-label="Value for file placeholder" aria-describedby="fill-status">
+                    </label>
+                    <label class="fill-field">
+                        <span class="ph fill-key">&lt;tag&gt;</span>
+                        <input id="fill-tag" data-fill="tag" type="text" autocomplete="off" spellcheck="false" placeholder="optional" aria-label="Value for tag placeholder" aria-describedby="fill-status">
+                    </label>
+                </div>
+                <span class="status-text fill-status" id="fill-status" aria-live="polite">Fills every command and every copy. Empty ones copy as-is.</span>
+                <div class="action-group">
+                    <button class="action-btn" type="button" id="fill-clear" data-tooltip="Clear placeholders" aria-label="Clear placeholders" disabled>
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-trash"></use></svg>
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
+
+        <main class="main-content">
+            <section class="panel" aria-labelledby="panel-title">
+                <div class="panel-header">
+                    <h2 class="panel-title" id="panel-title">All tasks</h2>
+                    <span class="panel-note">Git 2.23+ · switch / restore, legacy forms in the notes</span>
+                </div>
+                <div class="panel-body">
+                    <div class="sections" id="sections"></div>
+                </div>
+            </section>
+        </main>
+
+        <div class="modal-overlay" id="helpModal" data-modal>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">Using the Git cheatsheet</h3>
+                    <button class="modal-close" type="button" data-modal-close aria-label="Close">
+                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><use href="#i-close"></use></svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <section class="modal-section">
+                        <h4 class="modal-section-title">Finding a task</h4>
+                        <ul class="tip-list">
+                            <li>Search matches every word in any order across titles, commands, notes and categories: <span class="hint-code">untracked stash</span> finds the stash task.</li>
+                            <li>Narrow the list with the category menu. The category is kept in the address, so a link opens on the same list.</li>
+                            <li>Each command line has its own copy button, so a multi-step task is run one step at a time.</li>
+                        </ul>
+                    </section>
+                    <section class="modal-section">
+                        <h4 class="modal-section-title">Reading the badges</h4>
+                        <ul class="tip-list">
+                            <li><span class="badge warning">Rewrites history</span> — commits get new IDs. Harmless on commits only you have; once pushed, the branch needs a force push and everyone who pulled it has to repair their copy.</li>
+                            <li><span class="badge error">Discards work</span> — uncommitted changes or commits can be lost. Run <span class="hint-code">git stash -u</span> or create a branch first if you are unsure.</li>
+                            <li>No badge means the command only adds or inspects.</li>
+                        </ul>
+                    </section>
+                    <section class="modal-section">
+                        <h4 class="modal-section-title">Placeholders</h4>
+                        <ul class="tip-list">
+                            <li>Highlighted names such as <span class="ph">&lt;branch&gt;</span> and <span class="ph">&lt;file&gt;</span> are yours to replace.</li>
+                            <li>Fill in <span class="hint-code">branch</span>, <span class="hint-code">commit</span>, <span class="hint-code">file</span> or <span class="hint-code">tag</span> in the Placeholders bar and every command, and every copy, uses your value. Empty ones are copied as-is.</li>
+                            <li>Values are inserted exactly as typed. Quote a path that contains spaces.</li>
+                            <li><span class="hint-code">main</span> and <span class="hint-code">origin</span> are written literally; change them if your repository uses other names.</li>
+                        </ul>
+                    </section>
+                    <section class="modal-section">
+                        <h4 class="modal-section-title">Never rewrite pushed, shared history</h4>
+                        <ul class="tip-list">
+                            <li>If others may have pulled a commit, undo it with <span class="hint-code">git revert</span> instead of reset, amend or rebase.</li>
+                            <li>On your own pushed branch, force-push with <span class="hint-code">--force-with-lease</span>, never plain <span class="hint-code">--force</span>.</li>
+                            <li>Something went wrong? <span class="hint-code">git reflog</span> remembers where every branch pointed for about 90 days.</li>
+                        </ul>
+                    </section>
+                    <p class="footnote">Uses <span class="hint-code">git switch</span> and <span class="hint-code">git restore</span> (Git 2.23+); the notes give the older <span class="hint-code">checkout</span> and <span class="hint-code">reset</span> forms. In PowerShell, quote stash names: <span class="hint-code">'stash@{0}'</span>.</p>
+                </div>
+            </div>
+        </div>
     </div>
+
     <script src="../main.js"></script>
-    <script src="../utility-ui.js"></script>
     <script src="data.js"></script>
     <script src="script.js"></script>
-  </body>
+</body>
 </html>

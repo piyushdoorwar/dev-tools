@@ -1,1 +1,505 @@
-@import url("../utility-layout.css");
+/* Wrapped in the `tool` cascade layer: main.css declares the order
+   `base, tool, shared`, so the shared component layer wins without
+   needing higher specificity here. */
+@layer tool {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+/* The blanket reset above sits in the `tool` layer, so it flattens the shared
+   field shape that main.css declares in `base`. Roll form controls back to it;
+   anything this stylesheet sets later still wins. */
+button,
+input,
+textarea,
+select {
+    padding: revert-layer;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--font-body);
+    color: var(--text-primary);
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    height: 100vh;
+    padding: var(--space-6);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.segment {
+    display: flex;
+    gap: var(--space-1);
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-soft);
+}
+
+.segment--fill .segment-btn {
+    flex: 1;
+}
+
+.hint-code {
+    font-family: var(--font-mono);
+    color: var(--accent-yellow);
+}
+
+/* --- Tooltips ------------------------------------------------------------
+   main.css styles how a tooltip looks; placement and show/hide are the
+   tool's. Buttons near a right edge anchor right so the label stays on screen.
+   ------------------------------------------------------------------------ */
+
+.action-btn[data-tooltip] {
+    position: relative;
+}
+
+.action-btn[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    z-index: var(--z-dropdown);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 4px);
+    transition:
+        opacity var(--dur) var(--ease-out),
+        transform var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.action-btn[data-tooltip]:hover::after,
+.action-btn[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition-delay: 0s;
+}
+
+/* An open menu covers its own trigger's tooltip. */
+.dd.is-open .action-btn[data-tooltip]::after {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.header-actions .action-btn[data-tooltip]::after,
+.output-panel .action-btn[data-tooltip]::after,
+.settings-panel .panel-header .action-btn[data-tooltip]:last-child::after {
+    left: auto;
+    right: 0;
+    transform: translateY(4px);
+}
+
+.header-actions .action-btn[data-tooltip]:hover::after,
+.header-actions .action-btn[data-tooltip]:focus-visible::after,
+.output-panel .action-btn[data-tooltip]:hover::after,
+.output-panel .action-btn[data-tooltip]:focus-visible::after,
+.settings-panel .panel-header .action-btn[data-tooltip]:last-child:hover::after,
+.settings-panel .panel-header .action-btn[data-tooltip]:last-child:focus-visible::after {
+    transform: translateY(0);
+}
+
+/* --- Modal --------------------------------------------------------------
+   main.css owns how a modal looks; positioning and the open/closed state
+   belong to the tool.
+   ------------------------------------------------------------------------ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity var(--dur) var(--ease-out),
+        visibility 0s linear var(--dur);
+}
+
+.modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.modal-content {
+    width: var(--modal-w-md);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.legend-intro p {
+    color: var(--text-secondary);
+    line-height: var(--leading-normal);
+}
+
+/* --- Layout ------------------------------------------------------------- */
+
+.main-content {
+    display: grid;
+    grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+    gap: var(--space-4);
+    flex: 1;
+    min-height: 0;
+}
+
+.right-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+    min-height: 0;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
+    background: var(--panel-bg);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    /* Title-only headers match the height of ones holding icon buttons. */
+    min-height: calc(var(--control-h) + 2 * var(--space-4) + 1px);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+}
+
+.panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+    min-height: 0;
+    padding: var(--space-4);
+}
+
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* --- Settings ----------------------------------------------------------- */
+
+.settings-body {
+    gap: var(--space-4);
+    overflow-y: auto;
+}
+
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.field-group input:not([type="range"]) {
+    width: 100%;
+    min-width: 0;
+}
+
+.field-hint,
+.field-error {
+    line-height: var(--leading-normal);
+}
+
+.dd--block {
+    display: flex;
+    width: 100%;
+}
+
+.dd--block .dd__trigger {
+    flex: 1;
+    min-width: 0;
+    min-height: var(--control-h);
+    font-size: var(--text-base);
+}
+
+.size-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: end;
+    column-gap: var(--space-2);
+    row-gap: var(--space-2);
+}
+
+.size-error {
+    grid-column: 1 / -1;
+}
+
+.two-col {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+}
+
+.inline-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.inline-row .grow {
+    flex: 1;
+    min-width: 0;
+}
+
+.inline-row .segment {
+    flex: none;
+}
+
+.field-group .inline-row input.grow {
+    width: auto;
+}
+
+/* Auto mode shows the size it picked, quieter than a value the user typed. */
+#fontSize.is-auto {
+    color: var(--text-muted);
+}
+
+.field-group input.radius-input {
+    flex: none;
+    width: 88px;
+}
+
+.range {
+    height: var(--control-h);
+    accent-color: var(--accent-purple-light);
+}
+
+/* The swatch trigger and popover come from the shared layer; only the size of
+   the trigger inside this two-column field is set here. */
+.color-control {
+    display: grid;
+    grid-template-columns: var(--control-h) minmax(0, 1fr);
+    gap: var(--space-2);
+}
+
+.color-control .swatch {
+    width: 100%;
+}
+
+.color-control input {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+}
+
+/* --- Preview ------------------------------------------------------------ */
+
+.preview-panel {
+    flex: 1;
+}
+
+.preview-body {
+    gap: var(--space-3);
+}
+
+.stage {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: var(--space-5);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background-color: var(--bg-secondary);
+    transition: background-color var(--dur) var(--ease-out);
+}
+
+.stage[data-backdrop="checker"] {
+    background-image: repeating-conic-gradient(var(--surface-strong) 0% 25%, transparent 0% 50%);
+    background-size: 20px 20px;
+    background-position: 50% 50%;
+}
+
+.stage[data-backdrop="dark"] {
+    background-color: var(--bg);
+}
+
+.stage[data-backdrop="light"] {
+    background-color: var(--text-primary);
+}
+
+/* Fitted, never distorted: both limits apply and the aspect ratio holds. */
+.stage img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    transition: opacity var(--dur) var(--ease-out), filter var(--dur) var(--ease-out);
+}
+
+.is-stale .stage img,
+.is-stale .output-editor {
+    opacity: 0.4;
+    filter: grayscale(0.6);
+}
+
+/* --- Output ------------------------------------------------------------- */
+
+.output-panel {
+    flex: none;
+}
+
+.output-panel .panel-header {
+    flex-wrap: nowrap;
+}
+
+.output-panel .segment {
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+.output-body {
+    gap: var(--space-3);
+}
+
+.editor {
+    width: 100%;
+    resize: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    line-height: var(--leading-code);
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.output-editor {
+    height: 104px;
+    overflow-y: auto;
+    color: var(--text-secondary);
+    transition: opacity var(--dur) var(--ease-out);
+}
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--chrome-sm);
+    color: var(--text-muted);
+}
+
+.status-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-text.success { color: var(--accent-green); }
+.status-text.warning { color: var(--accent-yellow); }
+.status-text.error { color: var(--accent-pink); }
+
+.byte-count {
+    flex: none;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+}
+
+@media (max-width: 960px) {
+    .app-container {
+        height: auto;
+        min-height: 100vh;
+        padding: var(--space-4);
+    }
+
+    .main-content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .settings-body {
+        overflow-y: visible;
+    }
+
+    .stage {
+        flex: none;
+        height: 300px;
+    }
+
+    .status-bar {
+        flex-wrap: wrap;
+    }
+
+    .status-text {
+        white-space: normal;
+    }
+}
+
+@media (max-width: 520px) {
+    .output-panel .panel-header {
+        flex-wrap: wrap;
+    }
+
+    .output-panel .segment {
+        width: 100%;
+        flex-wrap: nowrap;
+    }
+
+    .output-panel .segment-btn {
+        flex: 1 1 auto;
+        padding: 0 var(--space-2);
+    }
+
+    .output-panel .action-group {
+        margin-left: auto;
+    }
+
+    .stage {
+        height: 220px;
+        padding: var(--space-3);
+    }
+}
+}
