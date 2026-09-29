@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Git Cheatsheet</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <h1 class="app-title">Git Cheatsheet</h1>
+        <p class="app-subtitle">
+          Search common Git tasks and copy commands with context and recovery
+          guidance.
+        </p>
+      </header>
+      <main>
+        <label class="field"
+          >Search tasks or commands<input
+            id="search"
+            type="text"
+            value=""
+            autocomplete="off"
+            spellcheck="false"
+        /></label>
+        <p>
+          Replace placeholders such as &lt;commit&gt; and &lt;branch&gt; before
+          running commands. Check git status first.
+          <a
+            href="https://git-scm.com/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Git documentation</a
+          >
+        </p>
+        <p id="count" role="status"></p>
+        <div id="results"></div>
+        <p id="error" role="status" aria-live="polite"></p>
+      </main>
+    </div>
+    <script src="../main.js"></script>
+    <script src="../utility-ui.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

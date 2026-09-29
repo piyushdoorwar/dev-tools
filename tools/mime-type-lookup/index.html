@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MIME Type Lookup</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <h1 class="app-title">MIME Type Lookup</h1>
+        <p class="app-subtitle">
+          Search common extensions, filenames, and MIME types in both
+          directions.
+        </p>
+      </header>
+      <main>
+        <label class="field"
+          >Extension, filename, or MIME type<input
+            id="search"
+            type="text"
+            value="webp"
+            autocomplete="off"
+            spellcheck="false"
+        /></label>
+        <p>
+          Extensions are hints, not file validation. Content-Type describes the
+          body; Content-Encoding describes compression. Use charset=UTF-8 for
+          text when appropriate. Let the browser set multipart boundaries for
+          FormData. Unknown binary data commonly uses application/octet-stream.
+        </p>
+        <p>
+          This is a curated common-type reference, not the complete
+          <a
+            href="https://www.iana.org/assignments/media-types/"
+            target="_blank"
+            rel="noopener noreferrer"
+            >IANA registry</a
+          >.
+        </p>
+        <p id="count" role="status"></p>
+        <div id="results"></div>
+        <p id="error" role="status" aria-live="polite"></p>
+      </main>
+    </div>
+    <script src="../main.js"></script>
+    <script src="../utility-ui.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

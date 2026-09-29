@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTTP Header Builder</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <h1 class="app-title">HTTP Header Builder</h1>
+        <p class="app-subtitle">
+          Build Basic, Bearer, or API-key headers and shell-quoted curl snippets
+          locally.
+        </p>
+      </header>
+      <main>
+        <section class="panel">
+          <h2>Basic authentication</h2>
+          <div class="grid">
+            <label class="field"
+              >Username<input
+                id="username"
+                type="text"
+                value=""
+                autocomplete="off"
+                spellcheck="false" /></label
+            ><label class="field"
+              >Password<input
+                id="password"
+                type="password"
+                value=""
+                autocomplete="off"
+                spellcheck="false"
+            /></label>
+          </div>
+          <button type="button" class="btn" id="basic">
+            Build Basic header</button
+          ><label class="field"
+            >Existing Basic header<textarea
+              id="decode-input"
+              spellcheck="false"
+            ></textarea></label
+          ><button type="button" class="btn" id="decode">
+            Decode Basic header
+          </button>
+          <p>
+            Basic is Base64, not encryption. Use HTTPS. Encoding is UTF-8; the
+            server must support it. Credentials stay in this page.
+          </p>
+        </section>
+        <section class="panel grid">
+          <label class="field"
+            >Bearer token<input
+              id="token"
+              type="password"
+              value=""
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><button type="button" class="btn" id="bearer">
+            Build Bearer header</button
+          ><label class="field"
+            >API-key header name<input
+              id="header-name"
+              type="text"
+              value="X-API-Key"
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >API key<input
+              id="api-key"
+              type="password"
+              value=""
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><button type="button" class="btn" id="api">
+            Build API-key header
+          </button>
+        </section>
+        <label class="field"
+          >Request URL<input
+            id="url"
+            type="text"
+            value="https://example.com/api"
+            autocomplete="off"
+            spellcheck="false" /></label
+        ><label class="field"
+          >Output<textarea
+            id="output"
+            spellcheck="false"
+            readonly
+          ></textarea></label
+        ><button type="button" class="btn" id="copy">Copy output</button
+        ><label class="field"
+          >curl (POSIX shell)<textarea
+            id="curl"
+            spellcheck="false"
+            readonly
+          ></textarea>
+        </label>
+        <button type="button" class="btn" id="copy-curl">Copy curl</button>
+        <p id="error" role="status" aria-live="polite"></p>
+      </main>
+    </div>
+    <script src="../main.js"></script>
+    <script src="../utility-ui.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

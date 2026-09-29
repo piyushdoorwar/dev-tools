@@ -254,8 +254,9 @@ test('pinned cards use an icon without visible pinned text', async ({ page }) =>
 test('dashboard search filters tools without an external utility library', async ({ page }) => {
   await page.goto('/');
   await page.locator('#toolSearch').fill('image');
-  await expect(page.locator('#toolList .menu__item')).toHaveCount(1);
-  await expect(page.locator('#toolList .menu__item')).toContainText('Image Toolkit');
+  await expect(page.locator('#toolList .menu__item')).toHaveCount(2);
+  await expect(page.locator('#toolList')).toContainText('Image Toolkit');
+  await expect(page.locator('#toolList')).toContainText('SVG Placeholder Generator');
   await page.locator('#toolSearch').fill('no-such-tool');
   await expect(page.locator('#toolList')).toContainText('No matching tools.');
 });

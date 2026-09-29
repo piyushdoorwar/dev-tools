@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { openTool } from '../helpers.js';
 
-const TOOLS = ['base-converter','bcrypt-generator','certificate-decoder','chmod-calculator','color-converter','cron-expression-generator','crypto-generator','docker-compose-converter','encoder-decoder','env-json-shell-converter','fake-data-generator','file-compressor',
+const TOOLS = ['http-header-builder','meta-tag-generator','mime-type-lookup','keyboard-event-inspector','git-cheatsheet','math-evaluator','unicode-inspector','svg-placeholder-generator','base-converter','bcrypt-generator','certificate-decoder','chmod-calculator','color-converter','cron-expression-generator','crypto-generator','docker-compose-converter','encoder-decoder','env-json-shell-converter','fake-data-generator','file-compressor',
  'hash-generator','html-preview','http-status-codes','id-generator','image-toolkit','json-diff','json-formatter', 'json-toon-converter',
  'json-xml-converter','json-yaml-toml-converter','jwt-debugger','key-pair-generator','markdown-editor','otp-generator','qr-generator','regex-cheatsheet','regex-tester',
  'sql-formatter','string-escaper','subnet-calculator','text-diff','text-encryptor','text-utilities','timestamp-converter','unit-converter','url-parser','user-agent-parser'];

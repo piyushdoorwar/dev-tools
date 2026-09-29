@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVG Placeholder Generator</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <h1 class="app-title">SVG Placeholder Generator</h1>
+        <p class="app-subtitle">
+          Create a placeholder as SVG markup, a data URI, or a downloadable
+          image.
+        </p>
+      </header>
+      <main>
+        <div class="grid">
+          <label class="field"
+            >Width<input
+              id="width"
+              type="number"
+              value="640"
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >Height<input
+              id="height"
+              type="number"
+              value="360"
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >Background<input
+              id="background"
+              type="text"
+              value="#6739b7"
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >Text colour<input
+              id="foreground"
+              type="text"
+              value="#ffffff"
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >Text (blank uses dimensions)<input
+              id="text"
+              type="text"
+              value=""
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >Font size<input
+              id="font-size"
+              type="number"
+              value="32"
+              autocomplete="off"
+              spellcheck="false"
+          /></label>
+        </div>
+        <div class="actions">
+          <div
+            data-color-picker
+            data-value="#6739b7"
+            data-alpha="false"
+            data-label="Background colour"
+            id="background-picker"
+          ></div>
+          <div
+            data-color-picker
+            data-value="#ffffff"
+            data-alpha="false"
+            data-label="Text colour"
+            id="foreground-picker"
+          ></div>
+        </div>
+        <div id="preview"></div>
+        <label class="field"
+          >Output<textarea
+            id="output"
+            spellcheck="false"
+            readonly
+          ></textarea></label
+        ><button type="button" class="btn" id="copy">Copy output</button
+        ><label class="field"
+          >Data URI<textarea
+            id="data-uri"
+            spellcheck="false"
+            readonly
+          ></textarea></label
+        ><button type="button" class="btn" id="copy-uri">Copy data URI</button
+        ><button type="button" class="btn" id="download">Download SVG</button>
+        <p id="error" role="status" aria-live="polite"></p>
+      </main>
+    </div>
+    <script src="../main.js"></script>
+    <script src="../utility-ui.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

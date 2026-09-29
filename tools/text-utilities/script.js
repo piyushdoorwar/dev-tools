@@ -343,9 +343,17 @@ function render() {
   const text = input.value;
   const ops = readOps();
 
-  output.value = applyOps(text, ops);
+  try {
+    output.value = convertList(applyOps(text, ops));
+  } catch (error) {
+    output.value = "";
+    pipelineNode.textContent = error.message;
+    renderStats(analyse(text));
+    return;
+  }
 
   const steps = pipelineLabel(ops);
+  if (listIsActive()) steps.push("Convert list");
   pipelineNode.textContent = steps.length
     ? `Applied in order: ${steps.join(" → ")}`
     : "No changes — the output matches the input.";
@@ -514,3 +522,59 @@ function init() {
 }
 
 init();
+
+// List transforms are opt-in and run after the existing cleaner pipeline.
+function listSettings() {
+  const get = (id) => document.getElementById("list-" + id);
+  const decode = (text) => text.replace(/\\n/g, "\n").replace(/\\t/g, "\t");
+  return {
+    prefix: get("prefix").value,
+    suffix: get("suffix").value,
+    limit: Math.max(0, Math.floor(Number(get("limit").value) || 0)),
+    separator: decode(get("separator").value),
+    quote: get("quote").checked,
+    json: get("json").checked,
+    transpose: get("transpose").checked,
+    delimiter: decode(get("delimiter").value),
+  };
+}
+function listIsActive() {
+  const o = listSettings();
+  return (
+    o.prefix ||
+    o.suffix ||
+    o.limit ||
+    o.separator !== "\n" ||
+    o.quote ||
+    o.json ||
+    o.transpose
+  );
+}
+function convertList(text) {
+  if (!text) return "";
+  const o = listSettings();
+  let lines = text.split("\n");
+  if (o.transpose && o.delimiter) {
+    const rows = lines.map((line) => line.split(o.delimiter));
+    const width = rows.reduce((max, row) => Math.max(max, row.length), 0);
+    if (width * rows.length > 100000)
+      throw Error("Transpose is limited to 100,000 output cells.");
+    lines = Array.from({ length: width }, (_, i) =>
+      rows.map((row) => row[i] ?? "").join(o.delimiter),
+    );
+  }
+  return lines
+    .map((line) => {
+      let result = o.limit ? Array.from(line).slice(0, o.limit).join("") : line;
+      result = o.prefix + result + o.suffix;
+      return o.json
+        ? JSON.stringify(result)
+        : o.quote
+          ? "'" + result.replace(/'/g, "''") + "'"
+          : result;
+    })
+    .join(o.separator);
+}
+document
+  .querySelectorAll(".list-options input")
+  .forEach((field) => field.addEventListener("input", render));

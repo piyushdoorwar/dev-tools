@@ -1,4 +1,92 @@
 globalThis.DEV_TOOLS_CATALOG = Object.freeze([
+{
+  "id": "http-header-builder",
+  "name": "HTTP Header Builder",
+  "route": "http-header-builder",
+  "description": "Build Basic, Bearer, or API-key headers and shell-quoted curl snippets locally.",
+  "capabilities": [
+    "UTF-8 Basic authentication encoding and decoding",
+    "Bearer and API-key headers",
+    "POSIX shell-quoted curl snippets"
+  ]
+},
+{
+  "id": "meta-tag-generator",
+  "name": "Open Graph / Meta Tag Generator",
+  "route": "meta-tag-generator",
+  "description": "Generate SEO, Open Graph, and Twitter Card tags with an illustrative link preview.",
+  "capabilities": [
+    "SEO, Open Graph and Twitter Card markup",
+    "Escaped attribute output and HTTP URL validation",
+    "Live illustrative social link preview"
+  ]
+},
+{
+  "id": "keyboard-event-inspector",
+  "name": "Keyboard Event Inspector",
+  "route": "keyboard-event-inspector",
+  "description": "Inspect keyboard key, code, modifiers, location and repeat state, and compare the latest 30 presses locally.",
+  "capabilities": [
+    "Key, code, legacy keyCode and location",
+    "Modifiers, repeat and composition state",
+    "Recent 30 keydown events with copy and clear"
+  ]
+},
+{
+  "id": "svg-placeholder-generator",
+  "name": "SVG Placeholder Generator",
+  "route": "svg-placeholder-generator",
+  "description": "Create a placeholder as SVG markup, a data URI, or a downloadable image.",
+  "capabilities": [
+    "Dimensions, colours and text customization",
+    "SVG markup and data URI output",
+    "Image preview and SVG download"
+  ]
+},
+{
+  "id": "math-evaluator",
+  "name": "Math / Expression Evaluator",
+  "route": "math-evaluator",
+  "description": "Calculate expressions, exact BigInt arithmetic, and percentages with a session history.",
+  "capabilities": [
+    "Arithmetic, functions, constants and hex/binary literals",
+    "Bounded exact BigInt arithmetic without JavaScript execution",
+    "Percentage calculations and session history"
+  ]
+},
+{
+  "id": "mime-type-lookup",
+  "name": "MIME Type Lookup",
+  "route": "mime-type-lookup",
+  "description": "Search common file extensions, filenames, and MIME types in both directions, with copyable Content-Type headers.",
+  "capabilities": [
+    "Extension, filename and MIME search",
+    "Copyable Content-Type headers",
+    "Common media-type notes and pitfalls"
+  ]
+},
+{
+  "id": "git-cheatsheet",
+  "name": "Git Cheatsheet",
+  "route": "git-cheatsheet",
+  "description": "Search common Git tasks and copy commands with context and recovery guidance.",
+  "capabilities": [
+    "Searchable Git task reference",
+    "Copyable commands with history-rewrite and data-loss notes",
+    "Rebase, stash, cherry-pick and detached HEAD recovery"
+  ]
+},
+{
+  "id": "unicode-inspector",
+  "name": "Unicode / Character Inspector",
+  "route": "unicode-inspector",
+  "description": "Inspect code points, Unicode names and categories, encoding bytes, and hidden characters.",
+  "capabilities": [
+    "Unicode 17 names, categories and hidden characters",
+    "Code points, UTF-8 and UTF-16 bytes",
+    "JavaScript, HTML and CSS escapes"
+  ]
+},
   {
     id: "base-converter",
     name: "Base Converter",
@@ -265,8 +353,8 @@ globalThis.DEV_TOOLS_CATALOG = Object.freeze([
     route: "text-cleaner",
     toolPath: "text-utilities",
     endpoint: "#clean",
-    description: "Trim, sort, deduplicate, renumber, and recase lines of text locally with a predictable, ordered pipeline.",
-    capabilities: ["Trim, collapse, and drop empty lines", "Sort, reverse, shuffle, and deduplicate", "Upper, lower, title, and sentence case"],
+    description: "Clean and convert lists locally: trim, sort, deduplicate, recase, add affixes, quote, join, transpose columns and truncate values.",
+    capabilities: ["List conversion: prefix/suffix, quoting, joining, transpose and truncation", "Trim, collapse, and drop empty lines", "Sort, reverse, shuffle, and deduplicate", "Upper, lower, title, and sentence case"],
   },
   {
     id: "timestamp-converter",

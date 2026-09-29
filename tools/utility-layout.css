@@ -1,0 +1,114 @@
+@layer tool {
+  .app-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 24px;
+  }
+  .header {
+    margin-bottom: 24px;
+  }
+  .app-subtitle {
+    margin-top: 10px;
+  }
+  main {
+    display: grid;
+    gap: 18px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+  .field input,
+  .field textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+  }
+  .field textarea {
+    min-height: 150px;
+    resize: vertical;
+    font-family: var(--font-mono, monospace);
+  }
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .panel,
+  .card {
+    padding: 20px;
+    border: 1px solid var(--border-light);
+    border-radius: 14px;
+    background: var(--panel-bg);
+  }
+  .panel,
+  .card {
+    display: grid;
+    gap: 12px;
+    min-width: 0;
+  }
+  .card pre,
+  pre {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  #results:not(tbody),
+  #history {
+    display: grid;
+    gap: 12px;
+  }
+  #error {
+    color: var(--accent-pink);
+    min-height: 1.5em;
+  }
+  button {
+    justify-self: start;
+    align-self: center;
+  }
+  #preview {
+    max-width: 100%;
+    overflow: hidden;
+  }
+  #preview img {
+    max-width: 100%;
+    max-height: 360px;
+  }
+  #capture {
+    padding: 36px;
+    border: 2px dashed var(--accent-purple-light);
+    border-radius: 14px;
+    outline-offset: 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  td,
+  th {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-light);
+    overflow-wrap: anywhere;
+  }
+  .table-wrap {
+    overflow: auto;
+  }
+  a {
+    color: var(--accent-yellow);
+  }
+  @media (max-width: 640px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .app-container {
+      padding: 16px;
+    }
+  }
+}

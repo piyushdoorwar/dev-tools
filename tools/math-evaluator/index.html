@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Math / Expression Evaluator</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <h1 class="app-title">Math / Expression Evaluator</h1>
+        <p class="app-subtitle">
+          Calculate expressions, exact BigInt arithmetic, and percentages with a
+          session history.
+        </p>
+      </header>
+      <main>
+        <label class="field"
+          >Expression<input
+            id="expression"
+            type="text"
+            value="sqrt(81) + 0xff"
+            autocomplete="off"
+            spellcheck="false" /></label
+        ><button type="button" class="btn" id="evaluate">Evaluate</button>
+        <p>
+          Operators: + − * / % ^ (power). Functions: sqrt, log (natural), log10,
+          sin, cos, tan, abs, floor, ceil, round, min, max. Constants: pi, e.
+          Trigonometry uses radians. Add n to integer literals for BigInt; do
+          not mix BigInt and decimal numbers. BigInt division truncates.
+          Ordinary numbers use floating-point arithmetic and may round.
+        </p>
+        <label class="field"
+          >Output<textarea
+            id="output"
+            spellcheck="false"
+            readonly
+          ></textarea></label
+        ><button type="button" class="btn" id="copy">Copy output</button>
+        <section class="panel">
+          <h2>Percentages</h2>
+          <p>
+            Percentage change uses (B − A) / |A| × 100. A zero starting value is
+            undefined.
+          </p>
+          <div class="grid">
+            <label class="field"
+              >X / starting value<input
+                id="a"
+                type="number"
+                value="25"
+                autocomplete="off"
+                spellcheck="false" /></label
+            ><label class="field"
+              >Y / ending value<input
+                id="b"
+                type="number"
+                value="100"
+                autocomplete="off"
+                spellcheck="false"
+            /></label>
+          </div>
+          <button type="button" class="btn" id="percent">
+            X is what % of Y?</button
+          ><button type="button" class="btn" id="change">
+            % change from A to B
+          </button>
+        </section>
+        <button type="button" class="btn" id="clear">Clear history</button>
+        <div id="history"></div>
+        <p id="error" role="status" aria-live="polite"></p>
+      </main>
+    </div>
+    <script src="../main.js"></script>
+    <script src="../utility-ui.js"></script>
+    <script src="parser.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unicode / Character Inspector</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <h1 class="app-title">Unicode / Character Inspector</h1>
+        <p class="app-subtitle">
+          Inspect code points, Unicode names and categories, encoding bytes, and
+          hidden characters.
+        </p>
+      </header>
+      <main>
+        <label class="field"
+          >Text<textarea id="input" spellcheck="false">Hello 👋​</textarea>
+        </label>
+        <p>
+          One row per code point, not per grapheme. UTF-16 bytes are shown
+          big-endian without a BOM. Lone surrogates have no valid UTF-8
+          encoding. Names and categories use bundled Unicode 17.0 data.
+        </p>
+        <p id="count" role="status"></p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Character</th>
+                <th>Code point</th>
+                <th>Name / category</th>
+                <th>UTF-8 bytes</th>
+                <th>UTF-16 BE bytes</th>
+              </tr>
+            </thead>
+            <tbody id="results"></tbody>
+          </table>
+        </div>
+        <label class="field"
+          >JavaScript code-point escapes<textarea
+            id="output"
+            spellcheck="false"
+            readonly
+          ></textarea></label
+        ><button type="button" class="btn" id="copy">Copy output</button
+        ><label class="field"
+          >HTML hexadecimal entities<textarea
+            id="html"
+            spellcheck="false"
+            readonly
+          ></textarea></label
+        ><button type="button" class="btn" id="copy-html">
+          Copy HTML entities</button
+        ><label class="field"
+          >CSS escapes<textarea
+            id="css"
+            spellcheck="false"
+            readonly
+          ></textarea></label
+        ><button type="button" class="btn" id="copy-css">
+          Copy CSS escapes
+        </button>
+        <p id="error" role="status" aria-live="polite"></p>
+      </main>
+    </div>
+    <script src="../main.js"></script>
+    <script src="../utility-ui.js"></script>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

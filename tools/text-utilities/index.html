@@ -124,7 +124,19 @@
                         </div>
                     </div>
 
-                    <p class="pipeline" id="pipeline">No changes — the output matches the input.</p>
+                    <details class="list-options"><summary>List converter</summary>
+<p>Runs after cleanup: transpose delimited columns, truncate each value, add prefix/suffix, quote, then join. Transpose uses literal delimiters, not CSV parsing. Empty cells are preserved.</p>
+<div class="list-fields">
+<label>Prefix per value<input id="list-prefix" type="text"></label>
+<label>Suffix per value<input id="list-suffix" type="text"></label>
+<label>Maximum code points (0 = unlimited)<input id="list-limit" type="number" min="0" value="0"></label>
+<label>Join separator (\n and \t supported)<input id="list-separator" type="text" value="\n"></label>
+<label><input id="list-quote" type="checkbox"> SQL single quotes (apostrophes doubled)</label>
+<label><input id="list-json" type="checkbox"> JSON double quotes (takes precedence)</label>
+<label><input id="list-transpose" type="checkbox"> Transpose columns</label>
+<label>Column delimiter (\t supported)<input id="list-delimiter" type="text" value="\t"></label>
+</div><p>For SQL IN lists, select SQL quotes and use a comma separator, then place the result inside IN (…). Use bound parameters for untrusted SQL values.</p></details>
+<p class="pipeline" id="pipeline">No changes — the output matches the input.</p>
                     <textarea id="output" class="editor" readonly spellcheck="false"
                               placeholder="The cleaned text appears here."></textarea>
                 </div>

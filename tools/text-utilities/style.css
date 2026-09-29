@@ -378,3 +378,47 @@ body {
     }
 }
 }
+
+@layer tool {
+  .list-options {
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+  }
+  .list-options summary {
+    cursor: pointer;
+  }
+  .list-options p {
+    margin: 10px 0;
+    color: var(--text-secondary);
+  }
+  .list-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .list-fields label {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .list-fields input:not([type="checkbox"]) {
+    width: 100%;
+    min-width: 0;
+    padding: 12px;
+  }
+  @media (max-width: 640px) {
+    .list-fields {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+@layer tool {
+  .list-fields label:has(input[type="checkbox"]) {
+    display: block;
+  }
+  .list-fields input[type="checkbox"] {
+    margin-right: 6px;
+  }
+}

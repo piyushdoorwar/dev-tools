@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Keyboard Event Inspector</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <h1 class="app-title">Keyboard Event Inspector</h1>
+        <p class="app-subtitle">
+          Inspect keyboard events and compare the latest 30 presses.
+        </p>
+      </header>
+      <main>
+        <div
+          id="capture"
+          tabindex="0"
+          role="region"
+          aria-label="Keyboard capture area"
+        >
+          Click here or focus with Tab, then press a key. Tab and Escape remain
+          available for navigation.
+        </div>
+        <p>
+          Events are captured only while this area is focused. Browser and OS
+          shortcuts may not reach the page. keyCode is deprecated; prefer key or
+          code.
+        </p>
+        <button type="button" class="btn" id="clear">Clear history</button
+        ><label class="field"
+          >Latest event<textarea
+            id="output"
+            spellcheck="false"
+            readonly
+          ></textarea></label
+        ><button type="button" class="btn" id="copy">Copy output</button>
+        <div id="history"></div>
+        <p id="error" role="status" aria-live="polite"></p>
+      </main>
+    </div>
+    <script src="../main.js"></script>
+    <script src="../utility-ui.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

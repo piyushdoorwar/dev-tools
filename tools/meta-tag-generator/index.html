@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Graph / Meta Tag Generator</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../main.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <header class="header">
+        <h1 class="app-title">Open Graph / Meta Tag Generator</h1>
+        <p class="app-subtitle">
+          Generate SEO, Open Graph, and Twitter Card tags with an illustrative
+          link preview.
+        </p>
+      </header>
+      <main>
+        <div class="grid">
+          <label class="field"
+            >Title<input
+              id="title"
+              type="text"
+              value="My page"
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >Description<input
+              id="description"
+              type="text"
+              value="A useful page worth sharing."
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >Page URL<input
+              id="url"
+              type="text"
+              value="https://example.com/"
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >Image URL<input
+              id="image"
+              type="text"
+              value=""
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >Image description<input
+              id="alt"
+              type="text"
+              value=""
+              autocomplete="off"
+              spellcheck="false" /></label
+          ><label class="field"
+            >Site name<input
+              id="site"
+              type="text"
+              value="Example"
+              autocomplete="off"
+              spellcheck="false"
+          /></label>
+        </div>
+        <label class="field"
+          >Output<textarea
+            id="output"
+            spellcheck="false"
+            readonly
+          ></textarea></label
+        ><button type="button" class="btn" id="copy">Copy output</button>
+        <section class="card" id="preview">
+          <h2>Link card preview</h2>
+          <div id="preview-image">Image preview appears after loading.</div>
+          <button type="button" class="btn" id="load-image">
+            Load image preview</button
+          ><small id="preview-url"></small>
+          <h3 id="preview-title"></h3>
+          <p id="preview-description"></p>
+          <p>
+            Illustrative layout; platforms may crop images or cache older
+            metadata. Loading an image contacts its host.
+          </p>
+        </section>
+        <p id="error" role="status" aria-live="polite"></p>
+      </main>
+    </div>
+    <script src="../main.js"></script>
+    <script src="../utility-ui.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

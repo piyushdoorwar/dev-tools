@@ -4,6 +4,15 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 
 ## Available tools
 
+- HTTP Header Builder (Basic, Bearer, API keys and curl)
+- Open Graph / Meta Tag Generator
+- MIME Type Lookup
+- Keyboard Event Inspector
+- Git Cheatsheet
+- Math / Expression Evaluator
+- Unicode / Character Inspector
+- SVG Placeholder Generator
+
 - Base Converter
 - Bcrypt Hash Generator
 - Chmod Calculator
@@ -36,7 +45,7 @@ A fast, installable collection of developer utilities built with plain HTML, CSS
 - Slug Generator / String Escaper
 - SQL Formatter
 - Subnet Calculator (IPv4 / IPv6)
-- Text Cleaner
+- Text Cleaner (including list conversion, quoting, joining, transposing and truncation)
 - Text Diff
 - Text Encrypt / Decrypt (AES-256-GCM)
 - Timestamp Converter
