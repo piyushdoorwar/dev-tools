@@ -1,7 +1,6 @@
 # DevTools Design System — flat console
 
-DevTools shares its design language with the author's other projects (ccs-ui,
-the StudyIn Docker Manager, Gitable, Lumyn, Yamlet and the portfolio): one UI
+DevTools shares its design language with the author's other projects: one UI
 face, solid surfaces, hairline borders, neutral elevation and small radii.
 What stays DevTools' own is the colour: **purple** and **yellow**.
 
