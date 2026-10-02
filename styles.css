@@ -437,8 +437,7 @@ kbd {
   align-items: center;
 }
 
-/* ccs-ui's side-nav item: quiet at rest, tinted on hover, a solid accent
-   pill when current. */
+
 .menu__item {
   width: 100%;
   display: grid;
@@ -825,7 +824,6 @@ kbd {
   flex-wrap: wrap;
 }
 
-/* ccs-ui button: 13px / 500, 6px radius. */
 .settings-btn {
   display: inline-flex;
   align-items: center;

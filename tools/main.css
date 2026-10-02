@@ -632,7 +632,6 @@ select[size]:not([size='1']) {
   color: var(--heading);
 }
 
-/* ccs-ui's segmented tab: the selected segment is a solid accent fill. */
 .mode-btn.active,
 .tab-button.active,
 .segment-btn.active,
@@ -1410,8 +1409,6 @@ kbd {
 
   /* --- Modal surface ----------------------------------------------------- */
 
-  /* ccs-ui's dialog shell, in the dark console finish: a framed solid
-     surface with the same shallow-to-deep neutral elevation as panels. */
   .modal-content,
   .modal-panel,
   .settings-content {
@@ -1735,10 +1732,6 @@ kbd {
 
   /* --- Badges, pills & status ------------------------------------------- */
 
-  /* Deliberately NOT `.pill`: qr-generator uses that name for tab controls,
-     and this layer would override them into tiny uppercase badges. */
-  /* ccs-ui / Docker Manager status badge: a 6px-radius tinted chip. Tone
-     classes colour it; `.badge--dot` adds the leading status dot. */
   .badge,
   .status-pill {
     padding: 3px var(--space-2);
