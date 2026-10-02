@@ -160,6 +160,8 @@ test('info modal keeps the basic content and appends details for the active tool
 
 test('settings reports what is stored and clears it on confirmation', async ({ page }) => {
   await page.goto('/');
+  // Pin buttons live in the expanded sidebar; it starts as the icon rail.
+  await page.locator('#collapseBtn').click();
 
   // Pin a tool and open another so there is real state to remove, plus a key
   // from a neighbouring app on the same origin, which must survive.
@@ -201,6 +203,8 @@ test('settings reports what is stored and clears it on confirmation', async ({ p
   // A key belonging to another app on the same origin is not ours to delete.
   expect(await page.evaluate(() => localStorage.getItem('someone-elses-app'))).toBe('keep me');
   await expect(page.locator('#recentTools [data-tool-id="markdown-editor"]')).toHaveCount(0);
+  // The sidebar preference goes with the rest, so it is back to the rail.
+  await expect(page.locator('#app')).toHaveClass(/sidebar-collapsed/);
 });
 
 test('the settings and support dialogs coexist without trapping page scroll', async ({ page }) => {
@@ -253,6 +257,7 @@ test('pinned cards use an icon without visible pinned text', async ({ page }) =>
 
 test('dashboard search filters tools without an external utility library', async ({ page }) => {
   await page.goto('/');
+  await page.locator('#collapseBtn').click();
   await page.locator('#toolSearch').fill('image');
   await expect(page.locator('#toolList .menu__item')).toHaveCount(2);
   await expect(page.locator('#toolList')).toContainText('Image Toolkit');

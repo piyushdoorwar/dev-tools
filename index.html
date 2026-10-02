@@ -36,7 +36,17 @@
   </head>
   <body>
     <div class="app" id="app">
-      <button class="expand-btn" id="expandBtn" type="button" aria-label="Expand sidebar" data-tooltip="Expand sidebar">
+      <script>
+        /* Apply the saved sidebar state before first paint (see app.js). */
+        (function () {
+          var saved = null;
+          try { saved = localStorage.getItem('devtools:sidebar-collapsed'); } catch (error) {}
+          if (!matchMedia('(max-width: 900px)').matches && saved !== 'false') {
+            document.getElementById('app').classList.add('sidebar-collapsed');
+          }
+        })();
+      </script>
+      <button class="expand-btn" id="expandBtn" type="button" aria-label="Expand sidebar" data-tooltip="Expand sidebar" aria-controls="sidebar">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M13 5l7 7-7 7"></path>
           <path d="M5 5l7 7-7 7"></path>
@@ -44,7 +54,7 @@
       </button>
       <aside class="sidebar" id="sidebar" aria-label="Tool navigation">
         <div class="sidebar__top">
-          <button class="collapse-btn" id="collapseBtn" type="button" aria-label="Toggle sidebar" data-tooltip="Collapse sidebar">
+          <button class="collapse-btn" id="collapseBtn" type="button" aria-label="Collapse sidebar" data-tooltip="Collapse sidebar" aria-controls="sidebar">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M11 19l-7-7 7-7"></path>
               <path d="M19 19l-7-7 7-7"></path>

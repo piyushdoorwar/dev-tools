@@ -73,6 +73,9 @@ test('a refused storage write does not stop a tool from opening', async ({ page 
   await expect(page).toHaveURL(/\/sql-formatter\/$/);
   await expect(page.locator('iframe.frame.is-visible')).toHaveAttribute('data-tool-id', 'sql-formatter');
 
+  // Expanding saves a preference too; a refused write must not block it.
+  await page.locator('#collapseBtn').click();
+  await expect(page.locator('#app')).not.toHaveClass(/sidebar-collapsed/);
   await page.locator('#toolList .menu__pin[data-tool-id="jwt-debugger"]').click();
   await expect(page.locator('#toolList .menu__section-title').first()).toHaveText('Pinned');
   expect(errors).toEqual([]);
@@ -103,13 +106,54 @@ test('on a phone, opening a tool tucks the sidebar away and the expand button do
   await expect(page.locator('#sidebar')).toBeVisible();
 });
 
-test('on desktop, opening a tool leaves the sidebar as it was', async ({ page }) => {
+test('on desktop, the sidebar starts as the collapsed icon rail', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openDashboard(page);
 
-  await page.locator('#toolList .menu__item[data-tool-id="qr-generator"]').click();
+  await expect(page.locator('#app')).toHaveClass(/sidebar-collapsed/);
   await expect(page.locator('#sidebar')).toBeVisible();
+  await expect(page.locator('#collapseBtn')).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#collapseBtn')).toHaveAttribute('aria-label', 'Expand sidebar');
+
+  // The rail still opens tools, and opening one leaves the sidebar as it was.
+  await page.locator('#toolList .menu__item[data-tool-id="qr-generator"]').click();
+  await expect(page.locator('#app')).toHaveClass(/sidebar-collapsed/);
+});
+
+test('on desktop, the sidebar remembers being expanded and collapsed across reloads', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openDashboard(page);
+
+  await page.locator('#collapseBtn').click();
   await expect(page.locator('#app')).not.toHaveClass(/sidebar-collapsed/);
+  await expect(page.locator('#collapseBtn')).toHaveAttribute('aria-expanded', 'true');
+  await page.reload();
+  await expect(page.locator('#app')).not.toHaveClass(/sidebar-collapsed/);
+
+  await page.locator('#collapseBtn').click();
+  await expect(page.locator('#app')).toHaveClass(/sidebar-collapsed/);
+  await page.reload();
+  await expect(page.locator('#app')).toHaveClass(/sidebar-collapsed/);
+});
+
+test('the saved sidebar state is applied before first paint', async ({ page }) => {
+  // app.js runs at the end of <body>; without the inline guard the shell
+  // would paint expanded and then snap to the rail on every load.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route('**/app.js', (route) => route.abort());
+  await page.goto('/');
+  await expect(page.locator('#app')).toHaveClass(/sidebar-collapsed/);
+});
+
+test('on a phone, the home screen still shows the menu and a toggle is not saved', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openDashboard(page);
+  await expect(page.locator('#sidebar')).toBeVisible();
+
+  // Hiding it on a phone is a momentary choice, not the desktop preference.
+  await page.locator('#collapseBtn').click();
+  await expect(page.locator('#sidebar')).toBeHidden();
+  expect(await page.evaluate(() => localStorage.getItem('devtools:sidebar-collapsed'))).toBeNull();
 });
 
 test('the sidebar lists every tool alphabetically, wherever it was added to the catalog', async ({ page }) => {

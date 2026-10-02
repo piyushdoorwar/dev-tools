@@ -3,6 +3,7 @@ const APP_ROOT_PATH = APP_ROOT_URL.pathname.endsWith("/") ? APP_ROOT_URL.pathnam
 const BASE = new URL("tools/", APP_ROOT_URL).href;
 const PINNED_TOOLS_KEY = "devtools:pinned-tools";
 const RECENT_TOOLS_KEY = "devtools:recent-tools";
+const SIDEBAR_COLLAPSED_KEY = "devtools:sidebar-collapsed";
 const RECENT_TOOLS_LIMIT = 5;
 const QUICK_LAUNCH_TOOL_IDS = [
   "markdown-editor",
@@ -568,14 +569,40 @@ function setActive(tool, updateHistory = true) {
 // Sidebar collapse/expand
 const NARROW_LAYOUT = window.matchMedia("(max-width: 900px)");
 
-function setSidebarCollapsed(collapsed) {
+/* On desktop the sidebar defaults to the collapsed icon rail — tools get the
+   width, and Ctrl+K finds any tool — and remembers whichever way the user last
+   left it. The stacked phone/tablet layout has no rail (collapsed there means
+   hidden), so it keeps its own flow: menu on the home screen, tucked away
+   once a tool opens. index.html applies the same rule before first paint. */
+function prefersCollapsedSidebar() {
+  try {
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) !== "false";
+  } catch {
+    return true;
+  }
+}
+
+function setSidebarCollapsed(collapsed, { remember = false } = {}) {
   els.sidebar.classList.toggle("is-collapsed", collapsed);
   els.app.classList.toggle("sidebar-collapsed", collapsed);
+  const label = collapsed ? "Expand sidebar" : "Collapse sidebar";
+  els.collapseBtn.setAttribute("aria-label", label);
+  els.collapseBtn.dataset.tooltip = label;
+  els.collapseBtn.setAttribute("aria-expanded", String(!collapsed));
+  els.expandBtn.setAttribute("aria-expanded", String(!collapsed));
+  if (remember) safeSetItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
 }
 
 function toggleSidebar() {
-  setSidebarCollapsed(!els.app.classList.contains("sidebar-collapsed"));
+  setSidebarCollapsed(!els.app.classList.contains("sidebar-collapsed"), {
+    remember: !NARROW_LAYOUT.matches,
+  });
 }
+
+setSidebarCollapsed(!NARROW_LAYOUT.matches && prefersCollapsedSidebar());
+NARROW_LAYOUT.addEventListener("change", (event) => {
+  if (!event.matches) setSidebarCollapsed(prefersCollapsedSidebar());
+});
 
 els.collapseBtn.addEventListener("click", toggleSidebar);
 els.expandBtn.addEventListener("click", toggleSidebar);
