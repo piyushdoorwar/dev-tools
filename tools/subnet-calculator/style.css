@@ -47,7 +47,7 @@ body {
     gap: var(--space-4);
     flex-wrap: wrap;
     padding-bottom: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
 }
 
 .header-right {
@@ -116,7 +116,8 @@ body {
     min-width: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -127,7 +128,9 @@ body {
     flex-wrap: wrap;
     min-height: 71px;
     padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
+    border-radius: calc(var(--radius-panel) - 1px) calc(var(--radius-panel) - 1px) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-hint {
@@ -161,11 +164,6 @@ body {
 .mode-switcher {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-1);
-    padding: var(--space-1);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
 }
 
 /* --- Tooltips ------------------------------------------------------------
@@ -232,9 +230,9 @@ body {
 .bit-group {
     display: inline-flex;
     padding: 6px 8px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface-soft);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-control);
+    background: var(--surface-2);
 }
 
 .bit {
@@ -336,7 +334,7 @@ body {
 
 .copy-value:hover {
     border-color: var(--border-light);
-    background: var(--surface-strong);
+    background: var(--surface-3);
 }
 
 /* --- Tools -------------------------------------------------------------- */
@@ -386,7 +384,7 @@ body {
     max-height: 60vh;
     overflow: auto;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-card);
 }
 
 .split-table {
@@ -400,9 +398,10 @@ body {
     position: sticky;
     top: 0;
     padding: var(--space-2) var(--space-3);
-    background: var(--panel-bg-elevated);
+    background: var(--surface-2);
     color: var(--text-muted);
     font-family: var(--font-body);
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: var(--tracking-caps);
     text-align: left;
@@ -411,7 +410,7 @@ body {
 
 .split-table td {
     padding: 6px var(--space-3);
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--divider);
     color: var(--text-secondary);
     white-space: nowrap;
 }
@@ -438,9 +437,9 @@ body {
 
 .cidr-chip {
     padding: 4px 10px;
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--border);
     border-radius: var(--radius-pill);
-    background: var(--surface-strong);
+    background: var(--surface-3);
     color: var(--text-primary);
     font-family: var(--font-mono);
     font-size: var(--chrome-sm);
@@ -449,7 +448,8 @@ body {
 }
 
 .cidr-chip:hover {
-    border-color: var(--accent-purple-light);
+    border-color: var(--border-strong);
+    color: var(--heading);
 }
 
 @media (max-width: 960px) {

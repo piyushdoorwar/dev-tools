@@ -56,8 +56,8 @@ body {
     gap: var(--space-1);
     padding: 3px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 .hint-code {
@@ -98,8 +98,11 @@ body {
     transition-delay: 0s;
 }
 
+/* Every panel action group sits at the panel's right edge, so all of their
+   bubbles anchor right: "Paste HTML to import its tags" is the middle button
+   and, centred, pushed the page 2px wider than a 390px phone. */
 .header-actions .action-btn[data-tooltip]::after,
-.panel-header .action-group .action-btn[data-tooltip]:last-child::after {
+.panel-header .action-group .action-btn[data-tooltip]::after {
     left: auto;
     right: 0;
     transform: translateY(4px);
@@ -107,8 +110,8 @@ body {
 
 .header-actions .action-btn[data-tooltip]:hover::after,
 .header-actions .action-btn[data-tooltip]:focus-visible::after,
-.panel-header .action-group .action-btn[data-tooltip]:last-child:hover::after,
-.panel-header .action-group .action-btn[data-tooltip]:last-child:focus-visible::after {
+.panel-header .action-group .action-btn[data-tooltip]:hover::after,
+.panel-header .action-group .action-btn[data-tooltip]:focus-visible::after {
     transform: translateY(0);
 }
 
@@ -181,7 +184,8 @@ body {
     min-height: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -191,7 +195,9 @@ body {
     gap: var(--space-3);
     flex-wrap: wrap;
     padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-body {
@@ -247,7 +253,7 @@ body {
 .field-tag {
     min-width: 0;
     overflow: hidden;
-    color: var(--text-disabled);
+    color: var(--text-hint);
     font-family: var(--font-mono);
     font-size: var(--chrome-sm);
     text-overflow: ellipsis;
@@ -392,8 +398,6 @@ body {
     flex: none;
 }
 
-
-
 /* A fixed stage keeps the tags panel from jumping as surfaces change. It is a
    size container so each card can scale its image to the height available. */
 .preview-stage {
@@ -405,9 +409,9 @@ body {
     container-type: size;
     padding: var(--space-3);
     overflow: auto;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--bg-secondary);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .preview-stage:focus-visible {
@@ -453,7 +457,7 @@ body {
     gap: var(--space-1);
     aspect-ratio: 1.91 / 1;
     overflow: hidden;
-    background: var(--panel-bg-elevated);
+    background: var(--surface-3);
     text-align: center;
 }
 
@@ -468,7 +472,7 @@ body {
     padding: var(--space-3);
     background:
         repeating-linear-gradient(135deg, var(--surface-soft) 0 10px, transparent 10px 20px),
-        var(--panel-bg-elevated);
+        var(--surface-3);
 }
 
 .media-glyph {
@@ -512,7 +516,7 @@ body {
     justify-content: center;
     width: 112px;
     aspect-ratio: 1;
-    background: var(--panel-bg-elevated);
+    background: var(--surface-3);
     border-right: 1px solid var(--border-light);
 }
 
@@ -554,10 +558,10 @@ body {
     height: 28px;
     border: 1px solid var(--border-light);
     border-radius: var(--radius-pill);
-    background: var(--panel-bg-elevated);
-    color: var(--accent-yellow);
+    background: var(--surface-3);
+    color: var(--accent-purple-light);
     font-size: var(--text-sm);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .g-site-text {
@@ -600,7 +604,7 @@ body {
 .x-card {
     overflow: hidden;
     border: 1px solid var(--border-light);
-    background: var(--panel-bg);
+    background: var(--surface);
 }
 
 .fb-card { border-radius: var(--radius-sm); }
@@ -612,7 +616,7 @@ body {
     flex-direction: column;
     gap: 2px;
     padding: var(--space-3);
-    background: var(--panel-bg-elevated);
+    background: var(--surface-3);
     border-top: 1px solid var(--border);
 }
 
@@ -671,9 +675,9 @@ body {
     width: 36px;
     height: 36px;
     border-radius: var(--radius-pill);
-    background: linear-gradient(135deg, var(--accent-yellow), var(--accent-purple-light));
-    color: var(--bg);
-    font-weight: 800;
+    background: var(--accent-purple);
+    color: #fff;
+    font-weight: 600;
 }
 
 .x-who {
@@ -805,7 +809,7 @@ body {
     box-shadow: var(--focus-ring);
 }
 
-.tok-comment { color: var(--text-disabled); font-style: italic; }
+.tok-comment { color: var(--text-hint); font-style: italic; }
 .tok-punct { color: var(--text-muted); }
 .tok-tag { color: var(--accent-purple-light); }
 .tok-attr { color: var(--accent-yellow); }

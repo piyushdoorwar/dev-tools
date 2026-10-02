@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0d0d0d" />
+    <meta name="theme-color" content="#0b0b0f" />
     <meta name="description" content="Use fast, free developer tools for formatting, conversion, testing, generation, and file processing directly in your browser." />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="author" content="Dev Tools" />
@@ -29,6 +29,8 @@
     <title>Dev Tools — Fast, Private Browser Utilities</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="manifest" href="./manifest.json" />
+    <link rel="preload" href="./assets/fonts/dm-sans-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="./assets/tokens.css" />
     <link rel="stylesheet" href="./styles.css" />
     <script id="seoStructuredData" type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Dev Tools","url":"https://piyushdoorwar.github.io/dev-tools/"}</script>
   </head>
@@ -230,7 +232,7 @@
             <kbd class="command-palette__key">Esc</kbd>
           </div>
           <div class="command-palette__body">
-            <h2 id="commandPaletteTitle" class="command-palette__title">Open tool</h2>
+            <h2 id="commandPaletteTitle" class="command-palette__title sr-only">Open tool</h2>
             <ul class="command-palette__list" id="commandPaletteList" role="listbox"></ul>
           </div>
           <div class="command-palette__footer" aria-hidden="true">

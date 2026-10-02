@@ -178,23 +178,15 @@ test('text buttons keep their horizontal padding', async ({ page }) => {
 });
 
 test('the close button sits beside the title, not under it', async ({ page }) => {
-  // main.css gives .modal-header its padding and rule but not its row layout,
-  // so a tool that omits `display: flex` wraps the close button onto its own
-  // line. Cheap to miss by eye, cheap to assert.
-  const CASES = [
-    ['timestamp-converter', '#helpBtn', '#helpModal'],
-    ['cron-expression-generator', '#helpBtn', '#helpModal'],
-    ['base-converter', '#schemaHelpBtn', '#schemaHelpModal'],
-    ['crypto-generator', '#securityInfoBtn', '#securityInfoModal'],
-  ];
-
-  for (const [tool, trigger, modal] of CASES) {
+  // Header layout belongs to the shared component. Check every primary modal
+  // so a new tool cannot accidentally put its close control on a second row.
+  for (const [tool, [trigger, modal]] of Object.entries(MODALS)) {
     await openTool(page, tool);
     await page.click(trigger);
     const geometry = await page.evaluate((sel) => {
       const header = document.querySelector(`${sel} .modal-header`);
       const title = header.querySelector('.modal-title, h2, h3');
-      const close = header.querySelector('.modal-close');
+      const close = header.querySelector('.modal-close, .settings-close, .info-close');
       const t = title.getBoundingClientRect();
       const c = close.getBoundingClientRect();
       return { titleRight: t.right, closeLeft: c.left,
@@ -205,4 +197,26 @@ test('the close button sits beside the title, not under it', async ({ page }) =>
     expect(geometry.closeLeft, `${tool}: close button is not to the right`).
       toBeGreaterThan(geometry.titleRight);
   }
+});
+
+test('docker converter modal separates sections and uses a compact accent', async ({ page }) => {
+  await openTool(page, 'docker-compose-converter');
+  await page.click('#helpBtn');
+
+  const geometry = await page.evaluate(() => {
+    const modal = document.querySelector('#helpModal .modal-content');
+    const headings = [...document.querySelectorAll('#helpModal .legend-intro > p')];
+    const lists = [...document.querySelectorAll('#helpModal .legend-intro > ul')];
+    const gaps = headings.slice(1).map((heading, index) =>
+      heading.getBoundingClientRect().top - lists[index].getBoundingClientRect().bottom);
+    const accent = getComputedStyle(modal, '::before');
+    return {
+      gaps,
+      accentWidth: parseFloat(accent.width),
+      modalWidth: modal.getBoundingClientRect().width,
+    };
+  });
+
+  expect(Math.min(...geometry.gaps)).toBeGreaterThanOrEqual(16);
+  expect(geometry.accentWidth).toBeLessThan(geometry.modalWidth / 3);
 });

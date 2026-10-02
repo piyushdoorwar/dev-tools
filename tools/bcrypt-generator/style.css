@@ -50,7 +50,7 @@ body {
     gap: var(--space-4);
     flex-wrap: wrap;
     padding-bottom: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
 }
 
 .header-right {
@@ -119,7 +119,8 @@ body {
     min-width: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -130,7 +131,9 @@ body {
     flex-wrap: wrap;
     min-height: 71px;
     padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
+    border-radius: calc(var(--radius-panel) - 1px) calc(var(--radius-panel) - 1px) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-hint {
@@ -164,11 +167,6 @@ body {
 .mode-switcher {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-1);
-    padding: var(--space-1);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
 }
 
 /* --- Tooltips ------------------------------------------------------------
@@ -211,10 +209,10 @@ body {
 .segment {
     display: flex;
     gap: var(--space-1);
-    padding: var(--space-1);
+    padding: 3px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 .segment-btn {
@@ -239,7 +237,7 @@ body {
 
 .field-label {
     color: var(--text-muted);
-    font-size: var(--chrome-sm);
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
@@ -325,9 +323,9 @@ body {
     gap: var(--space-3);
     min-height: 56px;
     padding: var(--space-3) var(--space-4);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
     color: var(--text-secondary);
     font-size: var(--chrome-base);
     line-height: var(--leading-normal);
@@ -380,14 +378,14 @@ body {
     flex-direction: column;
     gap: var(--space-3);
     padding-top: var(--space-3);
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--divider);
 }
 
 .anatomy-hash {
     padding: var(--space-3);
-    border: 1px dashed var(--border-light);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
     font-family: var(--font-mono);
     font-size: var(--text-md);
     word-break: break-all;

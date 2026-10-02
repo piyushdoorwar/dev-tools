@@ -58,7 +58,8 @@ body {
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .toolbar-left {
@@ -99,14 +100,14 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-1);
-    padding: 0.25rem;
+    padding: 3px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 .result-count {
-    color: var(--text-disabled);
+    color: var(--text-muted);
     font-family: var(--font-mono);
     font-size: var(--chrome-sm);
     font-variant-numeric: tabular-nums;
@@ -157,7 +158,7 @@ body {
 
 .footnote {
     margin-top: var(--space-3);
-    color: var(--text-disabled);
+    color: var(--text-hint);
     font-size: var(--chrome-sm);
     line-height: var(--leading-normal);
 }
@@ -193,7 +194,8 @@ body {
     min-height: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -205,7 +207,9 @@ body {
        sit on one line. */
     min-height: 71px;
     padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
+    border-radius: calc(var(--radius-panel) - 1px) calc(var(--radius-panel) - 1px) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-body {
@@ -219,7 +223,7 @@ body {
 }
 
 .panel-note {
-    color: var(--text-disabled);
+    color: var(--text-hint);
     font-size: var(--chrome-sm);
 }
 
@@ -238,11 +242,11 @@ body {
     z-index: 1;
     margin-top: var(--space-2);
     padding: var(--space-2) 0 var(--space-1);
-    background: var(--panel-bg);
-    color: var(--text-disabled);
-    font-size: var(--chrome-sm);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
 }
 
@@ -266,14 +270,14 @@ body {
 }
 
 .code-item:hover {
-    background: var(--surface-soft);
-    color: var(--text-primary);
+    background: var(--surface-3);
+    color: var(--heading);
 }
 
 .code-item.is-active {
-    border-color: rgba(var(--accent-purple-light-rgb), 0.5);
-    background: rgba(var(--accent-purple-light-rgb), 0.12);
-    color: var(--text-primary);
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--heading);
 }
 
 .code-number {
@@ -281,7 +285,7 @@ body {
     width: 2.75rem;
     font-family: var(--font-mono);
     font-size: var(--chrome-base);
-    font-weight: 700;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 
@@ -304,9 +308,10 @@ body {
 .code-badge {
     margin-left: auto;
     padding: 1px var(--space-2);
-    border: 1px solid var(--border-light);
-    border-radius: 999px;
-    color: var(--text-disabled);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-xs);
+    background: var(--surface-3);
+    color: var(--text-muted);
     font-size: 10px;
     letter-spacing: 0.04em;
     white-space: nowrap;
@@ -326,13 +331,14 @@ body {
     align-items: center;
     gap: var(--space-4);
     padding-bottom: var(--space-3);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
 }
 
 .detail-code {
     font-family: var(--font-mono);
     font-size: clamp(32px, 6vw, 44px);
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
     font-variant-numeric: tabular-nums;
     line-height: 1;
 }
@@ -345,9 +351,10 @@ body {
 }
 
 .detail-name {
-    color: var(--text-primary);
+    color: var(--heading);
     font-size: var(--text-xl);
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
 }
 
 .detail-group {
@@ -366,9 +373,11 @@ body {
 
 .detail-heading {
     margin-top: var(--space-2);
-    color: var(--text-secondary);
-    font-size: var(--chrome-base);
-    letter-spacing: 0.02em;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
+    text-transform: uppercase;
 }
 
 .detail-list {
@@ -395,8 +404,8 @@ body {
 
 .inline-code {
     padding: 1px 4px;
-    border-radius: var(--radius-sm);
-    background: var(--surface-soft);
+    border-radius: var(--radius-xs);
+    background: var(--surface-3);
     color: var(--accent-yellow);
     font-family: var(--font-mono);
     font-size: 0.92em;
@@ -410,9 +419,9 @@ body {
 
 .related-chip {
     padding: var(--space-1) var(--space-3);
-    border: 1px solid var(--border-light);
-    border-radius: 999px;
-    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface-2);
     color: var(--text-secondary);
     font-size: var(--chrome-sm);
     cursor: pointer;
@@ -420,15 +429,16 @@ body {
 }
 
 .related-chip:hover {
-    border-color: var(--accent-purple-light);
-    color: var(--text-primary);
+    border-color: var(--border-strong);
+    background: var(--surface-3);
+    color: var(--heading);
 }
 
 .detail-spec {
     margin-top: var(--space-2);
     padding-top: var(--space-3);
-    border-top: 1px solid var(--border);
-    color: var(--text-disabled);
+    border-top: 1px solid var(--divider);
+    color: var(--text-hint);
     font-size: var(--chrome-sm);
 }
 
@@ -443,7 +453,7 @@ body {
 
 .empty-state {
     padding: var(--space-4);
-    color: var(--text-disabled);
+    color: var(--text-hint);
     font-size: var(--chrome-base);
     text-align: center;
 }

@@ -6,19 +6,13 @@ body {
   margin: 0;
   height: 100vh;
   overflow: hidden;
-  font-family: var(--font-body);
   color: var(--text);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   position: relative;
 }
 
 .app-shell {
   position: relative;
   z-index: 1;
-}
-
-.app-shell {
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -29,7 +23,7 @@ body {
   display: flex;
   align-items: center;
   padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--divider);
   flex-shrink: 0;
 }
 
@@ -43,15 +37,17 @@ body {
   overflow: hidden;
 }
 
+/* --- Panels -------------------------------------------------------------- */
+
 .panel {
-  background: var(--panel-bg);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 1.5rem;
+  border-radius: var(--radius-panel);
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  box-shadow: var(--shadow-lg);
+  gap: var(--space-3);
+  box-shadow: var(--shadow-e1);
   flex: 1;
   min-width: 280px;
   height: 100%;
@@ -59,39 +55,39 @@ body {
   position: relative;
 }
 
-.panel::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-}
-
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8rem;
+  min-height: var(--control-h);
+  font-size: 11px;
   color: var(--text-muted);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   font-weight: 600;
 }
 
+.panel-header .hint {
+  margin-left: var(--space-2);
+  text-transform: none;
+  letter-spacing: var(--tracking-normal);
+  font-weight: 500;
+}
+
+/* Copy-rendered-HTML control in the preview header. */
 .preview-copy-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.04);
+  width: var(--control-h);
+  height: var(--control-h);
+  padding: 0;
+  background: transparent;
   border: 1px solid var(--border);
-  border-radius: 12px;
-  color: var(--text-secondary);
+  border-radius: var(--radius-control);
+  color: var(--control-text);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-control);
   position: relative;
 }
 
@@ -101,15 +97,19 @@ body {
 }
 
 .preview-copy-btn:hover {
-  background: var(--accent-purple);
-  border-color: var(--accent-purple);
-  color: var(--text);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-purple);
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+  color: var(--heading);
 }
 
 .preview-copy-btn:active {
-  transform: translateY(0) scale(0.95);
+  transform: translateY(1px);
+}
+
+.preview-copy-btn:focus-visible {
+  outline: none;
+  border-color: var(--focus-border);
+  box-shadow: var(--focus-ring);
 }
 
 .preview-copy-btn::after {
@@ -118,19 +118,13 @@ body {
   top: calc(100% + 8px);
   right: 0;
   transform: translateY(-4px);
-  padding: 0.5rem 0.875rem;
-  background: var(--panel-bg-elevated);
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-  color: var(--text);
-  font-size: 0.75rem;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.2s ease;
+  transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out),
+    visibility var(--dur) var(--ease-out);
   z-index: 1000;
-  box-shadow: var(--shadow-md);
 }
 
 .preview-copy-btn:hover::after {
@@ -144,132 +138,70 @@ body {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
-  background: var(--accent-yellow);
-  border-color: var(--accent-yellow);
-  color: var(--bg);
-  font-weight: 600;
 }
+
+/* --- Toolbar ------------------------------------------------------------- */
 
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 1rem 1.25rem;
-  background: var(--panel-bg);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 20px;
+  border-radius: var(--radius-panel);
   align-items: center;
   margin-top: 1rem;
   flex-shrink: 0;
   overflow: visible;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-e1);
   position: relative;
-}
-
-.toolbar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
 }
 
 .toolbar-group {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--space-1);
   align-items: center;
-  padding: 0.25rem 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-3);
+  background: var(--surface-2);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--divider);
 }
 
 .toolbar-label {
-  font-size: 0.65rem;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-disabled);
-  margin-right: 0.5rem;
-  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  color: var(--text-hint);
+  margin-right: var(--space-2);
+  font-weight: 600;
 }
 
+/* Shape, colour, hover and press come from main.css. */
 .toolbar-btn {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: var(--radius-control);
-  transition: all 0.2s ease;
 }
 
-.toolbar-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-.toolbar-btn:hover {
-  background: var(--accent-purple);
-  color: var(--text);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-purple);
-}
-
-.toolbar-btn:active {
-  transform: translateY(0) scale(0.95);
-}
-
-.toolbar-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.toolbar-btn:disabled:hover {
-  background: transparent;
-  color: var(--text-secondary);
-  transform: none;
-  box-shadow: none;
-}
-
-/* .toolbar-select inherits the shared select shape from main.css */
 .toolbar-color {
   position: relative;
-  padding: 0.5rem 0.75rem;
-  background: var(--surface-strong);
+  width: var(--control-h);
+  height: var(--control-h);
+  padding: 4px;
+  background: var(--surface-2);
   border: 1px solid var(--control-border);
   border-radius: var(--radius-control);
-  color: var(--text);
   cursor: pointer;
   transition: var(--transition-control);
 }
 
-.toolbar-select {
-  min-width: 120px;
-}
-
 .toolbar-color:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--surface-3);
   border-color: var(--control-border-hover);
-  box-shadow: var(--shadow-sm);
 }
 
 .toolbar-color:disabled {
   opacity: 0.35;
   cursor: not-allowed;
-}
-
-.toolbar-color {
-  width: 36px;
-  height: 36px;
-  padding: 4px;
-  border-radius: 10px;
 }
 
 .toolbar-color::-webkit-color-swatch-wrapper {
@@ -278,90 +210,64 @@ body {
 
 .toolbar-color::-webkit-color-swatch {
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 
-/* ::after never renders on <select>; only .toolbar-color gets a tooltip */
+/* Hover tooltips: appearance comes from the shared [data-tooltip]::after
+   rule, the tool only places them. (::after never renders on an <input>,
+   so .toolbar-color relies on its native title-less hover.) */
+.toolbar-btn::after,
 .toolbar-color::after {
   content: attr(data-tooltip);
   position: absolute;
   top: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%) translateY(-4px);
-  padding: 0.5rem 0.875rem;
-  background: var(--panel-bg-elevated);
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-  color: var(--text);
-  font-size: 0.75rem;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.2s ease;
+  transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out),
+    visibility var(--dur) var(--ease-out);
   z-index: 1000;
-  box-shadow: var(--shadow-md);
-  font-weight: 500;
 }
 
+.toolbar-btn:hover::after,
 .toolbar-color:hover::after {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
 }
 
-.toolbar-btn::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%) translateY(-4px);
-  padding: 0.5rem 0.875rem;
-  background: var(--panel-bg-elevated);
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-  color: var(--text);
-  font-size: 0.75rem;
-  white-space: nowrap;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 1000;
-  box-shadow: var(--shadow-md);
-  font-weight: 500;
-}
-
-.toolbar-btn:hover::after {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
 .toolbar-divider {
   width: 1px;
   height: 28px;
-  background: linear-gradient(to bottom, transparent, var(--border-light), transparent);
-  margin: 0 0.5rem;
+  background: var(--divider);
+  margin: 0 var(--space-1);
 }
+
+/* --- Editor -------------------------------------------------------------- */
 
 .editor-container {
   flex: 1;
   display: flex;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.01);
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
   overflow: hidden;
   min-height: 0;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--divider);
 }
+
 .line-numbers {
   padding: 1rem 0.75rem 1rem 1rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg);
   color: var(--text-disabled);
   font-family: var(--font-mono);
   font-size: 1rem;
   line-height: 1.6;
   text-align: right;
   user-select: none;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--divider);
   min-width: 50px;
   overflow: hidden;
   white-space: pre;
@@ -386,15 +292,19 @@ textarea {
 }
 
 textarea::selection {
-  background: rgba(103, 57, 183, 0.3);
+  background: rgba(var(--accent-purple-light-rgb), 0.3);
 }
+
+/* --- Rendered preview ---------------------------------------------------- */
 
 .preview {
   flex: 1;
   overflow-y: auto;
-  padding: 1.5rem;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.01);
+  padding: var(--space-5);
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
+  border: 1px solid var(--divider);
+  color: var(--text);
   font-size: 1rem;
   line-height: 1.65;
   min-height: 0;
@@ -406,7 +316,13 @@ textarea::selection {
 .preview h4 {
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
+  color: var(--heading);
   font-weight: 600;
+  letter-spacing: var(--tracking-title);
+}
+
+.preview > :first-child {
+  margin-top: 0;
 }
 
 .preview p,
@@ -417,65 +333,75 @@ textarea::selection {
 }
 
 .preview blockquote {
-  padding-left: 1rem;
-  border-left: 4px solid var(--accent-yellow);
-  color: var(--text-muted);
-  background: rgba(255, 215, 0, 0.05);
-  padding: 1rem;
-  border-radius: 8px;
+  border-left: 3px solid var(--accent-purple-light);
+  color: var(--text-secondary);
+  background: var(--accent-softer);
+  padding: 0.75rem 1rem;
+  border-radius: 0 var(--radius-card) var(--radius-card) 0;
 }
 
 .preview code,
 .preview pre {
-  background: rgba(103, 57, 183, 0.1);
-  padding: 0.4rem 0.6rem;
-  border-radius: 8px;
+  background: var(--surface-3);
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-xs);
   font-family: var(--font-mono);
-  border: 1px solid rgba(103, 57, 183, 0.2);
+  font-size: 0.9em;
+  border: 1px solid var(--divider);
 }
 
 .preview a {
-  color: var(--accent-yellow);
-  text-decoration: none;
-  transition: all 0.2s ease;
+  color: var(--accent-purple-light);
+  text-decoration: underline;
+  text-decoration-color: var(--accent-line);
+  text-underline-offset: 3px;
+  transition: var(--transition-control);
   font-weight: 500;
-  border-bottom: 1px solid transparent;
 }
 
 .preview a:hover {
-  border-bottom-color: var(--accent-yellow);
-  color: var(--accent-yellow-light);
+  color: var(--heading);
+  text-decoration-color: currentColor;
 }
 
 .preview table {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   width: 100%;
   margin: 1rem 0;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
+  background: var(--surface);
+  border-radius: var(--radius-card);
   overflow: hidden;
   border: 1px solid var(--border);
 }
 
 .preview table th,
 .preview table td {
-  border: 1px solid var(--border);
-  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--divider);
+  padding: 0.625rem 1rem;
   text-align: left;
 }
 
-.preview table th {
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-dark));
-  font-weight: 700;
-  color: var(--text);
-  border-bottom: 2px solid var(--accent-yellow);
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.05em;
+.preview table th + th,
+.preview table td + td {
+  border-left: 1px solid var(--divider);
 }
 
-.preview table tr:hover {
-  background: rgba(103, 57, 183, 0.08);
+.preview table tr:last-child td {
+  border-bottom: 0;
+}
+
+.preview table th {
+  background: var(--surface-3);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
+
+.preview table tr:hover td {
+  background: var(--accent-softer);
 }
 
 .preview table td {
@@ -492,14 +418,26 @@ textarea::selection {
   margin-bottom: 0.5rem;
 }
 
+.preview hr {
+  border: 0;
+  border-top: 1px solid var(--divider);
+  margin: 1.5rem 0;
+}
+
+.preview img {
+  max-width: 100%;
+  border-radius: var(--radius-card);
+}
+
 .preview pre {
-  padding: 1.25rem;
+  padding: 1rem 1.25rem;
   overflow-x: auto;
   margin: 1rem 0;
   position: relative;
-  background: rgba(0, 0, 0, 0.5) !important;
-  border: 1px solid rgba(103, 57, 183, 0.3);
-  box-shadow: var(--shadow-md);
+  background: var(--bg) !important;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  font-size: 0.875rem;
 }
 
 .preview pre code {
@@ -508,22 +446,24 @@ textarea::selection {
   display: block;
   overflow-x: auto;
   border: none;
+  font-size: inherit;
 }
 
 .code-language-label {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background: var(--accent-yellow);
-  color: var(--bg);
-  padding: 0.35rem 0.875rem;
-  border-radius: 8px;
-  font-size: 0.7rem;
-  font-weight: 800;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--surface-3);
+  border: 1px solid var(--divider);
+  color: var(--text-muted);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-caps);
   z-index: 1;
-  box-shadow: var(--shadow-yellow);
 }
 
 /* Override highlight.js default background */
@@ -532,10 +472,10 @@ textarea::selection {
   padding: 0 !important;
 }
 
-/* Custom syntax highlighting colors to match theme */
+/* Syntax colours mapped onto the palette */
 .preview .hljs-comment,
 .preview .hljs-quote {
-  color: var(--text-disabled);
+  color: var(--text-hint);
   font-style: italic;
 }
 
@@ -590,7 +530,7 @@ textarea::selection {
 }
 
 .preview .hljs-formula {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface-strong);
 }
 
 .preview .hljs-emphasis {
@@ -627,6 +567,7 @@ textarea::selection {
     flex: none;
     height: 60vh;
     min-height: 320px;
+    padding: 0.75rem;
   }
 
   .toolbar {
@@ -648,16 +589,13 @@ textarea::selection {
     margin-bottom: 0.25rem;
   }
 }
-/* Modal Styles */
+
+/* --- Modals (appearance comes from the shared layer) --------------------- */
+
 .modal {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(12px);
+  inset: 0;
   z-index: 10000;
   align-items: center;
   justify-content: center;
@@ -669,26 +607,11 @@ textarea::selection {
 
 .modal-content {
   width: var(--modal-w-md);
-  background: var(--panel-bg);
-  border: 1px solid var(--border-light);
-  border-radius: 24px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-lg);
-  animation: modalSlideIn 0.3s ease;
-  position: relative;
+  animation: modalSlideIn var(--dur-slow) var(--ease-out);
   overflow: hidden;
-}
-
-.modal-content::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
 .modal-content-small {
@@ -703,7 +626,7 @@ textarea::selection {
 @keyframes modalSlideIn {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -711,48 +634,17 @@ textarea::selection {
   }
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.75rem 2rem;
-  border-bottom: 1px solid var(--border);
-}
-
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-purple-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
+/* The close control is a text "×", so it needs a glyph size. */
 .modal-close {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 2rem;
-  line-height: 1;
-  cursor: pointer;
-  width: 36px;
-  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  transition: all 0.2s ease;
-}
-
-.modal-close:hover {
-  background: var(--accent-purple);
-  color: var(--text);
-  transform: rotate(90deg);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .modal-body {
-  padding: 2rem;
   overflow-y: auto;
   flex: 1;
   min-height: 0;
@@ -761,10 +653,7 @@ textarea::selection {
 .modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  padding: 1.75rem 2rem;
-  border-top: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.2);
+  gap: var(--space-3);
 }
 
 .form-group {
@@ -778,80 +667,60 @@ textarea::selection {
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: var(--chrome-base);
+  font-weight: 500;
   color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 /* Shape, colour and focus ring come from main.css */
 .form-group input[type="text"],
 .form-group input[type="number"],
 .form-group input[type="url"],
-.form-group select,
-.form-group textarea {
+.form-group select {
   width: 100%;
-  transition: all 0.2s ease;
 }
 
-.language-select {
-  font-weight: 600;
-}
-
-.form-group textarea {
-  font-family: var(--font-mono);
-  resize: vertical;
-  min-height: 120px;
-}
-
-.code-editor-group {
-  margin-bottom: 0;
-}
-
-.code-editor-group label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
+/* Code block modal: a toolbar strip fused to a gutter + editor well. */
 .code-modal-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.25rem;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(103, 57, 183, 0.3);
-  border-radius: 12px 12px 0 0;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
   margin-bottom: -1px;
 }
 
 .code-toolbar-left {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-2);
 }
 
 .code-toolbar-right {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--space-2);
   align-items: center;
 }
 
 .code-toolbar-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1.125rem;
-  background: rgba(255, 255, 255, 0.05);
+  gap: var(--space-2);
+  min-height: var(--control-h-sm);
+  padding: 0 var(--space-3);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
+  border-radius: var(--radius-control);
+  color: var(--control-text);
+  font-size: var(--chrome-base);
   font-family: inherit;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-control);
   position: relative;
-  font-weight: 600;
 }
 
 .code-toolbar-btn svg {
@@ -860,50 +729,37 @@ textarea::selection {
 }
 
 .code-toolbar-btn:hover {
-  background: var(--accent-purple);
-  color: var(--text);
-  border-color: var(--accent-purple);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-purple);
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+  color: var(--heading);
 }
 
 .code-toolbar-btn:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(1px);
+}
+
+.code-toolbar-btn:focus-visible {
+  outline: none;
+  border-color: var(--focus-border);
+  box-shadow: var(--focus-ring);
 }
 
 .language-icon {
   width: 18px;
   height: 18px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
+/* Shape comes from the shared select */
 .language-select-toolbar {
-  font-weight: 600;
   min-width: 150px;
-}
-
-.language-select-toolbar:hover {
-  border-color: var(--accent-purple);
-  background: var(--accent-purple);
-  box-shadow: var(--shadow-purple);
-}
-
-.language-select-toolbar:focus {
-  outline: none;
-  border-color: var(--accent-yellow);
-  box-shadow: var(--focus-ring);
-}
-
-.language-select-toolbar option {
-  background: var(--panel-bg);
-  color: var(--text);
 }
 
 .code-editor-container {
   display: flex;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(103, 57, 183, 0.3);
-  border-radius: 0 0 12px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
   overflow: hidden;
   height: 400px;
   max-height: 50vh;
@@ -911,14 +767,14 @@ textarea::selection {
 
 .code-line-numbers {
   padding: 1rem 0.75rem;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--surface-2);
   color: var(--text-disabled);
   font-family: var(--font-mono);
   font-size: 0.95rem;
   line-height: 1.6;
   text-align: right;
   user-select: none;
-  border-right: 1px solid rgba(103, 57, 183, 0.3);
+  border-right: 1px solid var(--divider);
   min-width: 50px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -931,7 +787,7 @@ textarea::selection {
 
 .code-editor-with-lines {
   flex: 1;
-  background: rgba(0, 0, 0, 0.4);
+  background: transparent;
   border: none;
   font-family: var(--font-mono);
   font-size: 0.95rem;
@@ -947,166 +803,67 @@ textarea::selection {
 }
 
 .code-editor-with-lines::placeholder {
-  color: var(--text-disabled);
-  font-style: italic;
+  color: var(--text-hint);
 }
 
 .code-editor-with-lines:focus {
   outline: none;
 }
-.code-editor {
-  background: rgba(0, 0, 0, 0.4) !important;
-  border: 1px solid rgba(103, 57, 183, 0.3) !important;
-  font-family: var(--font-mono);
-  font-size: 0.95rem !important;
-  line-height: 1.6 !important;
-  padding: 1.25rem !important;
-  min-height: 320px !important;
-  resize: vertical;
-  tab-size: 2;
-  -moz-tab-size: 2;
-}
 
-.code-editor:focus {
-  border-color: var(--accent-purple) !important;
-  background: rgba(0, 0, 0, 0.5) !important;
-  box-shadow: var(--focus-ring) !important;
-}
-
-.code-editor::placeholder {
-  color: var(--text-disabled);
-  font-style: italic;
-}
-
-.code-toolbar-left {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.code-toolbar-right {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-}
-
-.language-icon {
-  width: 18px;
-  height: 18px;
-  color: var(--text-secondary);
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  outline: none;
-  border-color: var(--focus-border);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: var(--focus-ring);
-}
-
-.btn {
-  padding: 0.875rem 1.75rem;
-  border: none;
-  border-radius: var(--radius-control);
-  font-size: var(--text-md);
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-yellow-dark));
-  color: var(--bg);
-  box-shadow: var(--shadow-yellow);
-}
-
-.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-yellow);
-}
-
-.btn-primary:active {
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background: var(--surface-strong);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-
-.btn-secondary:hover {
-  background: var(--accent-purple);
-  border-color: var(--accent-purple);
-  box-shadow: var(--shadow-purple);
-  transform: translateY(-2px);
-}
-
+/* Image modal */
 .image-upload-area {
-  border: 2px dashed var(--border-light);
-  border-radius: 16px;
-  padding: 2.5rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-card);
+  padding: 2rem;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  background: rgba(255, 255, 255, 0.02);
+  transition: var(--transition-control);
+  background: var(--surface-2);
 }
 
 .image-upload-area:hover {
-  border-color: var(--accent-purple);
-  background: rgba(103, 57, 183, 0.08);
+  border-color: var(--accent-purple-light);
+  background: var(--accent-softer);
 }
 
 .image-upload-area.drag-over {
-  border-color: var(--accent-yellow);
-  background: rgba(255, 215, 0, 0.1);
-  box-shadow: var(--shadow-yellow);
+  border-color: var(--accent-purple-light);
+  border-style: solid;
+  background: var(--accent-soft);
 }
 
 .image-upload-area svg {
-  width: 56px;
-  height: 56px;
-  margin-bottom: 1.25rem;
+  width: 40px;
+  height: 40px;
+  margin-bottom: var(--space-3);
   color: var(--accent-purple-light);
 }
 
 .image-upload-area p {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: var(--chrome-md);
   font-weight: 500;
 }
 
 .or-divider {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   margin: 1.25rem 0;
   color: var(--text-muted);
-  font-size: 0.8rem;
-  position: relative;
+  font-size: 11px;
   text-transform: uppercase;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-caps);
 }
 
 .or-divider::before,
 .or-divider::after {
   content: '';
-  position: absolute;
-  top: 50%;
-  width: 40%;
+  flex: 1;
   height: 1px;
-  background: linear-gradient(to right, transparent, var(--border-light), transparent);
-}
-
-.or-divider::before {
-  left: 0;
-}
-
-.or-divider::after {
-  right: 0;
+  background: var(--divider);
 }
 
 #imagePreview {
@@ -1117,56 +874,45 @@ textarea::selection {
 #imagePreview img {
   max-width: 100%;
   max-height: 200px;
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-md);
 }
 
+/* Table modal */
 .table-size-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   margin-bottom: 1.25rem;
 }
 
 .table-size-group label {
-  font-size: 0.9rem;
+  font-size: var(--chrome-base);
   font-weight: 500;
   color: var(--text-secondary);
   margin: 0;
 }
 
+/* Shape and focus ring come from main.css */
 .table-size-input {
-  width: 70px;
-  padding: 0.625rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font-size: 1.1rem;
-  font-family: inherit;
+  width: 72px;
   text-align: center;
-  transition: all 0.2s ease;
   font-weight: 600;
-}
-
-.table-size-input:focus {
-  outline: none;
-  border-color: var(--focus-border);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: var(--focus-ring);
 }
 
 .table-size-separator {
   color: var(--text-muted);
-  font-size: 1.2rem;
-  font-weight: 300;
+  font-size: 1.1rem;
 }
 
 .align-buttons {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  display: inline-flex;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+  padding: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 
 .align-btn {
@@ -1174,35 +920,35 @@ textarea::selection {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--text-secondary);
+  width: var(--control-h);
+  height: var(--control-h-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
   cursor: pointer;
-  border-radius: 10px;
-  transition: all 0.2s ease;
+  border-radius: var(--radius-sm);
+  transition: var(--transition-control);
 }
 
 .align-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
-.align-btn:hover {
-  background: var(--accent-purple);
-  border-color: var(--accent-purple);
-  color: var(--text);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-purple);
+.align-btn:hover:not(.active) {
+  background: var(--surface-strong);
+  color: var(--heading);
 }
 
 .align-btn.active {
-  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-yellow-dark));
-  border-color: transparent;
-  color: var(--bg);
-  font-weight: 700;
-  box-shadow: var(--shadow-yellow);
+  background: var(--accent-purple);
+  color: #fff;
+  box-shadow: var(--shadow-e1);
+}
+
+.align-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .align-btn::after {
@@ -1211,20 +957,13 @@ textarea::selection {
   top: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%) translateY(-4px);
-  padding: 0.5rem 0.875rem;
-  background: var(--panel-bg-elevated);
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-  color: var(--text);
-  font-size: 0.75rem;
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.2s ease;
+  transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out),
+    visibility var(--dur) var(--ease-out);
   z-index: 1000;
-  box-shadow: var(--shadow-md);
-  font-weight: 500;
 }
 
 .align-btn:hover::after {

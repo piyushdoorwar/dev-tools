@@ -60,7 +60,8 @@ body {
     min-width: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -68,8 +69,11 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    min-height: 52px;
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--divider);
+    border-radius: calc(var(--radius-panel) - 1px) calc(var(--radius-panel) - 1px) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-actions {
@@ -114,6 +118,11 @@ body {
     line-height: var(--leading-normal);
 }
 
+.hint-code {
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+}
+
 .field-error {
     color: var(--accent-pink);
     font-size: var(--chrome-sm);
@@ -127,12 +136,12 @@ body {
     gap: var(--space-2);
     padding: var(--space-4);
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-card);
 }
 
 .preview-large {
     font-size: 24px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: var(--leading-tight);
 }
 
@@ -146,32 +155,35 @@ body {
 .pill-group {
     display: flex;
     gap: var(--space-1);
-    padding: 0.25rem;
+    padding: 3px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 .pill {
-    padding: 0.35rem 0.75rem;
+    min-height: 26px;
+    padding: 0 0.75rem;
     border: none;
-    border-radius: calc(var(--radius-control) - 4px);
+    border-radius: var(--radius-xs);
     background: none;
     color: var(--text-muted);
     font-family: var(--font-body);
     font-size: var(--chrome-sm);
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     transition: background var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
 }
 
 .pill:hover {
-    color: var(--text-primary);
+    background: var(--surface-strong);
+    color: var(--heading);
 }
 
 .pill.is-active {
     background: var(--accent-purple);
-    color: var(--text-primary);
+    color: #fff;
+    box-shadow: var(--shadow-e1);
 }
 
 .result-list {
@@ -188,9 +200,15 @@ body {
     gap: var(--space-3);
     min-width: 0;
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
+    transition: border-color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
+}
+
+.result-row:hover {
+    border-color: var(--border-light);
+    background: var(--surface-3);
 }
 
 .result-label {
@@ -250,14 +268,15 @@ body {
     gap: var(--space-1);
     padding: var(--space-4);
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .ratio {
     font-family: var(--font-mono);
     font-size: clamp(28px, 4vw, 40px);
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
     font-variant-numeric: tabular-nums;
     line-height: 1;
     color: var(--text-primary);
@@ -269,9 +288,10 @@ body {
 
 .ratio-caption {
     color: var(--text-muted);
-    font-size: var(--chrome-sm);
+    font-size: 11px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: var(--tracking-caps);
 }
 
 .ratio-note {
@@ -292,8 +312,8 @@ body {
     gap: 0.15rem;
     padding: var(--space-3);
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .check-label {
@@ -310,9 +330,9 @@ body {
 .check-verdict {
     margin-top: var(--space-1);
     font-size: var(--chrome-sm);
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: var(--tracking-caps);
 }
 
 .check.is-pass {

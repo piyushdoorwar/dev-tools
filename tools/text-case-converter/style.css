@@ -48,10 +48,10 @@ body {
 .mode-switch {
     display: flex;
     gap: var(--space-1);
-    padding: 0.25rem;
+    padding: 3px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 .hint-code {
@@ -127,7 +127,8 @@ body {
     min-height: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -136,8 +137,11 @@ body {
     justify-content: space-between;
     gap: var(--space-3);
     flex-wrap: wrap;
-    padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    min-height: 52px;
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--divider);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-header-left {
@@ -191,8 +195,8 @@ body {
     min-height: 160px;
     padding: var(--space-3);
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .case-card-header {
@@ -204,7 +208,7 @@ body {
 }
 
 .case-card-label {
-    color: var(--accent-yellow);
+    color: var(--heading);
     font-family: var(--font-mono);
     font-size: var(--chrome-base);
     font-weight: 600;
@@ -217,7 +221,7 @@ body {
     resize: none;
     border: 1px solid var(--border);
     border-radius: var(--radius-control);
-    background: var(--panel-bg);
+    background: var(--surface);
     color: var(--text-secondary);
     font-size: var(--chrome-base);
     line-height: var(--leading-normal);

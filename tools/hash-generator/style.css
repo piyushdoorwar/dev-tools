@@ -57,8 +57,8 @@ body {
     gap: var(--space-1);
     padding: 3px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 .mode-btn {
@@ -178,7 +178,8 @@ body {
     min-height: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
     transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
 }
 
@@ -194,7 +195,9 @@ body {
     gap: var(--space-3);
     flex-wrap: wrap;
     padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
+    border-radius: calc(var(--radius-panel) - 1px) calc(var(--radius-panel) - 1px) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-body {
@@ -258,8 +261,8 @@ body {
     min-height: 220px;
     padding: var(--space-6);
     border: 1.5px dashed var(--border-light);
-    border-radius: var(--radius-panel);
-    background: var(--surface-soft);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
     color: var(--text-secondary);
     font: inherit;
     text-align: center;
@@ -269,9 +272,9 @@ body {
 
 .dropzone:hover,
 .input-panel.is-dragging .dropzone {
-    border-color: var(--accent-purple-light);
-    background: rgba(var(--accent-purple-rgb), 0.08);
-    color: var(--text-primary);
+    border-color: var(--accent-line);
+    background: var(--accent-softer);
+    color: var(--heading);
 }
 
 .dropzone:focus-visible {
@@ -289,7 +292,7 @@ body {
 .dropzone-title {
     max-width: 100%;
     overflow: hidden;
-    color: var(--text-primary);
+    color: var(--heading);
     font-size: var(--text-md);
     font-weight: 600;
     text-overflow: ellipsis;
@@ -352,8 +355,8 @@ body {
     row-gap: var(--space-1);
     padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
     transition: border-color var(--dur) var(--ease-out), background-color var(--dur) var(--ease-out);
 }
 
@@ -370,8 +373,9 @@ body {
 }
 
 .digest-name {
+    color: var(--heading);
     font-size: var(--chrome-base);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .digest-bits {
@@ -405,7 +409,7 @@ body {
     gap: var(--space-2);
     margin-top: auto;
     padding-top: var(--space-4);
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--divider);
 }
 
 .compare input {
@@ -424,7 +428,8 @@ body {
 .notice {
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
     color: var(--text-secondary);
     font-size: var(--text-base);
     line-height: var(--leading-normal);

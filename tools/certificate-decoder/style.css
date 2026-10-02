@@ -19,7 +19,6 @@ select {
 
 body {
     min-height: 100vh;
-    font-family: var(--font-body);
     color: var(--text-primary);
 }
 
@@ -37,7 +36,7 @@ body {
     justify-content: space-between;
     gap: var(--space-4);
     padding-bottom: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
 }
 
 .header-actions {
@@ -166,7 +165,8 @@ body {
     min-height: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
     transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
 }
 
@@ -182,7 +182,9 @@ body {
     gap: var(--space-3);
     flex-wrap: wrap;
     padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
+    border-radius: calc(var(--radius-panel) - 1px) calc(var(--radius-panel) - 1px) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-header-left {
@@ -265,9 +267,9 @@ body {
     min-width: 0;
     max-width: 280px;
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
     color: var(--text-secondary);
     font: inherit;
     text-align: left;
@@ -276,8 +278,9 @@ body {
 }
 
 .chain-item:hover {
-    border-color: var(--control-border-hover);
-    color: var(--text-primary);
+    border-color: var(--border-strong);
+    background: var(--surface-3);
+    color: var(--heading);
 }
 
 .chain-item:focus-visible {
@@ -286,9 +289,9 @@ body {
 }
 
 .chain-item.active {
-    border-color: var(--accent-purple-light);
-    background: rgba(var(--accent-purple-rgb), 0.22);
-    color: var(--text-primary);
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
+    color: var(--heading);
 }
 
 .chain-dot {
@@ -354,8 +357,9 @@ body {
 
 .cert-title {
     font-family: var(--font-headline);
+    color: var(--heading);
     font-size: var(--text-xl);
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: var(--tracking-tight);
     overflow-wrap: anywhere;
 }
@@ -389,8 +393,8 @@ body {
     min-width: 0;
     padding: var(--space-4);
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .info-card.wide {
@@ -406,11 +410,11 @@ body {
 }
 
 .info-card-title {
-    color: var(--accent-yellow);
+    color: var(--text-muted);
     font-family: var(--font-headline);
-    font-size: var(--chrome-base);
-    font-weight: 700;
-    letter-spacing: var(--tracking-wide);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
 }
 
@@ -496,9 +500,9 @@ body {
     gap: var(--space-2);
     max-width: 100%;
     padding: 4px var(--space-2) 4px 4px;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
-    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-control);
+    background: var(--surface);
     font-family: var(--font-mono);
     font-size: var(--chrome-sm);
 }
@@ -506,11 +510,11 @@ body {
 .san-type {
     flex: none;
     padding: 2px 6px;
-    border-radius: 6px;
-    background: rgba(var(--accent-purple-light-rgb), 0.16);
+    border-radius: var(--radius-xs);
+    background: var(--accent-soft);
     color: var(--accent-purple-light);
     font-size: 10px;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
 }
@@ -563,15 +567,15 @@ body {
     gap: var(--space-2);
     padding: var(--space-4);
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
     color: var(--text-secondary);
     font-size: var(--text-base);
     line-height: var(--leading-normal);
 }
 
 .notice strong {
-    color: var(--text-primary);
+    color: var(--heading);
 }
 
 .notice.warning {

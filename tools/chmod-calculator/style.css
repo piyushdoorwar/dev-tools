@@ -58,17 +58,18 @@ body {
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .mode-switch,
 .type-switch {
     display: flex;
     gap: var(--space-1);
-    padding: 0.25rem;
+    padding: 3px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 /* --- Modal --------------------------------------------------------------
@@ -115,7 +116,7 @@ body {
 
 .footnote {
     margin-top: var(--space-3);
-    color: var(--text-disabled);
+    color: var(--text-hint);
     font-size: var(--chrome-sm);
     line-height: var(--leading-normal);
 }
@@ -147,7 +148,8 @@ body {
     min-height: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -158,7 +160,9 @@ body {
     /* Match a header that holds icon buttons, so the two panel titles line up. */
     min-height: 71px;
     padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-body {
@@ -172,15 +176,15 @@ body {
 }
 
 .panel-note {
-    color: var(--text-disabled);
+    color: var(--text-hint);
     font-size: var(--chrome-sm);
 }
 
 .section-label {
-    color: var(--text-disabled);
-    font-size: var(--chrome-sm);
+    color: var(--text-muted);
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
 }
 
@@ -238,7 +242,7 @@ body {
 
 .matrix th {
     padding: 0 var(--space-2) var(--space-2);
-    color: var(--text-disabled);
+    color: var(--text-muted);
     font-size: var(--chrome-sm);
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -261,7 +265,7 @@ body {
 }
 
 .row-head {
-    color: var(--text-primary);
+    color: var(--heading);
     font-size: var(--chrome-base);
     font-weight: 600;
     text-align: left !important;
@@ -270,7 +274,7 @@ body {
 
 .row-who {
     margin-left: var(--space-2);
-    color: var(--text-disabled);
+    color: var(--text-hint);
     font-family: var(--font-mono);
     font-weight: 400;
 }
@@ -298,10 +302,10 @@ body {
     align-items: center;
     justify-content: center;
     height: 38px;
-    border: 1px solid var(--border-light);
+    border: 1px solid var(--border);
     border-radius: var(--radius-control);
-    background: var(--surface-soft);
-    color: var(--text-disabled);
+    background: var(--surface-2);
+    color: var(--text-hint);
     font-family: var(--font-mono);
     font-size: var(--chrome-base);
     font-weight: 600;
@@ -309,14 +313,15 @@ body {
 }
 
 .cell:hover .cell-face {
-    border-color: var(--accent-purple-light);
+    border-color: var(--border-strong);
+    background: var(--surface-3);
     color: var(--text-secondary);
 }
 
 .cell input:checked + .cell-face {
-    border-color: rgba(var(--accent-purple-light-rgb), 0.6);
-    background: rgba(var(--accent-purple-light-rgb), 0.18);
-    color: var(--text-primary);
+    border-color: transparent;
+    background: var(--accent-purple);
+    color: #fff;
 }
 
 .cell input:focus-visible + .cell-face {
@@ -326,14 +331,14 @@ body {
 
 .digit-col {
     width: 3.5rem;
-    color: var(--accent-yellow);
+    color: var(--heading);
     font-size: var(--text-lg);
-    font-weight: 700;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
 }
 
 .matrix thead .digit-col {
-    color: var(--text-disabled);
+    color: var(--text-muted);
     font-size: var(--chrome-sm);
     font-weight: 600;
 }
@@ -359,14 +364,15 @@ body {
     gap: var(--space-3);
     padding: var(--space-2) var(--space-3);
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
     cursor: pointer;
     transition: var(--transition-control);
 }
 
 .special-item:hover {
     border-color: var(--border-light);
+    background: var(--surface-3);
 }
 
 .special-item input {
@@ -379,8 +385,8 @@ body {
 }
 
 .special-item:has(input:checked) {
-    border-color: rgba(var(--accent-purple-light-rgb), 0.5);
-    background: rgba(var(--accent-purple-light-rgb), 0.1);
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
 }
 
 .special-text {
@@ -392,14 +398,14 @@ body {
 }
 
 .special-name {
-    color: var(--text-primary);
+    color: var(--heading);
     font-family: var(--font-mono);
     font-size: var(--chrome-base);
     font-weight: 600;
 }
 
 .special-value {
-    color: var(--accent-yellow);
+    color: var(--accent-purple-light);
     font-size: var(--chrome-sm);
 }
 
@@ -430,31 +436,31 @@ body {
     gap: 2px var(--space-2);
     padding: var(--space-2) var(--space-3);
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: transparent;
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
     text-align: left;
     cursor: pointer;
     transition: var(--transition-control);
 }
 
 .mode-preset:hover {
-    border-color: var(--accent-purple-light);
-    background: var(--surface-soft);
+    border-color: var(--border-strong);
+    background: var(--surface-3);
 }
 
 .mode-preset.is-active {
-    border-color: rgba(var(--accent-purple-light-rgb), 0.6);
-    background: rgba(var(--accent-purple-light-rgb), 0.14);
+    border-color: var(--accent-line);
+    background: var(--accent-soft);
 }
 
 .preset-octal {
-    color: var(--accent-yellow);
+    color: var(--accent-purple-light);
     font-size: var(--chrome-base);
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .preset-label {
-    color: var(--text-primary);
+    color: var(--heading);
     font-size: var(--chrome-base);
     font-weight: 600;
 }
@@ -474,8 +480,8 @@ body {
     gap: var(--space-2);
     padding: var(--space-4);
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-panel);
-    background: var(--surface-soft);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .readout-main {
@@ -486,15 +492,16 @@ body {
 }
 
 .readout-octal {
-    color: var(--accent-yellow);
+    color: var(--heading);
     font-size: clamp(32px, 6vw, 44px);
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
     font-variant-numeric: tabular-nums;
     line-height: 1;
 }
 
 .readout-symbolic {
-    color: var(--text-primary);
+    color: var(--accent-purple-light);
     font-size: clamp(18px, 3vw, 24px);
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -543,18 +550,18 @@ body {
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--bg-secondary);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .command-label {
     flex: none;
     width: 4.5rem;
-    color: var(--text-disabled);
-    font-size: var(--chrome-sm);
+    color: var(--text-muted);
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
 }
 
@@ -586,11 +593,11 @@ body {
 
 .meaning-item.is-empty {
     border-left-color: var(--border-light);
-    color: var(--text-disabled);
+    color: var(--text-hint);
 }
 
 .meaning-who {
-    color: var(--text-primary);
+    color: var(--heading);
     font-weight: 600;
 }
 
@@ -604,7 +611,7 @@ body {
     padding: var(--space-2) var(--space-3);
     border: 1px solid var(--border);
     border-left-width: 3px;
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-card);
     font-size: var(--chrome-sm);
     line-height: var(--leading-normal);
 }
@@ -634,29 +641,30 @@ body {
     flex-direction: column;
     gap: var(--space-1);
     padding: var(--space-4);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-panel);
-    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .umask-card-label {
-    color: var(--text-disabled);
-    font-size: var(--chrome-sm);
+    color: var(--text-muted);
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
 }
 
 .umask-card-octal {
-    color: var(--accent-yellow);
+    color: var(--heading);
     font-size: clamp(28px, 5vw, 36px);
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
     font-variant-numeric: tabular-nums;
     line-height: 1.1;
 }
 
 .umask-card-symbolic {
-    color: var(--text-primary);
+    color: var(--accent-purple-light);
     font-size: var(--text-md);
     letter-spacing: 0.08em;
 }
@@ -675,8 +683,8 @@ body {
 
 .inline-code {
     padding: 1px 4px;
-    border-radius: var(--radius-sm);
-    background: var(--surface-soft);
+    border-radius: var(--radius-xs);
+    background: var(--surface-3);
     color: var(--accent-yellow);
     font-family: var(--font-mono);
     font-size: 0.92em;

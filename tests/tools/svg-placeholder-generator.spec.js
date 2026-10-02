@@ -327,7 +327,7 @@ test.describe('svg-placeholder-generator', () => {
       .filter((id) => !document.getElementById(id)));
     expect(missing).toEqual([]);
     const info = await page.locator('#helpBtn').boundingBox();
-    expect(Math.round(info.width)).toBe(38);
+    expect(Math.round(info.width)).toBe(36);
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(100);

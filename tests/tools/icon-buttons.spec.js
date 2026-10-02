@@ -32,7 +32,7 @@ test('every info button is the same shape and glyph', async ({ page }) => {
   const distinct = new Set(seen.values());
   expect([...distinct], `info buttons differ: ${JSON.stringify([...seen])}`).toHaveLength(1);
   // And it is the canonical control size with the sprite glyph.
-  expect([...distinct][0]).toBe('38x38 r=10px icon=18 #i-info');
+  expect([...distinct][0]).toBe('36x36 r=6px icon=16 #i-info');
 });
 
 test('icon-only buttons share one geometry', async ({ page }) => {
@@ -50,7 +50,7 @@ test('icon-only buttons share one geometry', async ({ page }) => {
           return { cls: el.className, w: Math.round(r.width),
                    icon: svg ? Math.round(svg.getBoundingClientRect().width) : null };
         })
-        .filter((x) => x.w !== 38 || (x.icon !== null && x.icon !== 18));
+        .filter((x) => x.w !== 36 || (x.icon !== null && x.icon !== 16));
     });
     expect(odd, `${tool} has off-spec icon buttons`).toEqual([]);
   }
@@ -62,5 +62,5 @@ test('a help affordance uses the info glyph, not a bare character', async ({ pag
   await openTool(page, 'regex-tester');
   const s = await shapeOf(page, '#outputHelp');
   expect(s.href).toBe('#i-info');
-  expect(s.icon).toBe(18);
+  expect(s.icon).toBe(16);
 });

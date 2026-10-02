@@ -378,7 +378,7 @@ function renderDetail(entry) {
 
   const head = el("div", "detail-head");
   // The mono face sits on an inner span: the shared layer sets headings in
-  // Gilroy and would win over a font-family on the h3 itself.
+  // the UI face and would win over a font-family on the h3 itself.
   const title = el("h3", "detail-title");
   title.appendChild(el("span", "detail-mime", entry.mime));
   head.appendChild(title);

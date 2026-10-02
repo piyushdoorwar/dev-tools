@@ -21,8 +21,7 @@ select {
 }
 
 body {
-    font-family: var(--font-body);
-    color: var(--text-primary);
+    color: var(--text);
     overflow: hidden;
     height: 100vh;
     position: relative;
@@ -40,8 +39,6 @@ body {
     position: relative;
     z-index: 1;
     overflow: hidden;
-    background: rgba(26, 26, 26, 0.72);
-    backdrop-filter: blur(12px);
 }
 
 /* Header */
@@ -51,9 +48,7 @@ body {
     align-items: center;
     gap: 1rem;
     padding: 1.35rem 1.75rem;
-    background-color: rgba(0, 0, 0, 0.18);
-    border-bottom: 1px solid var(--border);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    border-bottom: 1px solid var(--divider);
 }
 
 .header-left,
@@ -77,10 +72,11 @@ body {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    background-color: rgba(30, 30, 30, 0.7);
-    border-radius: 18px;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-panel);
     overflow: hidden;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -89,9 +85,9 @@ body {
     justify-content: space-between;
     align-items: center;
     gap: 0.75rem;
-    padding: 1rem 1.1rem;
-    background-color: rgba(37, 37, 37, 0.55);
-    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.1rem;
+    background-color: var(--surface-2);
+    border-bottom: 1px solid var(--divider);
 }
 
 .panel-title {
@@ -102,29 +98,23 @@ body {
     display: flex;
     gap: 0.25rem;
     align-items: center;
-    padding: 0.375rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background-color: rgba(0, 0, 0, 0.22);
 }
 
+/* Icon-only: geometry from the shared layer, hover/focus/disabled from the
+   base .action-btn. Quiet at rest, like a ghost button. */
 .action-btn {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem;
+    border-color: transparent;
     background-color: transparent;
-    border: 1px solid transparent;
-    cursor: pointer;
-    min-height: 36px;
-    min-width: 36px;
+    box-shadow: none;
+    color: var(--text-muted);
 }
 
-.action-btn:hover:not(:disabled) {
-    background-color: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
+/* Buttons on the bare header/toolbar keep a frame so they read as controls. */
+.header .action-btn,
+.toolbar .action-btn {
+    border-color: var(--border);
+    background-color: var(--surface);
 }
 
 .action-btn.is-copied,
@@ -147,10 +137,10 @@ body {
 .editor-textarea {
     flex: 1;
     padding: 1.25rem;
-    background-color: rgba(0, 0, 0, 0.18);
-    color: var(--text-primary);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 14px;
+    background-color: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
     outline: none;
     font-family: var(--font-mono);
     font-size: 0.875rem;
@@ -159,17 +149,17 @@ body {
     overflow: auto;
     white-space: pre-wrap;
     word-break: break-all;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out);
 }
 
 .editor-textarea:focus {
-    border-color: var(--accent-purple-light);
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.16);
+    border-color: var(--focus-border);
+    box-shadow: var(--focus-ring);
 }
 
 .editor-textarea.is-invalid {
     border-color: rgba(255, 107, 157, 0.55);
-    box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.12);
+    box-shadow: var(--focus-ring-danger);
 }
 
 .editor-textarea[readonly] {
@@ -177,8 +167,7 @@ body {
 }
 
 .editor-textarea::placeholder {
-    color: var(--text-disabled);
-    font-style: italic;
+    color: var(--text-hint);
 }
 
 /* Status Bar */
@@ -187,10 +176,10 @@ body {
     justify-content: space-between;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.7rem 0.9rem;
-    background-color: rgba(37, 37, 37, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 14px;
+    padding: 0.6rem 0.9rem;
+    background-color: var(--surface-2);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
 }
 
 .status-text {
@@ -221,20 +210,12 @@ body {
     top: calc(100% + 10px);
     left: 50%;
     transform: translateX(-50%) translateY(4px);
-    padding: 0.45rem 0.75rem;
-    background: rgba(37, 37, 37, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    color: var(--text-primary);
-    font-size: 0.75rem;
-    font-weight: 600;
+    /* Bubble appearance comes from the shared [data-tooltip] rule. */
     white-space: nowrap;
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.2s ease;
-    z-index: 2000;
-    box-shadow: var(--shadow-md);
+    transition: opacity var(--dur) var(--ease-out), visibility var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
 }
 
 .action-btn[data-tooltip]:hover::after {
@@ -306,9 +287,9 @@ body {
 
 .hint-code {
     padding: 0.05rem 0.35rem;
-    border-radius: 6px;
-    background-color: rgba(255, 215, 0, 0.1);
-    color: var(--accent-yellow);
+    border-radius: var(--radius-xs);
+    background-color: var(--accent-softer);
+    color: var(--accent-purple-light);
     font-family: var(--font-mono);
     font-size: 0.78rem;
     overflow-wrap: anywhere;
@@ -323,8 +304,8 @@ body {
     gap: var(--space-3) var(--space-4);
     flex-wrap: wrap;
     padding: var(--space-3) 1.75rem;
-    background-color: rgba(0, 0, 0, 0.12);
-    border-bottom: 1px solid var(--border);
+    background-color: var(--surface-2);
+    border-bottom: 1px solid var(--divider);
 }
 
 .toolbar-left,
@@ -341,13 +322,14 @@ body {
     column-gap: var(--space-5);
 }
 
+/* Same well as the base .segmented container. */
 .segment {
     display: flex;
-    gap: 0.2rem;
-    padding: 0.2rem;
+    gap: var(--space-1);
+    padding: 3px;
     border: 1px solid var(--border);
-    border-radius: 10px;
-    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: var(--radius-md);
+    background-color: var(--surface);
 }
 
 .segment-btn {
@@ -367,7 +349,7 @@ body {
     gap: var(--space-4) var(--space-6);
     flex-wrap: wrap;
     padding: var(--space-4) 1.75rem;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
 }
 
 .key-group {
@@ -453,9 +435,9 @@ body {
     min-height: 0;
     padding: var(--space-4);
     overflow: auto;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 14px;
-    background-color: rgba(0, 0, 0, 0.18);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
+    background-color: var(--surface-2);
 }
 
 .pane-empty,
@@ -482,7 +464,7 @@ body {
 
 .details dd {
     min-width: 0;
-    color: var(--text-primary);
+    color: var(--text);
     font-family: var(--font-mono);
     word-break: break-all;
 }
@@ -507,7 +489,7 @@ body {
 
 .snippet-title {
     color: var(--text-muted);
-    font-size: var(--chrome-sm);
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
@@ -518,8 +500,8 @@ body {
     padding: var(--space-3) var(--space-4);
     overflow: auto;
     border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: var(--radius-card);
+    background-color: var(--surface);
     color: var(--text-secondary);
     font-family: var(--font-mono);
     font-size: var(--chrome-sm);

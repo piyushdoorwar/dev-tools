@@ -519,26 +519,6 @@ function handleConvert() {
     }
 }
 
-// Update Token Statistics
-function updateTokenStats(jsonStr, toonStr) {
-    const jsonTokens = countTokens(jsonStr);
-    const toonTokens = countTokens(toonStr);
-    const reduction = ((jsonTokens - toonTokens) / jsonTokens * 100).toFixed(1);
-    
-    document.getElementById('json-tokens').textContent = jsonTokens;
-    document.getElementById('toon-tokens').textContent = toonTokens;
-    document.getElementById('token-reduction').textContent = reduction + '%';
-    
-    const statsSection = document.getElementById('stats-section');
-    statsSection.classList.add('show');
-}
-
-// Hide Token Statistics
-function hideTokenStats() {
-    const statsSection = document.getElementById('stats-section');
-    statsSection.classList.remove('show');
-}
-
 // Count Tokens (simplified - counts non-whitespace sequences)
 function countTokens(str) {
     // Remove extra whitespace and count meaningful tokens

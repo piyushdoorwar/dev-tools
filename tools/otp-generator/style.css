@@ -112,7 +112,8 @@ body {
     min-width: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -123,7 +124,7 @@ body {
     flex-wrap: wrap;
     min-height: 71px;
     padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
 }
 
 .panel-body {
@@ -160,15 +161,16 @@ body {
 .segments {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-1);
-    padding: var(--space-1);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
 }
 
+/* .segments takes the same well as the shared .segmented container. */
 .segments {
     align-self: flex-start;
+    gap: var(--space-1);
+    padding: 3px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 /* --- Tooltips ------------------------------------------------------------
@@ -346,7 +348,7 @@ body {
 
 .code-display:hover {
     border-color: var(--border-light);
-    background: var(--surface-strong);
+    background: var(--surface-3);
 }
 
 .code-empty {
@@ -370,9 +372,9 @@ body {
     flex-direction: column;
     gap: var(--space-1);
     padding: var(--space-3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .neighbour dt {
@@ -401,7 +403,7 @@ body {
 
 .copy-value:hover {
     border-color: var(--border-light);
-    background: var(--surface-strong);
+    background: var(--surface-3);
     color: var(--text-primary);
 }
 
@@ -421,7 +423,7 @@ body {
     width: 224px;
     height: 224px;
     padding: 12px;
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-card);
     background: #ffffff;
     color: #111111;
     font-size: var(--chrome-sm);

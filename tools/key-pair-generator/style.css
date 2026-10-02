@@ -112,7 +112,8 @@ body {
     min-width: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -121,9 +122,11 @@ body {
     justify-content: space-between;
     gap: var(--space-3);
     flex-wrap: wrap;
-    min-height: 71px;
-    padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    min-height: 52px;
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--divider);
+    border-radius: calc(var(--radius-panel) - 1px) calc(var(--radius-panel) - 1px) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-hint {
@@ -152,16 +155,6 @@ body {
     grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.15fr);
     gap: var(--space-4);
     align-items: start;
-}
-
-.mode-switcher {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1);
-    padding: var(--space-1);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
 }
 
 /* --- Tooltips ------------------------------------------------------------
@@ -206,10 +199,10 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-1);
-    padding: var(--space-1);
+    padding: 3px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 .segment-btn {
@@ -300,9 +293,9 @@ body {
 .key-summary {
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
-    color: var(--text-primary);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
+    color: var(--heading);
     font-family: var(--font-mono);
     font-size: var(--chrome-base);
     line-height: var(--leading-normal);
@@ -357,7 +350,7 @@ body {
 .caution {
     padding: var(--space-3) var(--space-4);
     border: 1px solid rgba(var(--accent-pink-rgb), 0.35);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-card);
     background: rgba(var(--accent-pink-rgb), 0.06);
     color: var(--text-secondary);
     font-size: var(--chrome-sm);

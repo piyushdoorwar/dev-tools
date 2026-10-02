@@ -14,15 +14,17 @@ const ROOT_ASSETS = new Set([
   'tool-catalog.js',
 ]);
 const PUBLIC_EXTENSIONS = new Set(['.css', '.html', '.js', '.json', '.png', '.svg']);
+// Shared static assets (self-hosted fonts and their licence) live in assets/.
+const ASSET_EXTENSIONS = new Set([...PUBLIC_EXTENSIONS, '.woff2', '.txt']);
 
-async function walk(directory, rootDirectory) {
+async function walk(directory, rootDirectory, extensions = PUBLIC_EXTENSIONS) {
   const entries = await readdir(directory, { withFileTypes: true });
   const files = [];
   for (const entry of entries) {
     const absolute = path.join(directory, entry.name);
     if (entry.isDirectory()) {
-      files.push(...await walk(absolute, rootDirectory));
-    } else if (PUBLIC_EXTENSIONS.has(path.extname(entry.name))) {
+      files.push(...await walk(absolute, rootDirectory, extensions));
+    } else if (extensions.has(path.extname(entry.name))) {
       files.push(path.relative(rootDirectory, absolute).split(path.sep).join('/'));
     }
   }
@@ -31,5 +33,6 @@ async function walk(directory, rootDirectory) {
 
 export async function getPublicAssets(rootDirectory = process.cwd()) {
   const toolAssets = await walk(path.join(rootDirectory, 'tools'), rootDirectory);
-  return [...ROOT_ASSETS, ...toolAssets].sort();
+  const sharedAssets = await walk(path.join(rootDirectory, 'assets'), rootDirectory, ASSET_EXTENSIONS);
+  return [...ROOT_ASSETS, ...sharedAssets, ...toolAssets].sort();
 }

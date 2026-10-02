@@ -37,7 +37,7 @@ body {
     justify-content: space-between;
     gap: var(--space-4);
     padding-bottom: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
 }
 
 .header-actions,
@@ -58,7 +58,8 @@ body {
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .toolbar-left {
@@ -72,10 +73,10 @@ body {
 .mode-switch {
     display: flex;
     gap: var(--space-1);
-    padding: 0.25rem;
+    padding: 3px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 .search-field {
@@ -174,7 +175,8 @@ body {
     min-height: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -183,7 +185,9 @@ body {
     justify-content: space-between;
     gap: var(--space-3);
     padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
+    border-radius: calc(var(--radius-panel) - 1px) calc(var(--radius-panel) - 1px) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-body {
@@ -200,10 +204,10 @@ body {
 
 .section-title {
     margin: var(--space-4) 0 var(--space-2);
-    color: var(--accent-yellow);
-    font-size: var(--chrome-base);
-    font-weight: 700;
-    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
 }
 
@@ -226,16 +230,22 @@ body {
     align-items: baseline;
     gap: var(--space-3);
     padding: var(--space-3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
+    transition: var(--transition-control);
+}
+
+.syntax-row:hover {
+    border-color: var(--border-light);
+    background: var(--surface-3);
 }
 
 .syntax-token {
     color: var(--accent-purple-light);
     font-family: var(--font-mono);
     font-size: var(--chrome-base);
-    font-weight: 700;
+    font-weight: 600;
     overflow-wrap: anywhere;
 }
 
@@ -267,8 +277,8 @@ body {
 
 .inline-code {
     padding: 1px 4px;
-    border-radius: var(--radius-sm);
-    background: rgba(var(--accent-purple-light-rgb), 0.12);
+    border-radius: var(--radius-xs);
+    background: var(--accent-softer);
     color: var(--accent-yellow);
     font-family: var(--font-mono);
     font-size: 0.92em;
@@ -310,9 +320,9 @@ body {
     flex-direction: column;
     gap: var(--space-2);
     padding: var(--space-4);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .pattern-head {
@@ -323,25 +333,27 @@ body {
 }
 
 .pattern-name {
-    color: var(--text-primary);
-    font-size: var(--text-lg);
-    font-weight: 700;
+    font-size: var(--text-md);
+    font-weight: 600;
+    letter-spacing: var(--tracking-title);
+    color: var(--heading);
 }
 
 .pattern-category {
     padding: 1px var(--space-2);
-    border: 1px solid var(--border-light);
-    border-radius: 999px;
-    color: var(--text-disabled);
-    font-size: 10px;
-    letter-spacing: 0.04em;
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-xs);
+    background: var(--surface-3);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 500;
     white-space: nowrap;
 }
 
 .pattern-expression {
     padding: var(--space-3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-control);
     background: var(--bg);
     overflow-x: auto;
 }
@@ -369,7 +381,7 @@ body {
 .sample {
     padding: 2px var(--space-2);
     border: 1px solid;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-xs);
     font-family: var(--font-mono);
     font-size: var(--chrome-sm);
     overflow-wrap: anywhere;
@@ -397,7 +409,7 @@ body {
 
 .pattern-note {
     padding-left: var(--space-3);
-    border-left: 2px solid rgba(var(--accent-purple-light-rgb), 0.5);
+    border-left: 2px solid var(--accent-line);
     color: var(--text-muted);
     font-size: var(--chrome-sm);
     line-height: var(--leading-normal);

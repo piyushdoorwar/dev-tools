@@ -117,6 +117,13 @@ function updateMode() {
     
     // Update container class
     appContainer.className = 'app-container mode-' + currentMode;
+
+    // The shared dropdown's `display` sits in the shared CSS layer and beats
+    // the tool's `.mode-xml-* .json-only { display: none }`, so the JSON-only
+    // change-case menu stayed visible in the XML modes. `hidden` wins.
+    document.querySelectorAll('.dd.json-only').forEach(el => {
+        el.hidden = currentMode !== 'json-xml';
+    });
     
     // Update favicon based on mode
     const favicon = document.getElementById('favicon');

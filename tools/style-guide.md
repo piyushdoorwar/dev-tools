@@ -1,122 +1,94 @@
-# Premium Dark Design System
+# DevTools Design System — flat console
 
-## Color Palette
+DevTools shares its design language with the author's other projects (ccs-ui,
+the StudyIn Docker Manager, Gitable, Lumyn, Yamlet and the portfolio): one UI
+face, solid surfaces, hairline borders, neutral elevation and small radii.
+What stays DevTools' own is the colour: **purple** and **yellow**.
 
-### Primary Colors
-- **Purple**: `#6739B7` - Main brand color, used for interactive elements
-- **Purple Light**: `#8B5CF6` - Hover states and highlights
-- **Purple Dark**: `#5B21B6` - Active states
+All values below are tokens in [`assets/tokens.css`](../assets/tokens.css) —
+the single source for the dashboard shell (`styles.css`) and every tool
+(`tools/main.css` imports it). Never hardcode a hex, radius, shadow or font in
+a tool stylesheet when a token exists.
 
-### Secondary Colors
-- **Yellow/Gold**: `#FFD700` - Primary CTAs and accents
-- **Yellow Dark**: `#FFC700` - Hover states for yellow elements
-- **Yellow Light**: `#FFE55C` - Highlights
+## Colour
 
-### Additional Accents
-- **Green**: `#00D09C` - Success states and positive actions
-- **Pink**: `#FF6B9D` - Special highlights
-- **Blue**: `#5DADE2` - Information and links
+| Role | Token | Value |
+| --- | --- | --- |
+| Active / selected / structural accent | `--accent-purple` / `--accent-purple-light` | `#6739B7` / `#8B5CF6` |
+| The one primary CTA per screen | `--accent-yellow` (ink: `--accent-yellow-ink`) | `#FFD700` |
+| Success · error · warning · info | `--accent-green` · `--accent-pink` · `--accent-orange` · `--accent-blue` | |
+| Purple tints (selected rows, chips) | `--accent-soft` · `--accent-softer` · `--accent-line` | 14% · 7% · 34% |
 
-### Backgrounds
-- **Primary BG**: `#0d0d0d` - Main background
-- **Secondary BG**: `#1a1a1a` - Secondary surfaces
-- **Panel BG**: `#1e1e1e` - Card/panel backgrounds
-- **Panel BG Elevated**: `#252525` - Elevated panels and modals
+- **Purple** = where you are: selected tab (solid fill, white text), current
+  nav item, focus ring, selected row (`--accent-soft` + `--accent-line`).
+- **Yellow** = what to press: one solid `.btn-primary` per screen, the
+  current-tool marker, pinned state. Never a large fill or a gradient.
+- No new hues. Gradients only where they encode data (pickers, hue rails,
+  strength meters, previews) and in the two brand marks below.
 
-### Text Colors
-- **Primary Text**: `#FFFFFF` - Main content
-- **Secondary Text**: `#B8B8B8` - Supporting text
-- **Muted Text**: `rgba(255, 255, 255, 0.6)` - Disabled or less important text
-- **Disabled Text**: `rgba(255, 255, 255, 0.3)` - Completely disabled elements
+## Surfaces & lines
 
-### Borders
-- **Default Border**: `rgba(255, 255, 255, 0.06)` - Subtle borders
-- **Light Border**: `rgba(255, 255, 255, 0.1)` - More prominent borders
+| Token | Use |
+| --- | --- |
+| `--bg` `#0b0b0f` | page |
+| `--surface` | resting panel / card |
+| `--surface-2` | inset: fields, editors, panel heads |
+| `--surface-3` | raised: menus, hovered rows |
+| `--border` | 1px purple-tinted hairline on a surface edge |
+| `--border-light` / `--border-strong` | hover, framed surfaces (modals) |
+| `--divider` | rules *inside* a surface (header bottoms, row separators) |
 
-### Shadows
-- **Small**: `0 2px 8px rgba(0, 0, 0, 0.3)`
-- **Medium**: `0 8px 24px rgba(0, 0, 0, 0.4)`
-- **Large**: `0 16px 48px rgba(0, 0, 0, 0.5)`
-- **Purple Glow**: `0 8px 24px rgba(103, 57, 183, 0.3)`
-- **Yellow Glow**: `0 8px 24px rgba(255, 215, 0, 0.3)`
+Elevation is neutral: `--shadow-e1` resting, `--shadow-e2` raised/hover,
+`--shadow-e3` dialogs. Colour is never used for depth — no glows. Blur is
+only spent on the modal scrim.
 
-## Typography
+## Type
 
-### Font Families
-- **Primary**: Inter (clean, modern sans-serif)
-- **Secondary**: Gilroy (headlines and accent text)
-- **Monospace**: JetBrains Mono (code blocks)
+- **DM Sans** (`--font-body`) for all UI, **JetBrains Mono** (`--font-mono`)
+  for code. Both are self-hosted in `assets/fonts/` (SIL OFL 1.1) — no
+  third-party font requests.
+- Headings weight 600 with negative tracking (`--tracking-tight`,
+  `--tracking-title`); body 13–14px at 400–500; buttons 13px / 500.
+- Small caps labels: 11px / 600 / uppercase / `--tracking-caps` /
+  `--text-muted` (`.meta-label`).
+- Text: `--heading` titles, `--text` body, `--text-secondary` supporting,
+  `--text-muted` secondary, `--text-hint` placeholders and hints (still AA).
 
-### Font Weights
-- **Regular**: 400
-- **Medium**: 500
-- **Semibold**: 600
-- **Bold**: 700
-- **Extra Bold**: 800
+## Shape & motion
 
-## Atmospheric Blueprint
+- Radius: `--radius-control` 6px (inputs, buttons, chips), `--radius-card`
+  8px (cards, inner blocks, menus), `--radius-panel` / `--radius-modal` 12px,
+  `--radius-xs` 4px for tiny badges.
+- Controls 36px (`--control-h`), 32px small; 44px on coarse pointers.
+- Hover changes border and surface, never position. Press feedback is
+  `translateY(1px)`. No lifts, bounces or looping decoration.
+- `prefers-reduced-motion`, `prefers-reduced-transparency` and
+  `prefers-contrast: more` are honoured. **Token overrides for these must live
+  in `assets/tokens.css`**: a `:root` override inside a cascade layer always
+  loses to the unlayered tokens (that is why the contrast and coarse-pointer
+  overrides never applied before).
 
-### Surface Spectrum
-- **Base Layer**: Start with `--bg` (#0d0d0d) and stack animated radial gradients defined in `body::before` (purple, yellow, and lavender glows) with `gradientShift` 20s animation
-- **Secondary Planes**: Use `--bg-secondary`, `--panel-bg`, and `--panel-bg-elevated` to layer panels with `--border` or `--border-light`
-- **Glows**: Apply soft purple/yellow glows (`--shadow-purple` or `--shadow-yellow`) on interactive lifted states
-- **Viewport**: Maintain fixed overlay with `pointer-events: none` for non-blocking atmospheric effect
+## Brand marks
 
-### App Name & Identity
-- Position the name inside the `app-header` with `Inter` 800 weight, 2rem size, and tight letter spacing (–0.02em)
-- Use diagonal gradient: `linear-gradient(135deg, var(--accent-yellow), var(--accent-purple-light))`
-- Apply with `-webkit-background-clip: text` and `-webkit-text-fill-color: transparent` for text gradient effect
-- Keep clean without additional shadows—the gradient provides premium feel
+- **Page title** — solid `--heading` text with a 4px purple→yellow bar drawn
+  by `::before` (shared layer). Not gradient-clipped text.
+- **Modal** — a short 2px purple→yellow marker at the top-left edge.
 
-### Action Bar (Toolbar) System
-- Flexible surface with `display: flex; gap: 0.5rem`, padding `1rem 1.25rem`, 20px border-radius
-- Background: `var(--panel-bg)` with `var(--border)` frame and `var(--shadow-md)` elevation
-- Group buttons in `toolbar-group` pods with semi-transparent fill `rgba(255, 255, 255, 0.03)`, subtle border, and 0.25rem padding
+## Common components
 
-### Action Bar Typography & States
-- Labels are uppercase at `0.65rem`, letter-spaced (.12em), using `var(--text-disabled)` for system captions
-- Buttons/selects use `Inter` or `JetBrains Mono` (monospace) at 36px square for consistent touch targets
-- Hover: shift up 2px, purple background, standard text color
-- Active: scale to 0.95 with purple glow
-- Disabled: fade to 0.3 opacity
-- Select controls and color swatches follow same hover pattern with purple accent and shadow
+| Need | Use |
+| --- | --- |
+| Button | `.btn` + `.btn-primary` (yellow) · `.btn-accent` (purple) · `.btn-secondary` · `.btn-ghost` · `.btn-danger` · `.btn-sm` |
+| Icon button | `.icon-btn`, `.action-btn`, `.toolbar-btn`, `.info-btn` |
+| Segmented control | `.segmented` / `.mode-switcher` containing `.mode-btn` / `.segment-btn` / `.tab-button` |
+| Panel | `.ui-surface`, `.ui-surface-head`, `.ui-inset` |
+| Chip / label | `.ui-tag`, `.ui-tag--accent`, `.meta-label`, `.kbd` |
+| Status | `.badge` / `.status-pill` with `.success` `.error` `.warning` `.info`, `.badge--dot` |
+| Dropdown, colour picker, modal, toast, tooltip, resizer | see below |
 
-### Tooltip Language
-- Unified style: 0.75rem text at weight 500, 0.5rem padding, 10px border-radius
-- Background: `var(--panel-bg-elevated)` with `var(--border-light)` borders
-- Fade in with 0.2s transition, slide up 4px from trigger, z-index: 1000
-- Success states: switch to `var(--accent-yellow)` background with `var(--bg)` text
-
-### Consuming the System
-- Reuse CSS hooks: apply radial gradient overlay to body, use gradient-filled title, wrap actions in toolbar pattern, and maintain consistent hover/tooltip language across all tools
-
-## Usage Guidelines
-
-### When to Use Yellow
-- Primary call-to-action buttons
-- Important labels (like code language tags)
-- Links and interactive text
-- Active/selected states
-
-### When to Use Purple
-- Hover states for buttons and interactive elements
-- Focus states for inputs
-- Table headers
-- Secondary accents
-- Scrollbar thumbs
-
-### When to Use Gradients
-- Headers and titles (yellow to purple)
-- Active button states
-- Scrollbars
-- Special highlights
-
-## Accessibility
-
-- High contrast ratios (white on dark)
-- Clear focus states with purple borders
-- Adequate spacing for touch targets (36-44px minimum)
-- Readable font sizes (minimum 0.75rem)
+A tool keeps its own *layout* (grid, flex, widths, positions) and uses these
+for *appearance*. If a tool needs a variant, add it here rather than
+re-skinning locally.
 
 ## Shared Components
 
@@ -274,6 +246,12 @@ different ones (`is-open`, `active`, `show`, `open`) or raw `style.display`.
 A tool's stylesheet still owns `display`, because centring differs between
 tools; the shared layer owns everything else.
 
+The shared header is always a single flex row: the title stays on the left and
+the close control stays on the right. Tools should not reimplement that layout.
+The short gradient marker at the header's top-left is the common modal accent.
+Top-level heading/content pairs inside `.legend-intro` receive a full section
+gap so one section never runs into the previous card.
+
 The component provides, for every dialog:
 
 - **A focus trap.** Tab and Shift+Tab cycle within the dialog. Not one of the
@@ -367,27 +345,23 @@ two; the picker never owns text input.
 
 | Role | Token / class | Treatment |
 | --- | --- | --- |
-| Page title | `.app-title`, `.app-header h1` | Gilroy 800, `--text-page-title`, yellow→purple gradient |
-| Subtitle | `.app-subtitle` | Inter 400, `--text-md`, `--text-secondary` |
-| Section heading | `h2`, `h3` | Gilroy 700, tight tracking |
+| Page title | `.app-title`, `.app-header h1` | DM Sans 600, `--text-page-title`, solid `--heading`, purple→yellow `::before` bar |
+| Subtitle | `.app-subtitle` | DM Sans 400, `--chrome-base`, `--text-muted` |
+| Section heading | `h2`, `h3` | DM Sans 600, `--tracking-title` |
 | Panel labels | unchanged | small uppercase chrome, `--chrome-sm` |
 
-Measured before consolidating, the page title rendered in **two faces**
-(Gilroy / Inter), **three sizes** (32px / 38.4px / 30px), **two weights**
-(700 / 800), and one tool had no gradient at all. Every tool also carried its
-own mobile override.
+Measured before consolidating, the page title rendered in **two faces**,
+**three sizes** and **two weights**, and every tool carried its own mobile
+override.
 
 **`--text-page-title` is a px clamp, not rem.** `file-compressor` and
 `image-toolkit` set `html { font-size: 15px }`, so a rem-based title silently
-rendered 2px smaller in those two. The clamp — `clamp(24px, 4vw, 32px)` —
+rendered smaller in those two. The clamp — `clamp(20px, 3.2vw, 24px)` —
 also replaces the per-tool mobile overrides.
 
-A gradient title is painted with a transparent fill over a clipped background,
-so if the clip breaks it goes **invisible rather than wrong**. The tests assert
-the title occupies space, not just that it has the right properties.
-
-Child `<span>`s inside a title inherit the transparent fill and pick up the
-parent gradient — `html-preview`'s two-tone markup needed no change.
+The title used to be gradient-clipped text, which goes **invisible rather than
+wrong** when the clip breaks. It is now solid text; the brand colour lives in
+the `::before` bar, which keeps the title selectable and always legible.
 
 `jwt-debugger` was the one structural outlier: its `<h1>` held the tagline and
 the tool name sat in a small eyebrow above it. The name is now the `h1` and the

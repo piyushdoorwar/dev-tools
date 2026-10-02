@@ -54,10 +54,10 @@ body {
 .mode-switch {
     display: flex;
     gap: var(--space-1);
-    padding: 0.25rem;
+    padding: 3px;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
 }
 
 .hint-code {
@@ -129,7 +129,8 @@ body {
     min-height: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -138,8 +139,11 @@ body {
     justify-content: space-between;
     gap: var(--space-3);
     flex-wrap: wrap;
-    padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    min-height: 52px;
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--divider);
+    border-radius: calc(var(--radius-panel) - 1px) calc(var(--radius-panel) - 1px) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-body {
@@ -200,7 +204,7 @@ body {
     gap: var(--space-4);
     flex-wrap: wrap;
     padding: var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
 }
 
 .option {
@@ -285,8 +289,8 @@ body {
     min-height: 240px;
     overflow: auto;
     border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--control-bg);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
 }
 
 .data-table {
@@ -302,8 +306,8 @@ body {
 .data-table td {
     max-width: 360px;
     padding: 0.45rem 0.75rem;
-    border-bottom: 1px solid var(--border);
-    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
+    border-right: 1px solid var(--divider);
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
@@ -315,8 +319,8 @@ body {
     top: 0;
     z-index: 1;
     padding: 0;
-    background: var(--panel-bg-elevated);
-    color: var(--text-primary);
+    background: var(--surface-3);
+    color: var(--heading);
 }
 
 .data-table tbody tr:hover td {
@@ -327,15 +331,15 @@ body {
     position: sticky;
     left: 0;
     min-width: 3rem;
-    background: var(--panel-bg);
-    color: var(--text-disabled);
+    background: var(--surface-2);
+    color: var(--text-hint);
     text-align: right;
 }
 
 .data-table thead .row-num {
     z-index: 2;
     padding: 0.45rem 0.75rem;
-    background: var(--panel-bg-elevated);
+    background: var(--surface-3);
 }
 
 .sort-btn {
@@ -356,7 +360,7 @@ body {
 }
 
 .sort-btn:hover {
-    color: var(--accent-yellow);
+    color: var(--accent-purple-light);
 }
 
 .sort-btn:focus-visible {

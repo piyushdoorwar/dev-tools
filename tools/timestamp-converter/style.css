@@ -56,7 +56,8 @@ body {
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .toolbar-left,
@@ -69,7 +70,7 @@ body {
 .live-clock {
     font-family: var(--font-mono);
     font-size: var(--text-md);
-    color: var(--accent-yellow);
+    color: var(--heading);
     font-variant-numeric: tabular-nums;
 }
 
@@ -93,7 +94,7 @@ body {
     width: 100%;
     min-height: var(--control-h-sm);
     margin-bottom: var(--space-1);
-    background: var(--panel-bg-elevated);
+    background: var(--surface-3);
 }
 
 /* --- Modal --------------------------------------------------------------
@@ -155,7 +156,8 @@ body {
     min-width: 0;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: var(--panel-bg);
+    background: var(--surface);
+    box-shadow: var(--shadow-e1);
 }
 
 .panel-header {
@@ -167,7 +169,9 @@ body {
        button in it; reserve its height so the two headers line up. */
     min-height: calc(var(--control-h) + 2 * var(--space-4) + 1px);
     padding: var(--space-4);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--divider);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    background: var(--surface-2);
 }
 
 .panel-body {
@@ -207,7 +211,7 @@ body {
     flex-direction: column;
     gap: var(--space-2);
     padding-top: var(--space-3);
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--divider);
 }
 
 .picker-note {
@@ -218,7 +222,7 @@ body {
 .error {
     padding: var(--space-3);
     border: 1px solid rgba(255, 107, 157, 0.45);
-    border-radius: var(--radius-control);
+    border-radius: var(--radius-card);
     background: rgba(255, 107, 157, 0.12);
     color: var(--accent-pink);
     font-size: var(--chrome-base);
@@ -240,9 +244,14 @@ body {
     gap: var(--space-3);
     min-width: 0;
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-control);
-    background: var(--surface-soft);
+    border: 1px solid var(--divider);
+    border-radius: var(--radius-card);
+    background: var(--surface-2);
+    transition: border-color var(--dur) var(--ease-out);
+}
+
+.result-row:hover {
+    border-color: var(--border-light);
 }
 
 .result-label {
@@ -254,7 +263,7 @@ body {
 .result-value {
     min-width: 0;
     overflow-wrap: anywhere;
-    color: var(--text-primary);
+    color: var(--heading);
     font-size: var(--chrome-base);
 }
 

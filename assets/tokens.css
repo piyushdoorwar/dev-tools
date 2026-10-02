@@ -1,0 +1,332 @@
+/* ==========================================================================
+   DevTools — design tokens
+   --------------------------------------------------------------------------
+   The single source of fonts and tokens for the dashboard shell (styles.css)
+   and every tool (tools/main.css imports this file).
+
+   Unlayered on purpose. Tool CSS lives in cascade layers, and an unlayered
+   declaration beats any layered one — so a token override placed inside a
+   layer (as the contrast and coarse-pointer overrides once were) silently
+   never applies. Keep every :root override in this file.
+   ========================================================================== */
+
+/* ==========================================================================
+   0. FONTS
+   Self-hosted, so every tool renders the same face offline and nothing is
+   fetched from a third party. DM Sans (SIL OFL 1.1, see assets/fonts/) is the
+   UI face shared with Gitable, Lumyn, Yamlet, ccs-ui and the portfolio;
+   JetBrains Mono is the code face.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./fonts/dm-sans-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('./fonts/dm-sans-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('./fonts/dm-sans-600.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 700 800;
+  font-display: swap;
+  src: url('./fonts/dm-sans-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('./fonts/jetbrains-mono-latin-var.woff2') format('woff2');
+}
+
+/* ==========================================================================
+   1. TOKENS
+   Flat console finish: solid surfaces, 1px purple-tinted hairlines, neutral
+   elevation, 6 / 8 / 12px radii. Brand colour is unchanged — purple is the
+   active/structural accent, yellow is the one primary action per screen.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+  font-optical-sizing: auto;
+
+  /* --- Surfaces ---------------------------------------------------------- */
+  --bg: #0b0b0f;            /* page                                     */
+  --surface: #131319;       /* resting panel / card                     */
+  --surface-2: #0f0f14;     /* inset: fields, editors, panel heads      */
+  --surface-3: #1a1a22;     /* raised: menus, modals, hover rows        */
+  --bg-secondary: var(--surface-2);
+  --panel-bg: var(--surface);
+  --panel-bg-elevated: var(--surface-3);
+  --surface-soft: rgba(255, 255, 255, 0.02);
+  --surface-strong: rgba(255, 255, 255, 0.05);
+
+  /* --- Lines ------------------------------------------------------------- */
+  --border: rgba(139, 92, 246, 0.14);        /* resting hairline           */
+  --border-light: rgba(139, 92, 246, 0.26);  /* hover / framed surfaces    */
+  --border-strong: rgba(139, 92, 246, 0.4);
+  --divider: rgba(255, 255, 255, 0.06);      /* rules inside a surface     */
+
+  /* --- Accents ----------------------------------------------------------- */
+  --accent-purple: #6739b7;
+  --accent-purple-light: #8b5cf6;
+  --accent-purple-dark: #5b21b6;
+  --accent-yellow: #ffd700;
+  --accent-yellow-dark: #ffc700;
+  --accent-yellow-light: #ffe55c;
+  --accent-yellow-ink: #1a1400;   /* text on a yellow fill */
+  --accent-green: #00d09c;
+  --accent-pink: #ff6b9d;
+  --accent-blue: #5dade2;
+  --accent-orange: #f59e0b;
+
+  /* Accent channels — for building rgba() without re-hardcoding the hex */
+  --accent-purple-rgb: 103, 57, 183;
+  --accent-purple-light-rgb: 139, 92, 246;
+  --accent-yellow-rgb: 255, 215, 0;
+  --accent-green-rgb: 0, 208, 156;
+  --accent-pink-rgb: 255, 107, 157;
+
+  /* Tints: selected rows, active tags, soft fills */
+  --accent-soft: rgba(139, 92, 246, 0.14);
+  --accent-softer: rgba(139, 92, 246, 0.07);
+  --accent-line: rgba(139, 92, 246, 0.34);
+  --yellow-soft: rgba(255, 215, 0, 0.12);
+
+  /* --- Diff palette ------------------------------------------------------ */
+  --diff-added: rgba(0, 208, 156, 0.15);
+  --diff-added-border: rgba(0, 208, 156, 0.5);
+  --diff-removed: rgba(255, 107, 157, 0.15);
+  --diff-removed-border: rgba(255, 107, 157, 0.5);
+  --diff-modified: rgba(139, 92, 246, 0.15);
+  --diff-modified-border: rgba(139, 92, 246, 0.5);
+  --diff-minor: rgba(245, 158, 11, 0.15);
+  --diff-minor-border: rgba(245, 158, 11, 0.5);
+
+  /* --- Text -------------------------------------------------------------- */
+  --heading: #f4f3f8;
+  --text: #d4d2dc;
+  --text-primary: var(--heading);
+  --text-secondary: #b9b6c4;
+  --text-muted: #9b98a8;
+  --text-hint: #807d90;          /* still clears WCAG AA on --bg */
+  --text-disabled: rgba(244, 243, 248, 0.32);
+
+  /* --- Elevation ---------------------------------------------------------
+     Neutral shadows carry structure; colour is never used for depth. */
+  --shadow-e1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-e2: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px -14px rgba(0, 0, 0, 0.7);
+  --shadow-e3: 0 2px 4px rgba(0, 0, 0, 0.35), 0 28px 56px -24px rgba(0, 0, 0, 0.85);
+  --shadow-sm: var(--shadow-e1);
+  --shadow-md: var(--shadow-e2);
+  --shadow-lg: var(--shadow-e3);
+  --shadow-purple: 0 0 0 1px rgba(139, 92, 246, 0.2), 0 8px 20px -12px rgba(139, 92, 246, 0.6);
+  --shadow-yellow: 0 1px 2px rgba(255, 215, 0, 0.25), 0 8px 24px -12px rgba(255, 215, 0, 0.55);
+
+  /* --- Type -------------------------------------------------------------- */
+  --font-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-headline: var(--font-body);
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* Type scale — tracking tightens as size grows */
+  --text-xs: 0.6875rem;   /* 11px — badges, meta            */
+  --text-sm: 0.75rem;     /* 12px — labels, toolbar         */
+  --text-base: 0.8125rem; /* 13px — dense UI body           */
+  --text-md: 0.875rem;    /* 14px — comfortable body, code  */
+  --text-lg: 1rem;        /* 16px — inputs, emphasis        */
+  --text-xl: 1.25rem;     /* 20px — panel / modal titles    */
+  --text-2xl: 1.75rem;    /* 28px — section titles          */
+  /* px, not rem: file-compressor and image-toolkit set
+     html { font-size: 15px }, which would shrink a rem-based title.
+     Clamped so it still steps down on narrow screens. */
+  --text-page-title: clamp(20px, 3.2vw, 24px); /* the tool name in the header */
+
+  /* Shared chrome is sized in px so a tool's root font-size cannot change it.
+     Content keeps the rem scale above and still respects user zoom. */
+  --chrome-sm: 12px;
+  --chrome-base: 13px;
+  --chrome-md: 14px;
+  --chrome-title: 16px;
+
+  --tracking-tight: -0.02em;
+  --tracking-title: -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.02em;
+  --tracking-caps: 0.08em;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-code: 1.7;
+
+  /* --- Radius ------------------------------------------------------------ */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-control: 6px;  /* every input / select / button  */
+  --radius-card: 8px;     /* cards, tables, inner blocks    */
+  --radius-panel: 12px;   /* panels, framed surfaces        */
+  --radius-modal: 12px;   /* modals                         */
+  --radius-menu: 8px;     /* popovers, dropdown lists       */
+  --radius-pill: 999px;
+
+  /* Modal width scale — modals differ in content, so they share a scale
+     rather than a single width. */
+  --modal-w-sm: min(440px, 92vw);
+  --modal-w-md: min(600px, 92vw);
+  --modal-w-lg: min(900px, 94vw);
+  --modal-w-xl: min(1180px, 94vw);
+
+  /* --- Spacing (4px rhythm) ---------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* --- Control geometry -------------------------------------------------- */
+  --control-h-sm: 32px;
+  --control-h: 36px;
+  --control-h-lg: 44px;
+  --control-pad-x: 12px;
+  --icon-btn-glyph: 16px; /* glyph size inside an icon-only button */
+
+  /* --- Control colour ---------------------------------------------------- */
+  --control-bg: var(--surface-2);
+  --control-bg-strong: var(--surface-3);
+  --control-bg-hover: var(--accent-purple);
+  --control-border: rgba(255, 255, 255, 0.08);
+  --control-border-strong: var(--border-light);
+  --control-border-hover: var(--border-strong);
+  --control-text: var(--text-secondary);
+  --control-text-hover: var(--heading);
+
+  /* --- Focus ------------------------------------------------------------- */
+  --focus-border: var(--accent-purple-light);
+  --focus-ring: 0 0 0 3px rgba(139, 92, 246, 0.25);
+  --focus-ring-danger: 0 0 0 3px rgba(255, 107, 157, 0.25);
+  --focus-ring-success: 0 0 0 3px rgba(0, 208, 156, 0.25);
+
+  /* --- Motion ------------------------------------------------------------ */
+  --ease-out: cubic-bezier(0.2, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-fast: 120ms;
+  --dur: 150ms;
+  --dur-slow: 240ms;
+  --transition-control:
+    background-color var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out),
+    color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out),
+    opacity var(--dur) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+
+  /* --- Scrollbar --------------------------------------------------------- */
+  --scrollbar-size: 10px;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(139, 92, 246, 0.32);
+  --scrollbar-thumb-hover: rgba(139, 92, 246, 0.55);
+
+  /* --- Chrome ------------------------------------------------------------ */
+  --tooltip-bg: var(--surface-3);
+  --scrim: rgba(5, 5, 8, 0.72);
+  --scrim-blur: blur(6px);
+
+  --toast-bg: var(--surface-3);
+  --toast-border: var(--border-light);
+  --toast-success-bg: var(--surface-3);
+  --toast-success-border: rgba(0, 208, 156, 0.45);
+  --toast-error-bg: var(--surface-3);
+  --toast-error-border: rgba(255, 107, 157, 0.45);
+  --toast-info-bg: var(--surface-3);
+  --toast-info-border: rgba(139, 92, 246, 0.45);
+
+  /* --- Z-index scale ----------------------------------------------------- */
+  --z-base: 1;
+  --z-sticky: 20;
+  --z-dropdown: 40;
+  --z-overlay: 100;
+  --z-modal: 200;
+  --z-toast: 400;
+  --z-tooltip: 600;
+
+  /* --- Select chevron (shared, so every dropdown gets the same arrow) ----- */
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239b98a8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+
+  /* Calendar glyph for date/time inputs, drawn in the secondary text colour
+     so it reads on a dark field. */
+  --date-picker-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b9b6c4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E");
+
+  /* Tick for the selected dropdown option. Masked, so it inherits its colour. */
+  --dd-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+
+  /* --- Legacy aliases (kept so existing tool CSS keeps resolving) --------- */
+  --purple: var(--accent-purple);
+  --purple-light: var(--accent-purple-light);
+  --purple-dark: var(--accent-purple-dark);
+  --yellow: var(--accent-yellow);
+  --yellow-dark: var(--accent-yellow-dark);
+  --yellow-light: var(--accent-yellow-light);
+  --green: var(--accent-green);
+  --pink: var(--accent-pink);
+  --blue: var(--accent-blue);
+  --bg-primary: var(--bg);
+  --bg-panel: var(--panel-bg);
+  --bg-panel-elevated: var(--panel-bg-elevated);
+  --bg-elevated: var(--panel-bg-elevated);
+  --border-default: var(--border);
+  --panel: var(--surface);
+  --panel-strong: var(--surface-3);
+  --accent: var(--accent-purple);
+  --accent-strong: var(--accent-purple-light);
+  --shadow: var(--shadow-md);
+  --focus: rgba(103, 57, 183, 0.3);
+  --radius: var(--radius-control);
+}
+
+/* Controls grow to a comfortable touch target on coarse pointers. */
+@media (pointer: coarse) {
+  :root {
+    --control-h-sm: 38px;
+    --control-h: 44px;
+  }
+}
+
+/* Near-solid lines and brighter secondary text when more contrast is asked
+   for. */
+@media (prefers-contrast: more) {
+  :root {
+    --border: rgba(255, 255, 255, 0.24);
+    --border-light: rgba(255, 255, 255, 0.36);
+    --border-strong: rgba(255, 255, 255, 0.5);
+    --divider: rgba(255, 255, 255, 0.2);
+    --control-border: rgba(255, 255, 255, 0.32);
+    --text-secondary: #e0e0e0;
+    --text-muted: rgba(255, 255, 255, 0.82);
+    --text-hint: rgba(255, 255, 255, 0.72);
+    --text-disabled: rgba(255, 255, 255, 0.55);
+  }
+}

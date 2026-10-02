@@ -12,7 +12,8 @@
    anything this stylesheet sets later still wins. */
 input,
 textarea,
-select {
+select,
+.btn {
   padding: revert-layer;
 }
 
@@ -21,8 +22,7 @@ select {
 }
 
 body {
-  font-family: "Inter", "Segoe UI", sans-serif;
-  color: var(--text-primary);
+  color: var(--text);
   min-height: 100vh;
   position: relative;
 }
@@ -42,9 +42,7 @@ body {
   align-items: center;
   padding: 1.35rem 0 1.1rem;
   background-color: transparent;
-  border-bottom: 1px solid var(--border);
-  box-shadow: none;
-  border-radius: 0;
+  border-bottom: 1px solid var(--divider);
 }
 
 .header-left {
@@ -56,46 +54,44 @@ body {
   margin-left: auto;
 }
 
-.icon-btn {
-  width: var(--control-h);
-  height: var(--control-h);
-  border-radius: var(--radius-control);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(0, 0, 0, 0.22);
-  color: var(--text-muted);
-  cursor: pointer;
+/* Header icon buttons take their look from the base .icon-btn; give them a
+   resting hairline so they read as controls on the bare page. */
+.header-right .icon-btn {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.header-right {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Secondary in-form action, matching the base .btn-secondary. */
+.ghost-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.icon-btn:hover {
-  color: var(--text-primary);
-  border-color: rgba(255, 255, 255, 0.14);
-  transform: translateY(-1px);
-}
-
-.icon-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-.ghost-btn {
-  padding: 10px 18px;
+  min-height: var(--control-h);
+  padding: 0 var(--space-4);
   border-radius: var(--radius-control);
-  border: 1px solid var(--border);
-  background: var(--surface-strong);
-  color: var(--text-secondary);
-  font-weight: 600;
+  border: 1px solid var(--border-light);
+  background: var(--surface);
+  color: var(--heading);
+  font-size: var(--chrome-base);
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow-e1);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-control);
 }
 
 .ghost-btn:hover {
-  color: var(--text-primary);
-  border-color: var(--border-light);
-  transform: translateY(-1px);
+  background: var(--surface-3);
+  border-color: var(--border-strong);
+}
+
+.ghost-btn:active {
+  transform: translateY(1px);
 }
 
 .workspace {
@@ -113,23 +109,11 @@ body {
 }
 
 .step-card {
-  background: var(--panel-bg);
-  border-radius: 20px;
+  background: var(--surface);
+  border-radius: var(--radius-panel);
   border: 1px solid var(--border);
   padding: 24px;
-  box-shadow: var(--shadow-md);
-  animation: floatIn 0.5s ease both;
-}
-
-@keyframes floatIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  box-shadow: var(--shadow-e1);
 }
 
 .step-head {
@@ -140,8 +124,9 @@ body {
 }
 
 .step-head h2 {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--heading);
 }
 
 .step-head p {
@@ -153,55 +138,56 @@ body {
 .step-badge {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
+  color: var(--heading);
   display: grid;
   place-items: center;
-  font-weight: 700;
+  font-weight: 600;
   border: 1px solid var(--border);
 }
 
 .pill-group {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  gap: var(--space-1);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 26px; /* capsule on one row, rounded rect once wrapped */
-  padding: 6px;
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
+  padding: 3px;
   margin-bottom: 16px;
 }
 
+/* Content-type tabs: a segmented control. The selected segment is the solid
+   purple fill used by every other tool's tabs; yellow stays reserved for the
+   Download CTA. */
 .pill {
   padding: 10px 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: none;
   background: transparent;
-  color: var(--text-secondary);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: var(--chrome-md);
+  line-height: 1;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-control);
 }
 
 .pill:hover:not(.active) {
-  background: rgba(103, 57, 183, 0.2);
-  color: var(--text-primary);
+  background: var(--surface-strong);
+  color: var(--heading);
 }
 
 .pill:focus-visible {
   outline: none;
-  border-color: rgba(255, 215, 0, 0.45);
   box-shadow: var(--focus-ring);
 }
 
 .pill.active {
-  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-yellow-dark));
-  color: var(--bg);
-  box-shadow: var(--shadow-yellow);
+  background: var(--accent-purple);
+  color: #fff;
+  box-shadow: var(--shadow-e1);
 }
 
 .content-forms {
@@ -229,9 +215,9 @@ body {
   flex-direction: column;
   gap: 14px;
   padding: 16px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(0, 0, 0, 0.22);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--divider);
+  background: var(--surface-2);
 }
 
 .contact-section-header {
@@ -242,17 +228,17 @@ body {
 }
 
 .contact-section-header h3 {
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: var(--tracking-caps);
   color: var(--text-muted);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .contact-section-header p {
   margin-top: 6px;
   font-size: 12px;
-  color: var(--text-disabled);
+  color: var(--text-hint);
 }
 
 .contact-section-actions {
@@ -286,8 +272,9 @@ body {
 }
 
 .contact-extra-toggle .ghost-btn {
-  padding: 8px 14px;
-  font-size: 12px;
+  min-height: var(--control-h-sm);
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
 }
 
 .form-help {
@@ -306,12 +293,11 @@ body {
 }
 
 .label {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-caps);
   color: var(--text-muted);
-  font-family: var(--font-mono);
 }
 
 /* Input/textarea/select shape, chevron and focus ring come from main.css */
@@ -332,14 +318,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 input[type="date"]::-webkit-datetime-edit {
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 input[type="date"]::-webkit-datetime-edit-text,
 input[type="date"]::-webkit-datetime-edit-month-field,
 input[type="date"]::-webkit-datetime-edit-day-field,
 input[type="date"]::-webkit-datetime-edit-year-field {
-  color: var(--text-primary);
+  color: var(--text);
   padding: 0 2px;
 }
 
@@ -397,7 +383,7 @@ textarea {
   transform: translateY(-50%);
   width: 26px;
   height: 18px;
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
   border: 1px solid transparent;
   background: transparent;
   display: grid;
@@ -409,14 +395,14 @@ textarea {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 3px;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
 
 .country-code-input .flag-slot.is-visible {
   border-color: var(--border);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--surface-3);
 }
 
 .country-code-input .flag-slot.is-visible .flag-icon {
@@ -437,12 +423,13 @@ textarea {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.3);
+  min-height: var(--control-h);
+  padding: 0 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--control-border);
+  background: var(--control-bg);
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: var(--chrome-md);
 }
 
 .checkbox-field input {
@@ -455,25 +442,32 @@ textarea {
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--divider);
   padding-bottom: 12px;
 }
 
 .tab {
-  padding: 10px 16px;
-  border-radius: 10px;
+  min-height: var(--control-h-sm);
+  padding: 0 14px;
+  border-radius: var(--radius-control);
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-muted);
-  font-weight: 600;
+  font-size: var(--chrome-base);
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: var(--transition-control);
+}
+
+.tab:hover:not(.active) {
+  background: var(--surface-strong);
+  color: var(--heading);
 }
 
 .tab.active {
-  background: rgba(103, 57, 183, 0.25);
-  border-color: rgba(139, 92, 246, 0.3);
-  color: var(--accent-yellow);
+  background: var(--accent-purple);
+  color: #fff;
+  box-shadow: var(--shadow-e1);
 }
 
 .tab-panels {
@@ -500,31 +494,33 @@ textarea {
 
 .option-card,
 .level-card {
-  border-radius: 16px;
+  border-radius: var(--radius-card);
   border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--surface-2);
   padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  font-weight: 600;
+  font-size: var(--chrome-base);
+  font-weight: 500;
   color: var(--text-muted);
-  transition: all 0.2s ease;
+  transition: var(--transition-control);
 }
 
-.option-card:hover,
-.level-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+.option-card:hover:not(.active),
+.level-card:hover:not(.active) {
+  background: var(--surface-3);
+  border-color: var(--border-light);
+  color: var(--heading);
 }
 
 .option-card.active,
 .level-card.active {
-  border-color: rgba(139, 92, 246, 0.5);
-  background: rgba(139, 92, 246, 0.16);
-  color: var(--accent-yellow);
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--heading);
 }
 
 .icon {
@@ -532,9 +528,9 @@ textarea {
   height: 48px;
   display: grid;
   place-items: center;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-primary);
+  border-radius: var(--radius-card);
+  background: var(--surface-3);
+  color: var(--heading);
 }
 
 .icon svg {
@@ -550,7 +546,7 @@ textarea {
 }
 
 .logo-grid .icon {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--surface);
   border: 1px solid var(--border);
 }
 
@@ -570,8 +566,8 @@ textarea {
 .frame-preview {
   width: 56px;
   height: 56px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-panel);
+  background: var(--surface-3);
   position: relative;
   border: 1px solid var(--border);
 }
@@ -580,9 +576,9 @@ textarea {
   content: "";
   position: absolute;
   inset: 12px;
-  border-radius: 10px;
-  border: 1px solid var(--text-primary);
-  background: rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--heading);
+  background: var(--surface-2);
 }
 
 .frame-preview.frame-badge::before,
@@ -595,8 +591,8 @@ textarea {
   font-size: 7px;
   line-height: 1;
   padding: 2px 6px 1px;
-  border-radius: 999px;
-  background: var(--text-primary);
+  border-radius: var(--radius-pill);
+  background: var(--heading);
   color: var(--bg);
   white-space: nowrap;
 }
@@ -613,9 +609,9 @@ textarea {
 
 .color-field input[type="color"] {
   width: 48px;
-  height: 40px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
+  height: var(--control-h);
+  border-radius: var(--radius-control);
+  border: 1px solid var(--control-border);
   padding: 0;
   background: #fff;
 }
@@ -626,14 +622,14 @@ textarea {
 }
 
 .upload-box {
-  border: 1px dashed var(--border);
-  border-radius: 16px;
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-card);
   padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   align-items: flex-start;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--surface-2);
 }
 
 .upload-box input[type="file"] {
@@ -641,7 +637,8 @@ textarea {
 }
 
 .upload-box label {
-  font-weight: 600;
+  font-weight: 500;
+  color: var(--heading);
   cursor: pointer;
 }
 
@@ -659,9 +656,11 @@ textarea {
 
 .level-percent {
   font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-3);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
 }
 
 .panel-right {
@@ -692,11 +691,11 @@ textarea {
   align-items: center;
   gap: 12px;
   padding: 18px;
-  border-radius: 22px;
+  border-radius: var(--radius-panel);
   background: var(--frame-bg, #ffffff);
   border: 1px solid var(--border);
-  box-shadow: var(--shadow-lg);
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-e2);
+  transition: padding var(--dur) var(--ease-out), border-color var(--dur) var(--ease-out);
 }
 
 .qr-frame.frame-none {
@@ -708,7 +707,7 @@ textarea {
 
 .qr-frame.frame-soft {
   padding: 20px;
-  border-radius: 24px;
+  border-radius: 20px;
 }
 
 .qr-frame.frame-badge {
@@ -736,7 +735,7 @@ textarea {
 
 .frame-label {
   padding: 8px 18px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--frame-accent, var(--accent-purple));
   color: #fff;
   font-weight: 600;
@@ -767,7 +766,8 @@ textarea {
 }
 
 .qr-empty h3 {
-  font-size: 16px;
+  font-size: var(--text-lg);
+  color: var(--heading);
   margin-bottom: 6px;
 }
 
@@ -782,37 +782,10 @@ textarea {
   margin-top: 18px;
 }
 
-.btn {
+/* Button appearance (.btn-primary / .btn-secondary) comes from main.css. */
+.download-actions .btn {
   flex: 1;
-  padding: 12px 18px;
-  border-radius: var(--radius-control);
-  border: 1px solid transparent;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-secondary {
-  background: var(--surface-strong);
-  border-color: var(--border);
-  color: var(--text-secondary);
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent-yellow), var(--accent-yellow-dark));
-  color: var(--bg);
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+  min-height: 40px;
 }
 
 .preview-meta {
@@ -826,47 +799,33 @@ textarea {
 }
 
 .status-pill {
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: rgba(0, 208, 156, 0.2);
+  background: rgba(0, 208, 156, 0.12);
   color: var(--accent-green);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 10px;
-  font-family: var(--font-mono);
 }
 
 .status-pill.is-warning {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.12);
   color: var(--accent-orange);
-}
-
-.tips-card h3 {
-  font-size: 16px;
-  margin-bottom: 12px;
 }
 
 .tips-card ul {
   display: grid;
   gap: 10px;
-  color: var(--text-muted);
-  font-size: 13px;
+  color: var(--text-secondary);
+  font-size: var(--chrome-md);
   padding-left: 18px;
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.82);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.2s ease;
+  transition: opacity var(--dur) var(--ease-out), visibility var(--dur) var(--ease-out);
   z-index: 2000;
-  backdrop-filter: blur(6px);
 }
 
 .modal-overlay.is-open {
@@ -877,64 +836,14 @@ textarea {
 .modal-content {
   width: var(--modal-w-lg);
   max-height: 90vh;
-  background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(22, 22, 22, 0.98) 55%, rgba(36, 36, 36, 0.95) 100%);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  position: relative;
 }
 
-.modal-content::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--accent-purple), var(--accent-purple-light), var(--accent-yellow));
-  opacity: 0.85;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 22px 28px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(135deg, rgba(103, 57, 183, 0.16), rgba(0, 0, 0, 0.2));
-}
-
-.modal-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--accent-yellow);
-}
-
-.modal-subtitle {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-top: 6px;
-}
-
+/* Header, title, subtitle and body chrome come from the shared modal. */
 .modal-body {
-  padding: 28px;
   overflow-y: auto;
-}
-
-.modal-header .icon-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-light));
-  color: #fff;
-  border: none;
-}
-
-.modal-header .icon-btn:hover {
-  transform: translateY(-1px);
 }
 
 #designModal .modal-body {
@@ -943,17 +852,10 @@ textarea {
 }
 
 #tipsModal .tips-card {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-card);
   padding: 16px 18px;
-}
-
-@keyframes toastIn {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
 }
 
 @media (max-width: 980px) {
@@ -967,20 +869,12 @@ textarea {
 }
 
 @media (max-width: 640px) {
-  /* Once the pills wrap, a 999px radius turns the group into a lozenge. */
   .pill-group {
     display: flex;
-    border-radius: 20px;
-    gap: 6px;
   }
 
   .pill {
     padding: 8px 14px;
-  }
-
-  .modal-header,
-  .modal-body {
-    padding: 18px;
   }
 
   .tab-list {
@@ -988,7 +882,7 @@ textarea {
   }
 
   .tab {
-    padding: 8px 12px;
+    padding: 0 12px;
   }
 
   .option-grid {

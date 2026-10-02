@@ -1093,6 +1093,7 @@ test('QR content-type tabs are tabs, not badges', async ({ page }) => {
         padding: c.padding,
         transform: c.textTransform,
         hasGradient: c.backgroundImage !== 'none',
+        background: c.backgroundColor,
         color: c.color,
       };
     };
@@ -1105,12 +1106,12 @@ test('QR content-type tabs are tabs, not badges', async ({ page }) => {
   expect(style.active.transform, 'labels are sentence case in the markup').toBe('none');
   expect(style.label).toBe('Text');
 
-  // The selected tab is a filled yellow chip with dark text.
-  expect(style.active.hasGradient, 'active tab lost its fill').toBe(true);
-  expect(style.active.color).toBe('rgb(13, 13, 13)');
+  // The selected tab is the shared segmented fill: solid purple, white text.
+  expect(style.active.background, 'active tab lost its fill').toBe('rgb(103, 57, 183)');
+  expect(style.active.color).toBe('rgb(255, 255, 255)');
 
   // Unselected tabs stay quiet.
-  expect(style.idle.hasGradient).toBe(false);
+  expect(style.idle.background).not.toBe('rgb(103, 57, 183)');
 });
 
 test('the shared badge component does not claim generic component names', async ({ page }) => {
