@@ -16,6 +16,7 @@ import {
   renderRobots,
   renderSitemap,
   renderToolRoutePage,
+  SITE_URL,
   TOOL_CATALOG,
 } from './seo.mjs';
 
@@ -71,6 +72,8 @@ await Promise.all([
   writeFile(path.join(outputDirectory, 'robots.txt'), renderRobots()),
   writeFile(path.join(outputDirectory, 'llms.txt'), renderLlms()),
   writeFile(path.join(outputDirectory, 'llms-full.txt'), renderLlmsFull()),
+  // GitHub Pages custom domain, derived from the canonical site URL.
+  writeFile(path.join(outputDirectory, 'CNAME'), `${new URL(SITE_URL).hostname}\n`),
 ]);
 
 const precacheAssets = [...publicAssets, ...EXTERNAL_ASSETS.map((asset) => asset.output)].sort();

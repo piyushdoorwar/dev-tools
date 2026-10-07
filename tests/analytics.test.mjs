@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { getPublicAssets } from '../scripts/public-assets.mjs';
 
-const TOKEN = 'e9cd556fb46f4880a8842d37e2dfe3fb';
+const TOKEN = '7bf02e12b7eb4bcfb147fbf33e347cd9';
 const BEACON_URL = 'https://static.cloudflareinsights.com/beacon.min.js';
 
 test('ships the configured Cloudflare Analytics loader', async () => {

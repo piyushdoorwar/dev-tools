@@ -28,7 +28,7 @@ test('Cloudflare Analytics uses the configured token on the dashboard', async ({
   });
   expect(loaded).toEqual({
     type: 'module',
-    config: { token: 'e9cd556fb46f4880a8842d37e2dfe3fb' },
+    config: { token: '7bf02e12b7eb4bcfb147fbf33e347cd9' },
   });
 });
 

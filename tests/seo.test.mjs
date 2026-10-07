@@ -60,7 +60,7 @@ test('sitemap, robots, and LLM indexes include every canonical route', async () 
     readDist('llms-full.txt'),
   ]);
   assert.match(robots, new RegExp(`Sitemap: ${SITE_URL}sitemap\\.xml`));
-  assert.match(robots, /User-agent: OAI-SearchBot\nAllow: \/dev-tools\//);
+  assert.match(robots, /User-agent: OAI-SearchBot\nAllow: \//);
   for (const tool of TOOL_CATALOG) {
     const url = toolURL(tool);
     assert.match(sitemap, new RegExp(`<loc>${url}</loc>`));
@@ -76,7 +76,7 @@ test('internal iframe pages are excluded in favor of clean canonical routes', as
     seenPaths.add(tool.toolPath);
     const html = await readDist(`tools/${tool.toolPath}/index.html`);
     assert.match(html, /<meta name="robots" content="noindex, follow"/);
-    assert.match(html, /<link rel="canonical" href="https:\/\/piyushdoorwar\.github\.io\/dev-tools\//);
+    assert.match(html, /<link rel="canonical" href="https:\/\/devtools\.piyushdoorwar\.com\//);
   }
 });
 

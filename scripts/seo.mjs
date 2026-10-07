@@ -1,6 +1,6 @@
 import '../tool-catalog.js';
 
-export const SITE_URL = 'https://piyushdoorwar.github.io/dev-tools/';
+export const SITE_URL = 'https://devtools.piyushdoorwar.com/';
 export const SITE_NAME = 'Dev Tools';
 export const HOME_TITLE = 'Dev Tools — Fast, Private Browser Utilities';
 export const HOME_DESCRIPTION = 'Use fast, free developer tools for formatting, conversion, testing, generation, and file processing directly in your browser.';
@@ -156,7 +156,7 @@ export function renderSitemap() {
 }
 
 export function renderRobots() {
-  return `User-agent: *\nAllow: /dev-tools/\n\nUser-agent: OAI-SearchBot\nAllow: /dev-tools/\n\nSitemap: ${SITE_URL}sitemap.xml\n`;
+  return `User-agent: *\nAllow: /\n\nUser-agent: OAI-SearchBot\nAllow: /\n\nSitemap: ${SITE_URL}sitemap.xml\n`;
 }
 
 export function renderLlms() {
