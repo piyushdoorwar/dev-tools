@@ -15,6 +15,6 @@
     "test": "npm run build && npm run test:syntax && npm run test:static && npm run test:unit && npm run precache:check && npm run test:e2e:built"
   },
   "devDependencies": {
-    "@playwright/test": "1.61.1"
+    "@playwright/test": "1.63.0"
   }
 }
